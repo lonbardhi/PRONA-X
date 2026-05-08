@@ -34,10 +34,11 @@ const heroSlides = [
     image: "/brand/albania-beach-properties-for-sale-2-1920x1920.jpg",
     alt: "Albanian coastal villa on a cliff above the sea",
     quote:
-      "A premium operating layer for Albania's most desirable coastal property inventory.",
-    title: "Coastal Portfolio",
-    subtitle: "Luxury villas, beachfront homes, and land",
-    note: "Built for high-trust property sales teams",
+      "Turn scattered listings, WhatsApp chats, photos, documents, viewings, and offers into one polished operating system for your agency.",
+    title: "Sales • Rentals • Development Land",
+    subtitle:
+      "Manage premium properties, landowner agreements, buyer interest, appointments, offers, documents, and private sharing.",
+    note: "",
   },
   {
     image: "/brand/albania-beachfront-properties-for-sale-1920x1920.jpg",
@@ -117,19 +118,14 @@ export function AuthEntry({
                 </p>
               </div>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">
-                Rent
-              </span>
-              <span className="rounded-full bg-slate-950 px-3 py-1 text-white">
-                Sell
-              </span>
-              <span className="rounded-full bg-orange-100 px-3 py-1 text-orange-700">
-                Manage
-              </span>
-              <span className="rounded-full bg-cyan-100 px-3 py-1 text-cyan-700">
-                Share
-              </span>
+            <div className="mt-4 inline-flex max-w-full items-center overflow-hidden rounded-full border border-slate-950/10 bg-slate-950 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-sm shadow-slate-950/10">
+              <span>Sell</span>
+              <span className="mx-2 text-white/35">|</span>
+              <span>Rent</span>
+              <span className="mx-2 text-white/35">|</span>
+              <span>Land</span>
+              <span className="mx-2 text-white/35">|</span>
+              <span>Share</span>
             </div>
           </div>
 
@@ -138,11 +134,12 @@ export function AuthEntry({
               PRONA X Platform
             </p>
             <h2 className="mt-3 text-4xl font-black leading-tight tracking-normal sm:text-5xl">
-              Coastal property work, branded end to end.
+              Albanian property operations, branded end to end.
             </h2>
             <p className="mt-4 max-w-md text-sm font-medium leading-6 text-white/85">
-              A sharp workspace for Albanian property teams that need listings,
-              media, sharing, and access control in one place.
+              A premium CRM for agencies managing sales, rentals, development land,
+              media, documents, viewings, offers, and client sharing from one secure
+              workspace.
             </p>
           </div>
 
@@ -188,16 +185,18 @@ export function AuthEntry({
           </div>
 
           <div className="absolute inset-x-5 bottom-16 rounded-3xl border border-white/25 bg-slate-950/38 p-5 text-white shadow-2xl backdrop-blur-md sm:inset-x-8 sm:bottom-20 sm:p-6">
-            <p className="max-w-xl text-xl font-semibold leading-8">
+            <p className="max-w-xl text-lg font-semibold leading-7 sm:text-xl sm:leading-8">
               &quot;{slide.quote}&quot;
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
               <div>
-                <p className="text-2xl font-bold">{slide.title}</p>
-                <p className="mt-1 text-sm font-medium text-white/82">
+                <p className="text-xl font-bold sm:text-2xl">{slide.title}</p>
+                <p className="mt-1 max-w-xl text-sm font-medium leading-6 text-white/82">
                   {slide.subtitle}
                 </p>
-                <p className="text-sm text-white/68">{slide.note}</p>
+                {slide.note ? (
+                  <p className="text-sm text-white/68">{slide.note}</p>
+                ) : null}
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/12 px-4 py-3">
                 <p className="text-xs uppercase tracking-[0.18em] text-white/60">
