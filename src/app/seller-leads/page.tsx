@@ -1,38 +1,20 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ArrowRight, Building2, ClipboardList, UserPlus } from "lucide-react";
 
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
-import {
-  getClearSessionPath,
-  getCurrentUser,
-  isInvalidRefreshTokenError,
-} from "@/lib/supabase/server";
+import { requireApprovedUser } from "@/lib/supabase/server";
 
 export default async function SellerLeadsPage() {
   if (!hasSupabaseEnv()) {
     return <SetupNotice />;
   }
 
-  const { authError, user } = await getCurrentUser();
-
-  if (authError && isInvalidRefreshTokenError(authError)) {
-    redirect(
-      getClearSessionPath(
-        "/login",
-        "Your session expired. Sign in again to continue.",
-      ),
-    );
-  }
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { profile, user } = await requireApprovedUser();
 
   return (
-    <DashboardShell userEmail={user.email}>
+    <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

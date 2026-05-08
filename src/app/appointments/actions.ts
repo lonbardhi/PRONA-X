@@ -9,27 +9,10 @@ import {
   appointmentStatuses,
   formDataToAppointmentInput,
 } from "@/lib/appointments";
-import {
-  getClearSessionPath,
-  getCurrentUser,
-  isInvalidRefreshTokenError,
-} from "@/lib/supabase/server";
+import { requireApprovedUser } from "@/lib/supabase/server";
 
 async function requireUser() {
-  const { authError, supabase, user } = await getCurrentUser();
-
-  if (authError && isInvalidRefreshTokenError(authError)) {
-    redirect(
-      getClearSessionPath(
-        "/login",
-        "Your session expired. Sign in again to continue.",
-      ),
-    );
-  }
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { supabase, user } = await requireApprovedUser();
 
   return { supabase, user };
 }

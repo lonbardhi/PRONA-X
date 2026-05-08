@@ -6,19 +6,26 @@ import {
   Home,
   LogOut,
   Plus,
+  ShieldCheck,
   UserPlus,
   UserCircle,
 } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
+import { SessionTimeout } from "@/components/SessionTimeout";
 
 type DashboardShellProps = {
   children: React.ReactNode;
   userEmail?: string | null;
+  userRole?: string | null;
 };
 
-export function DashboardShell({ children, userEmail }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  userEmail,
+  userRole,
+}: DashboardShellProps) {
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Home },
     { label: "Sales", href: "/sales", icon: Building2 },
@@ -26,6 +33,9 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
     { label: "Calendar", href: "/appointments", icon: CalendarDays },
     { label: "Seller Leads", href: "/seller-leads", icon: UserPlus },
     { label: "Add Property", href: "/sales#add-property", icon: Plus },
+    ...(userRole === "admin"
+      ? [{ label: "Admin Users", href: "/admin/users", icon: ShieldCheck }]
+      : []),
   ];
 
   return (
@@ -84,6 +94,7 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
           </div>
         </div>
       </header>
+      <SessionTimeout />
       {children}
     </main>
   );

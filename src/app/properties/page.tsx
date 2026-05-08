@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import {
   ArrowUpDown,
   BadgeCheck,
@@ -28,11 +27,7 @@ import {
 } from "@/lib/property-filters";
 import { normalizeAppointments } from "@/lib/appointments";
 import type { PropertyRecord } from "@/lib/properties";
-import {
-  getClearSessionPath,
-  getCurrentUser,
-  isInvalidRefreshTokenError,
-} from "@/lib/supabase/server";
+import { requireApprovedUser } from "@/lib/supabase/server";
 
 type PropertiesPageProps = {
   searchParams: Promise<PropertySearchParams>;
@@ -151,20 +146,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
 
   const params = await searchParams;
   const filters = parsePropertyFilters(params);
-  const { authError, supabase, user } = await getCurrentUser();
-
-  if (authError && isInvalidRefreshTokenError(authError)) {
-    redirect(
-      getClearSessionPath(
-        "/login",
-        "Your session expired. Sign in again to continue.",
-      ),
-    );
-  }
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { profile, supabase, user } = await requireApprovedUser();
 
   let propertiesQuery = supabase
     .from("properties")
@@ -258,7 +240,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   );
 
   return (
-    <DashboardShell userEmail={user.email}>
+    <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

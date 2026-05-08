@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   CalendarClock,
   CalendarDays,
@@ -22,11 +21,7 @@ import {
   type AppointmentRecord,
 } from "@/lib/appointments";
 import { hasSupabaseEnv } from "@/lib/env";
-import {
-  getClearSessionPath,
-  getCurrentUser,
-  isInvalidRefreshTokenError,
-} from "@/lib/supabase/server";
+import { requireApprovedUser } from "@/lib/supabase/server";
 
 type AppointmentsPageProps = {
   searchParams: Promise<{
@@ -149,20 +144,7 @@ export default async function AppointmentsPage({
   }
 
   const params = await searchParams;
-  const { authError, supabase, user } = await getCurrentUser();
-
-  if (authError && isInvalidRefreshTokenError(authError)) {
-    redirect(
-      getClearSessionPath(
-        "/login",
-        "Your session expired. Sign in again to continue.",
-      ),
-    );
-  }
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { profile, supabase, user } = await requireApprovedUser();
 
   const [propertyResult, profileResult, appointmentResult] = await Promise.all([
     supabase
@@ -198,7 +180,7 @@ export default async function AppointmentsPage({
   const days = getCalendarDays();
 
   return (
-    <DashboardShell userEmail={user.email}>
+    <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-4 px-3 py-4 sm:gap-5 sm:px-6 sm:py-6">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

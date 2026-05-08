@@ -35,7 +35,7 @@ const heroSlides = [
     alt: "Albanian coastal villa on a cliff above the sea",
     quote:
       "Turn scattered listings, WhatsApp chats, photos, documents, viewings, and offers into one polished operating system for your agency.",
-    title: "Sales • Rentals • Development Land",
+    title: "Sales | Rentals | Development Land",
     subtitle:
       "Manage premium properties, landowner agreements, buyer interest, appointments, offers, documents, and private sharing.",
     note: "",
@@ -266,7 +266,7 @@ export function AuthEntry({
                   ? "Sign in to manage inventory, media, roles, and public shares."
                   : mode === "recovery"
                     ? "Enter your email and we will send a secure reset link."
-                    : "Start your PRONA X workspace for property operations."}
+                    : "Create an account, then an admin will approve workspace access."}
               </p>
             </div>
 

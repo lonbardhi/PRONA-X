@@ -11,7 +11,8 @@ import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
 import {
   getClearSessionPath,
-  getCurrentUser,
+  getCurrentUserWithProfile,
+  isApprovedProfile,
   isInvalidRefreshTokenError,
 } from "@/lib/supabase/server";
 
@@ -26,7 +27,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     return <SetupNotice />;
   }
 
-  const { authError, user } = await getCurrentUser();
+  const { authError, profile, user } = await getCurrentUserWithProfile();
 
   if (authError && isInvalidRefreshTokenError(authError)) {
     redirect(
@@ -35,6 +36,10 @@ export default async function Home({ searchParams }: HomePageProps) {
   }
 
   if (user) {
+    if (!isApprovedProfile(profile)) {
+      redirect("/pending-approval");
+    }
+
     redirect("/sales");
   }
 

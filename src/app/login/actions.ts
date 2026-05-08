@@ -91,12 +91,12 @@ export async function signUpAction(formData: FormData) {
   if (!data.session) {
     redirect(
       `/?message=${encodeURIComponent(
-        "Account created. Confirm the email Supabase sends you, then sign in.",
+        "Account created. Confirm the email Supabase sends you, then sign in. An admin will approve CRM access after that.",
       )}`,
     );
   }
 
-  redirect("/sales");
+  redirect("/pending-approval");
 }
 
 export async function signInWithOAuthAction(provider: OAuthProvider) {
@@ -117,6 +117,12 @@ export async function signInWithOAuthAction(provider: OAuthProvider) {
     provider,
     options: {
       redirectTo: `${origin}/auth/callback?next=/sales`,
+      queryParams:
+        provider === "google"
+          ? {
+              prompt: "select_account",
+            }
+          : undefined,
     },
   });
 

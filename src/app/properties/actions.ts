@@ -16,28 +16,13 @@ import {
 } from "@/lib/property-media";
 import {
   createClient,
-  getClearSessionPath,
-  getCurrentUser,
-  isInvalidRefreshTokenError,
+  requireApprovedUser,
 } from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "property-media";
 
 async function requireUser() {
-  const { authError, supabase, user } = await getCurrentUser();
-
-  if (authError && isInvalidRefreshTokenError(authError)) {
-    redirect(
-      getClearSessionPath(
-        "/login",
-        "Your session expired. Sign in again to continue.",
-      ),
-    );
-  }
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { supabase, user } = await requireApprovedUser();
 
   return { supabase, user };
 }
