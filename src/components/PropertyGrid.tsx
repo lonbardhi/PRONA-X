@@ -1,10 +1,31 @@
+"use client";
+
 import Link from "next/link";
-import { Edit3, Trash2 } from "lucide-react";
+import { useState, type KeyboardEvent, type MouseEvent } from "react";
+import {
+  Bath,
+  BedDouble,
+  Edit3,
+  Images,
+  Landmark,
+  MapPin,
+  Percent,
+  Ruler,
+  Trash2,
+} from "lucide-react";
 
 import { deletePropertyAction } from "@/app/properties/actions";
+import { FavoritePropertyButton } from "@/components/FavoritePropertyButton";
 import { PropertyMediaPreview } from "@/components/PropertyMediaPreview";
+import { PropertyQuickViewDialog } from "@/components/PropertyQuickViewDialog";
 import type { PropertyRecord } from "@/lib/properties";
-import { formatEuro } from "@/lib/properties";
+import {
+  formatDevelopmentAgreement,
+  formatEuro,
+  formatPropertyType,
+  formatStatusLabel,
+  isDevelopmentLand,
+} from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 import { SharePropertyButton } from "@/components/SharePropertyButton";
 
@@ -12,99 +33,255 @@ type PropertyGridProps = {
   properties: PropertyRecord[];
 };
 
+function getStatusTone(status: PropertyRecord["status"]) {
+  if (
+    status === "published" ||
+    status === "ready_for_developers" ||
+    status === "documents_verified" ||
+    status === "agreement_signed" ||
+    status === "completed"
+  ) {
+    return "bg-emerald-50 text-emerald-700";
+  }
+
+  if (
+    status === "reserved" ||
+    status === "offer_received" ||
+    status === "negotiation" ||
+    status === "agreement_in_principle" ||
+    status === "contract_drafting"
+  ) {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  if (status === "sold" || status === "project_in_progress") {
+    return "bg-blue-50 text-blue-700";
+  }
+
+  if (status === "rented" || status === "presented_to_developers") {
+    return "bg-cyan-50 text-cyan-700";
+  }
+
+  if (status === "rejected" || status === "withdrawn") {
+    return "bg-rose-50 text-rose-700";
+  }
+
+  if (status === "archived") {
+    return "bg-slate-200 text-slate-600";
+  }
+
+  return "bg-slate-100 text-slate-700";
+}
+
+function shouldIgnoreCardOpen(event: MouseEvent<HTMLElement>) {
+  const target = event.target;
+
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      "a, button, input, select, textarea, form, label, [data-prevent-card-open]",
+    ),
+  );
+}
+
 export function PropertyGrid({ properties }: PropertyGridProps) {
+  const [selectedProperty, setSelectedProperty] = useState<PropertyRecord | null>(null);
+
   if (properties.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center sm:p-8">
         <h2 className="text-lg font-semibold text-slate-950">No properties yet</h2>
         <p className="mt-2 text-sm text-slate-500">
-          Create the first Tirana, Durres, Vlora, or Lalzi Bay listing to test the CRUD flow.
+          Adjust the filters or add the first property for sale.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4">
-      {properties.map((property, index) => {
-        const cover = pickPrimaryPropertyMedia(property.property_media || []);
+    <>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {properties.map((property, index) => {
+          const cover = pickPrimaryPropertyMedia(property.property_media || []);
+          const developmentLand = isDevelopmentLand(property);
 
-        return (
-          <article
-            key={property.id}
-            className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
-          >
-            <div className="relative h-72 w-full overflow-hidden bg-slate-100 sm:h-80 lg:h-[360px]">
+          function openProperty() {
+            setSelectedProperty(property);
+          }
+
+          function openPropertyFromKeyboard(event: KeyboardEvent<HTMLElement>) {
+            if (event.target !== event.currentTarget) {
+              return;
+            }
+
+            if (event.key !== "Enter" && event.key !== " ") {
+              return;
+            }
+
+            event.preventDefault();
+            openProperty();
+          }
+
+          return (
+            <article
+              aria-label={`Open details for ${property.title}`}
+              className="min-w-0 cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-emerald-100"
+              key={property.id}
+              onClick={(event) => {
+                if (!shouldIgnoreCardOpen(event)) {
+                  openProperty();
+                }
+              }}
+              onKeyDown={openPropertyFromKeyboard}
+              role="button"
+              tabIndex={0}
+            >
+            <div className="relative h-48 w-full overflow-hidden bg-slate-100">
               <PropertyMediaPreview
                 emptyLabel="No media"
                 fit="cover"
                 media={cover}
                 priority={index === 0}
-                sizes="(min-width: 1024px) 780px, 100vw"
+                sizes="(min-width: 1280px) 31vw, (min-width: 768px) 45vw, 100vw"
                 title={property.title}
                 zoom
               />
-            </div>
-
-            <div className="grid min-w-0 gap-5 p-5">
-              <div className="flex min-w-0 items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-600">
-                    {property.city}
-                    {property.neighborhood ? ` / ${property.neighborhood}` : ""}
-                  </p>
-                  <h3 className="mt-2 break-words text-2xl font-semibold leading-tight text-slate-950">
-                    {property.title}
-                  </h3>
-                  <p className="mt-1 text-sm capitalize text-slate-500">
-                    {property.type} / {property.status}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold capitalize text-emerald-700">
-                  {property.status}
+              <div className="absolute left-3 top-3 flex max-w-[calc(100%-5rem)] items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+                <MapPin className="h-3.5 w-3.5 text-emerald-700" />
+                <span className="truncate">
+                  {property.neighborhood
+                    ? `${property.neighborhood}, ${property.city}`
+                    : property.city}
                 </span>
               </div>
+              <div className="absolute right-3 top-3">
+                <FavoritePropertyButton propertyId={property.id} title={property.title} />
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm text-slate-600 lg:grid-cols-4">
-                <div className="min-w-0 rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs text-slate-400">Price</p>
-                  <p className="break-words font-semibold text-slate-950">
-                    {formatEuro(property.price_eur)}
+            <div className="grid min-w-0 gap-4 p-4">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="line-clamp-2 break-words text-base font-semibold leading-snug text-slate-950">
+                    {property.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {formatPropertyType(property.type)}
                   </p>
                 </div>
-                <div className="min-w-0 rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs text-slate-400">Area</p>
-                  <p className="break-words font-semibold text-slate-950">
-                    {property.area_m2 ? `${property.area_m2} m2` : "-"}
-                  </p>
-                </div>
-                <div className="min-w-0 rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs text-slate-400">Beds</p>
-                  <p className="font-semibold text-slate-950">{property.bedrooms ?? "-"}</p>
-                </div>
-                <div className="min-w-0 rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs text-slate-400">Media</p>
-                  <p className="font-semibold text-slate-950">
-                    {property.property_media?.length || 0}
-                  </p>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusTone(property.status)}`}
+                  >
+                    {formatStatusLabel(property.status)}
+                  </span>
+                  {(property.property_media?.length || 0) === 0 ? (
+                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                      Missing Media
+                    </span>
+                  ) : null}
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="min-w-0 break-words text-lg font-semibold text-slate-950">
+                  {developmentLand
+                    ? formatDevelopmentAgreement(property)
+                    : formatEuro(property.price_eur || 0)}
+                </p>
+                <div className="flex shrink-0 items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                  <Images className="h-3.5 w-3.5 text-slate-400" />
+                  {property.property_media?.length || 0}
+                </div>
+              </div>
+
+              {developmentLand ? (
+                <div className="grid grid-cols-3 gap-2 text-xs text-slate-600 max-[380px]:grid-cols-1">
+                  <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
+                    <p className="flex items-center gap-1 text-slate-400">
+                      <Landmark className="h-3.5 w-3.5" />
+                      Plot
+                    </p>
+                    <p className="mt-1 truncate font-semibold text-slate-950">
+                      {property.plot_size_m2 != null
+                        ? `${property.plot_size_m2} m2`
+                        : "-"}
+                    </p>
+                  </div>
+                  <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
+                    <p className="flex items-center gap-1 text-slate-400">
+                      <Percent className="h-3.5 w-3.5" />
+                      Owner %
+                    </p>
+                    <p className="mt-1 font-semibold text-slate-950">
+                      {property.landowner_requested_percentage != null
+                        ? `${property.landowner_requested_percentage}%`
+                        : "-"}
+                    </p>
+                  </div>
+                  <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
+                    <p className="flex items-center gap-1 text-slate-400">
+                      <Ruler className="h-3.5 w-3.5" />
+                      Buildable
+                    </p>
+                    <p className="mt-1 truncate font-semibold text-slate-950">
+                      {property.estimated_gross_buildable_area_m2 != null
+                        ? `${property.estimated_gross_buildable_area_m2} m2`
+                        : "-"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 text-xs text-slate-600 max-[380px]:grid-cols-1">
+                  <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
+                    <p className="flex items-center gap-1 text-slate-400">
+                      <BedDouble className="h-3.5 w-3.5" />
+                      Beds
+                    </p>
+                    <p className="mt-1 font-semibold text-slate-950">
+                      {property.bedrooms ?? "-"}
+                    </p>
+                  </div>
+                  <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
+                    <p className="flex items-center gap-1 text-slate-400">
+                      <Bath className="h-3.5 w-3.5" />
+                      Baths
+                    </p>
+                    <p className="mt-1 font-semibold text-slate-950">
+                      {property.bathrooms ?? "-"}
+                    </p>
+                  </div>
+                  <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
+                    <p className="flex items-center gap-1 text-slate-400">
+                      <Ruler className="h-3.5 w-3.5" />
+                      Area
+                    </p>
+                    <p className="mt-1 truncate font-semibold text-slate-950">
+                      {property.area_m2 != null ? `${property.area_m2} m2` : "-"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 min-[420px]:flex min-[420px]:flex-wrap min-[420px]:items-center">
                 <Link
                   href={`/properties/${property.id}/edit`}
-                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                  prefetch={false}
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
                 >
                   <Edit3 className="h-4 w-4" />
                   Edit
                 </Link>
                 <form action={deletePropertyAction}>
                   <input type="hidden" name="property_id" value={property.id} />
-                  <button className="inline-flex h-10 items-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
+                  <button className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
                     <Trash2 className="h-4 w-4" />
                     Delete
-                    </button>
-                  </form>
+                  </button>
+                </form>
                 <SharePropertyButton
                   isPublished={property.status === "published"}
                   propertyId={property.id}
@@ -112,9 +289,14 @@ export function PropertyGrid({ properties }: PropertyGridProps) {
                 />
               </div>
             </div>
-          </article>
-        );
-      })}
-    </div>
+            </article>
+          );
+        })}
+      </div>
+      <PropertyQuickViewDialog
+        onClose={() => setSelectedProperty(null)}
+        property={selectedProperty}
+      />
+    </>
   );
 }

@@ -63,7 +63,7 @@ export async function signInAction(formData: FormData) {
     redirect(`/?message=${encodeURIComponent(getSignInMessage(error.message))}`);
   }
 
-  redirect("/properties");
+  redirect("/sales");
 }
 
 export async function signUpAction(formData: FormData) {
@@ -77,7 +77,7 @@ export async function signUpAction(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/properties`,
+      emailRedirectTo: `${origin}/auth/callback?next=/sales`,
       data: {
         full_name: fullName,
       },
@@ -96,7 +96,7 @@ export async function signUpAction(formData: FormData) {
     );
   }
 
-  redirect("/properties");
+  redirect("/sales");
 }
 
 export async function signInWithOAuthAction(provider: OAuthProvider) {
@@ -116,7 +116,7 @@ export async function signInWithOAuthAction(provider: OAuthProvider) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${origin}/auth/callback?next=/properties`,
+      redirectTo: `${origin}/auth/callback?next=/sales`,
     },
   });
 

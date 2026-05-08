@@ -9,7 +9,11 @@ import {
 import { AuthEntry } from "@/components/AuthEntry";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import {
+  getClearSessionPath,
+  getCurrentUser,
+  isInvalidRefreshTokenError,
+} from "@/lib/supabase/server";
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -22,13 +26,16 @@ export default async function Home({ searchParams }: HomePageProps) {
     return <SetupNotice />;
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { authError, user } = await getCurrentUser();
+
+  if (authError && isInvalidRefreshTokenError(authError)) {
+    redirect(
+      getClearSessionPath("/", "Your session expired. Sign in again to continue."),
+    );
+  }
 
   if (user) {
-    redirect("/properties");
+    redirect("/sales");
   }
 
   const params = await searchParams;

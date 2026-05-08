@@ -16,6 +16,8 @@ import {
   WalletCards,
 } from "lucide-react";
 
+import { LogoMark } from "@/components/BrandLogo";
+
 type AuthEntryProps = {
   message?: string;
   requestPasswordResetAction: (formData: FormData) => void | Promise<void>;
@@ -50,8 +52,8 @@ const heroSlides = [
     image: "/brand/albania-beach-properties-for-sale-2-1920x1920.jpg",
     alt: "Mediterranean villa with sea views and cliffside landscaping",
     quote:
-      "Turn every listing into a controlled, shareable buyer experience without exposing admin tools.",
-    title: "Buyer-Ready Listings",
+      "Turn every listing into a controlled, shareable sales experience without exposing admin tools.",
+    title: "Sales-Ready Listings",
     subtitle: "WhatsApp-ready property links",
     note: "Public pages stay view-only by design",
   },
@@ -85,9 +87,9 @@ export function AuthEntry({
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(#eef2f7_1px,transparent_1px),linear-gradient(90deg,#eef2f7_1px,transparent_1px)] bg-[size:40px_40px] px-4 py-4 text-slate-950 sm:px-6 lg:p-8">
-      <section className="mx-auto grid min-h-[calc(100vh-2rem)] max-w-7xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]">
-        <div className="relative min-h-[540px] overflow-hidden bg-slate-950 lg:min-h-full">
+    <main className="min-h-screen bg-[linear-gradient(#eef2f7_1px,transparent_1px),linear-gradient(90deg,#eef2f7_1px,transparent_1px)] bg-[size:40px_40px] px-3 py-3 text-slate-950 sm:px-6 sm:py-4 lg:p-8">
+      <section className="mx-auto grid min-h-[calc(100dvh-1.5rem)] max-w-7xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl sm:rounded-2xl lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]">
+        <div className="relative hidden min-h-[540px] overflow-hidden bg-slate-950 lg:block lg:min-h-full">
           <Image
             alt={slide.alt}
             className="absolute inset-0 h-full w-full object-cover"
@@ -101,19 +103,24 @@ export function AuthEntry({
 
           <div className="absolute left-6 top-6 rounded-3xl border border-white/25 bg-white/92 px-5 py-4 shadow-xl backdrop-blur-md sm:left-8 sm:top-8 sm:px-6">
             <div className="flex items-center gap-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-950/20">
-                <Building2 className="h-7 w-7" />
-              </span>
+              <LogoMark
+                className="rounded-2xl border border-white/30 bg-white p-2 shadow-lg shadow-slate-950/20"
+                priority
+                size={56}
+              />
               <div>
                 <p className="text-3xl font-black uppercase leading-none tracking-[0.08em] text-slate-950">
                   PRONA X
                 </p>
                 <p className="mt-1 text-sm font-semibold text-slate-600">
-                  Albania property operations
+                  Albanian Property CRM
                 </p>
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">
+                Rent
+              </span>
               <span className="rounded-full bg-slate-950 px-3 py-1 text-white">
                 Sell
               </span>
@@ -144,7 +151,7 @@ export function AuthEntry({
               Market focus
             </p>
             <p className="mt-1 text-lg font-semibold">Albanian Riviera</p>
-            <p className="text-sm text-white/75">Premium listings, buyer-ready</p>
+            <p className="text-sm text-white/75">Premium listings, sales-ready</p>
           </div>
 
           <div className="absolute bottom-6 left-6 flex gap-2 sm:left-8">
@@ -202,8 +209,24 @@ export function AuthEntry({
           </div>
         </div>
 
-        <div className="flex items-center justify-center px-6 py-10 lg:px-12">
+        <div className="flex items-center justify-center px-4 py-8 sm:px-6 sm:py-10 lg:px-12">
           <div className="w-full max-w-[420px]">
+            <div className="mb-6 flex items-center gap-3 lg:hidden">
+              <LogoMark
+                className="rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
+                priority
+                size={44}
+              />
+              <div className="min-w-0">
+                <p className="truncate text-xl font-black uppercase tracking-[0.06em] text-slate-950">
+                  PRONA X
+                </p>
+                <p className="truncate text-xs font-medium text-slate-500">
+                  Albanian Property CRM
+                </p>
+              </div>
+            </div>
+
             <div className="mx-auto flex w-fit rounded-lg bg-slate-100 p-1">
               <button
                 className={`inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold transition ${
@@ -232,7 +255,7 @@ export function AuthEntry({
             </div>
 
             <div className="mt-8 text-center">
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
                 {mode === "login"
                   ? "Sign in to PRONA X"
                   : mode === "recovery"

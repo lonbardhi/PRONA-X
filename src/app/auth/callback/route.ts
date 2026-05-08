@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 function getSafeNextPath(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/properties";
+    return "/sales";
   }
 
   return value;

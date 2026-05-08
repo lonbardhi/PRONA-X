@@ -4,23 +4,36 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
+  calculateGrossBuildableArea,
   createSlug,
   formDataToPropertyInput,
+  isDevelopmentLand,
   normalizeOptionalNumber,
 } from "@/lib/properties";
 import {
   getPropertyMediaMimeType,
   validatePropertyMediaFile,
 } from "@/lib/property-media";
-import { createClient } from "@/lib/supabase/server";
+import {
+  createClient,
+  getClearSessionPath,
+  getCurrentUser,
+  isInvalidRefreshTokenError,
+} from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "property-media";
 
 async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { authError, supabase, user } = await getCurrentUser();
+
+  if (authError && isInvalidRefreshTokenError(authError)) {
+    redirect(
+      getClearSessionPath(
+        "/login",
+        "Your session expired. Sign in again to continue.",
+      ),
+    );
+  }
 
   if (!user) {
     redirect("/login");
@@ -31,6 +44,10 @@ async function requireUser() {
 
 function getPropertyPayload(formData: FormData, userId: string) {
   const input = formDataToPropertyInput(formData);
+  const developmentLand = isDevelopmentLand(input.type);
+  const estimatedGrossBuildableArea =
+    normalizeOptionalNumber(input.estimated_gross_buildable_area_m2) ??
+    calculateGrossBuildableArea(input.plot_size_m2, input.building_coefficient);
 
   return {
     title: input.title,
@@ -41,11 +58,63 @@ function getPropertyPayload(formData: FormData, userId: string) {
     city: input.city,
     neighborhood: input.neighborhood || null,
     address: input.address || null,
-    price_eur: input.price_eur,
-    bedrooms: normalizeOptionalNumber(input.bedrooms),
-    bathrooms: normalizeOptionalNumber(input.bathrooms),
-    area_m2: normalizeOptionalNumber(input.area_m2),
-    year_built: normalizeOptionalNumber(input.year_built),
+    price_eur: developmentLand ? null : normalizeOptionalNumber(input.price_eur),
+    bedrooms: developmentLand ? null : normalizeOptionalNumber(input.bedrooms),
+    bathrooms: developmentLand ? null : normalizeOptionalNumber(input.bathrooms),
+    area_m2: developmentLand
+      ? normalizeOptionalNumber(input.plot_size_m2)
+      : normalizeOptionalNumber(input.area_m2),
+    year_built: developmentLand ? null : normalizeOptionalNumber(input.year_built),
+    plot_size_m2: normalizeOptionalNumber(input.plot_size_m2),
+    land_certificate_number: input.land_certificate_number || null,
+    cadastral_zone: input.cadastral_zone || null,
+    parcel_number: input.parcel_number || null,
+    ownership_status: input.ownership_status || null,
+    landowners_count: normalizeOptionalNumber(input.landowners_count),
+    current_land_use: input.current_land_use || null,
+    development_zone: input.development_zone || null,
+    building_coefficient: normalizeOptionalNumber(input.building_coefficient),
+    max_floors: normalizeOptionalNumber(input.max_floors),
+    estimated_gross_buildable_area_m2: estimatedGrossBuildableArea,
+    estimated_net_sellable_area_m2: normalizeOptionalNumber(
+      input.estimated_net_sellable_area_m2,
+    ),
+    estimated_apartments: normalizeOptionalNumber(input.estimated_apartments),
+    estimated_garages: normalizeOptionalNumber(input.estimated_garages),
+    estimated_parking_spaces: normalizeOptionalNumber(input.estimated_parking_spaces),
+    estimated_commercial_units: normalizeOptionalNumber(
+      input.estimated_commercial_units,
+    ),
+    road_access: input.road_access || null,
+    utilities_access: input.utilities_access || null,
+    planning_permission_status: input.planning_permission_status || null,
+    construction_permit_status: input.construction_permit_status || null,
+    urban_study_status: input.urban_study_status || null,
+    landowner_requested_percentage: normalizeOptionalNumber(
+      input.landowner_requested_percentage,
+    ),
+    minimum_acceptable_percentage: normalizeOptionalNumber(
+      input.minimum_acceptable_percentage,
+    ),
+    preferred_compensation_type: input.preferred_compensation_type || null,
+    preferred_floor_allocation: input.preferred_floor_allocation || null,
+    preferred_unit_orientation: input.preferred_unit_orientation || null,
+    agreement_notes: input.agreement_notes || null,
+    negotiation_status: input.negotiation_status || null,
+    developer_name: input.developer_name || null,
+    developer_contact: input.developer_contact || null,
+    developer_offered_percentage: normalizeOptionalNumber(
+      input.developer_offered_percentage,
+    ),
+    developer_proposed_project_size:
+      input.developer_proposed_project_size || null,
+    developer_proposed_delivery_timeline:
+      input.developer_proposed_delivery_timeline || null,
+    developer_proposed_unit_allocation:
+      input.developer_proposed_unit_allocation || null,
+    developer_conditions: input.developer_conditions || null,
+    developer_offer_status: input.developer_offer_status || null,
+    visibility: input.visibility || (developmentLand ? "internal_only" : null),
     created_by: userId,
     assigned_agent_id: userId,
   };
@@ -130,7 +199,7 @@ export async function createPropertyAction(formData: FormData) {
   const mediaValidationError = validatePropertyMediaFiles(files);
 
   if (mediaValidationError) {
-    redirect(`/properties?message=${encodeURIComponent(mediaValidationError)}`);
+    redirect(`/sales?message=${encodeURIComponent(mediaValidationError)}`);
   }
 
   const { data: property, error } = await supabase
@@ -140,18 +209,19 @@ export async function createPropertyAction(formData: FormData) {
     .single();
 
   if (error) {
-    redirect(`/properties?message=${encodeURIComponent(error.message)}`);
+    redirect(`/sales?message=${encodeURIComponent(error.message)}`);
   }
 
   try {
     await uploadPropertyMedia(supabase, property.id, property.title, files);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Media upload failed";
-    redirect(`/properties?message=${encodeURIComponent(message)}`);
+    redirect(`/sales?message=${encodeURIComponent(message)}`);
   }
 
   revalidatePath("/properties");
-  redirect("/properties");
+  revalidatePath("/sales");
+  redirect("/sales");
 }
 
 export async function updatePropertyAction(propertyId: string, formData: FormData) {
@@ -192,8 +262,9 @@ export async function updatePropertyAction(propertyId: string, formData: FormDat
   }
 
   revalidatePath("/properties");
+  revalidatePath("/sales");
   revalidatePath(`/properties/${propertyId}/edit`);
-  redirect("/properties");
+  redirect("/sales");
 }
 
 export async function deletePropertyAction(formData: FormData) {
@@ -201,7 +272,7 @@ export async function deletePropertyAction(formData: FormData) {
   const { supabase } = await requireUser();
 
   if (!propertyId) {
-    redirect("/properties");
+    redirect("/sales");
   }
 
   const { data: media } = await supabase
@@ -212,7 +283,7 @@ export async function deletePropertyAction(formData: FormData) {
   const { error } = await supabase.from("properties").delete().eq("id", propertyId);
 
   if (error) {
-    redirect(`/properties?message=${encodeURIComponent(error.message)}`);
+    redirect(`/sales?message=${encodeURIComponent(error.message)}`);
   }
 
   const paths = media?.map((item) => item.storage_path).filter(Boolean) || [];
@@ -221,5 +292,6 @@ export async function deletePropertyAction(formData: FormData) {
   }
 
   revalidatePath("/properties");
-  redirect("/properties");
+  revalidatePath("/sales");
+  redirect("/sales");
 }
