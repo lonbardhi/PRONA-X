@@ -40,6 +40,7 @@ import {
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 
 type PropertyQuickViewDialogProps = {
+  canManage?: boolean;
   onClose: () => void;
   property: PropertyRecord | null;
 };
@@ -129,6 +130,7 @@ function getMediaButtonLabel(
 }
 
 export function PropertyQuickViewDialog({
+  canManage = true,
   onClose,
   property,
 }: PropertyQuickViewDialogProps) {
@@ -543,51 +545,55 @@ export function PropertyQuickViewDialog({
                 </>
               ) : null}
 
-              <div className="min-w-0 rounded-lg border border-slate-200 p-4">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-base font-semibold text-slate-950">
-                    Appointments
-                  </h3>
-                  <Link
-                    className="inline-flex h-8 items-center rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-700"
-                    href={`/appointments?property_id=${property.id}#new-appointment`}
-                    prefetch={false}
-                  >
-                    Schedule
-                  </Link>
-                </div>
-                <AppointmentAgenda
-                  appointments={appointments}
-                  density="compact"
-                  emptyLabel="No appointments for this property yet."
-                  layout="stack"
-                  returnTo="/sales"
-                  showProperty={false}
-                />
-              </div>
+              {canManage ? (
+                <>
+                  <div className="min-w-0 rounded-lg border border-slate-200 p-4">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-base font-semibold text-slate-950">
+                        Appointments
+                      </h3>
+                      <Link
+                        className="inline-flex h-8 items-center rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                        href={`/appointments?property_id=${property.id}#new-appointment`}
+                        prefetch={false}
+                      >
+                        Schedule
+                      </Link>
+                    </div>
+                    <AppointmentAgenda
+                      appointments={appointments}
+                      density="compact"
+                      emptyLabel="No appointments for this property yet."
+                      layout="stack"
+                      returnTo="/sales"
+                      showProperty={false}
+                    />
+                  </div>
 
-              <div className="grid min-w-0 grid-cols-2 gap-2 border-t border-slate-200 pt-4 min-[420px]:flex min-[420px]:flex-wrap">
-                <Link
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
-                  href={`/properties/${property.id}/edit`}
-                  prefetch={false}
-                >
-                  <Edit3 className="h-4 w-4" />
-                  Edit
-                </Link>
-                <form action={deletePropertyAction}>
-                  <input name="property_id" type="hidden" value={property.id} />
-                  <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </button>
-                </form>
-                <SharePropertyButton
-                  isPublished={property.status === "published"}
-                  propertyId={property.id}
-                  title={property.title}
-                />
-              </div>
+                  <div className="grid min-w-0 grid-cols-2 gap-2 border-t border-slate-200 pt-4 min-[420px]:flex min-[420px]:flex-wrap">
+                    <Link
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                      href={`/properties/${property.id}/edit`}
+                      prefetch={false}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                      Edit
+                    </Link>
+                    <form action={deletePropertyAction}>
+                      <input name="property_id" type="hidden" value={property.id} />
+                      <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </form>
+                    <SharePropertyButton
+                      isPublished={property.status === "published"}
+                      propertyId={property.id}
+                      title={property.title}
+                    />
+                  </div>
+                </>
+              ) : null}
             </aside>
           </div>
         </div>

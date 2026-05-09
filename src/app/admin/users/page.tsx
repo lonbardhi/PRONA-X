@@ -21,7 +21,8 @@ type ProfileRow = {
 };
 
 const roleOptions: Array<{ value: AppRole; label: string }> = [
-  { value: "viewer", label: "Pending viewer" },
+  { value: "pending", label: "Pending approval" },
+  { value: "viewer", label: "Viewer" },
   { value: "agent", label: "Agent" },
   { value: "manager", label: "Manager" },
   { value: "admin", label: "Admin" },
@@ -50,7 +51,8 @@ export default async function AdminUsersPage({
     .order("created_at", { ascending: false });
 
   const profiles = (data || []) as ProfileRow[];
-  const pendingCount = profiles.filter((item) => item.role === "viewer").length;
+  const pendingCount = profiles.filter((item) => item.role === "pending").length;
+  const viewerCount = profiles.filter((item) => item.role === "viewer").length;
   const approvedCount = profiles.length - pendingCount;
   const adminCount = profiles.filter((item) => item.role === "admin").length;
 
@@ -68,8 +70,8 @@ export default async function AdminUsersPage({
                 Admin Users
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                Review new signups and approve CRM access by assigning Agent,
-                Manager, or Admin roles. Viewer accounts remain pending.
+                Review new signups and approve CRM access by assigning Viewer,
+                Agent, Manager, or Admin roles. Pending accounts stay locked out.
               </p>
             </div>
 
@@ -102,6 +104,23 @@ export default async function AdminUsersPage({
           </div>
         </div>
 
+        <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm md:grid-cols-3">
+          <p>
+            <span className="font-semibold text-slate-950">Pending</span> users
+            can only see the approval screen.
+          </p>
+          <p>
+            <span className="font-semibold text-slate-950">
+              Viewers ({viewerCount})
+            </span>{" "}
+            are approved external users with read-only inventory access.
+          </p>
+          <p>
+            <span className="font-semibold text-slate-950">Operators</span>{" "}
+            are agents, managers, and admins who can manage CRM work.
+          </p>
+        </div>
+
         {params.message ? (
           <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
             {params.message}
@@ -132,7 +151,7 @@ export default async function AdminUsersPage({
             ) : null}
 
             {profiles.map((item) => {
-              const approved = item.role !== "viewer";
+              const approved = item.role !== "pending";
 
               return (
                 <div
@@ -158,6 +177,11 @@ export default async function AdminUsersPage({
                       <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-slate-600">
                         {item.role}
                       </span>
+                      {item.role === "viewer" ? (
+                        <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
+                          Read-only
+                        </span>
+                      ) : null}
                     </div>
                     <h3 className="mt-3 break-words text-base font-semibold text-slate-950">
                       {item.full_name || item.id}

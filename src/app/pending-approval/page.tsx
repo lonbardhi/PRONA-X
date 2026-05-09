@@ -67,8 +67,8 @@ export default async function PendingApprovalPage() {
                   Your PRONA X account is waiting for access.
                 </h1>
                 <p className="mt-3 text-sm leading-6 text-slate-600">
-                  New users can sign up with Google or email, but workspace access
-                  is released by an admin. Once approved, you can enter the CRM.
+                  New users start as Pending. An admin can approve read-only
+                  Viewer access or promote the account to an operator role.
                 </p>
               </div>
             </div>
@@ -92,7 +92,7 @@ export default async function PendingApprovalPage() {
               </p>
               <p className="mt-1 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 font-semibold capitalize text-slate-950">
                 <ShieldCheck className="h-4 w-4 text-slate-400" />
-                {profile?.role || "viewer"}
+                {profile?.role || "pending"}
               </p>
             </div>
           </div>
@@ -104,8 +104,8 @@ export default async function PendingApprovalPage() {
           ) : null}
 
           <p className="mt-5 text-sm leading-6 text-slate-500">
-            Ask a PRONA X admin to open Admin Users and promote this account to
-            Agent, Manager, or Admin.
+            Ask a PRONA X admin to open Admin Users and approve this account as
+            Viewer, Agent, Manager, or Admin.
           </p>
         </div>
       </section>

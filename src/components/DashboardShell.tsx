@@ -4,6 +4,7 @@ import {
   Building2,
   CalendarDays,
   Home,
+  Landmark,
   LogOut,
   Plus,
   ShieldCheck,
@@ -26,17 +27,24 @@ export function DashboardShell({
   userEmail,
   userRole,
 }: DashboardShellProps) {
-  const navItems = [
-    { label: "Dashboard", href: "/dashboard", icon: Home },
-    { label: "Sales", href: "/sales", icon: Building2 },
-    { label: "Rentals", href: "/rentals", icon: Building2 },
-    { label: "Calendar", href: "/appointments", icon: CalendarDays },
-    { label: "Seller Leads", href: "/seller-leads", icon: UserPlus },
-    { label: "Add Property", href: "/sales#add-property", icon: Plus },
-    ...(userRole === "admin"
-      ? [{ label: "Admin Users", href: "/admin/users", icon: ShieldCheck }]
-      : []),
-  ];
+  const isViewer = userRole === "viewer";
+  const navItems = isViewer
+    ? [
+        { label: "Sales", href: "/sales", icon: Building2 },
+        { label: "Rentals", href: "/sales?status=rented", icon: Building2 },
+        { label: "Land", href: "/sales?type=development_land", icon: Landmark },
+      ]
+    : [
+        { label: "Dashboard", href: "/dashboard", icon: Home },
+        { label: "Sales", href: "/sales", icon: Building2 },
+        { label: "Rentals", href: "/rentals", icon: Building2 },
+        { label: "Calendar", href: "/appointments", icon: CalendarDays },
+        { label: "Seller Leads", href: "/seller-leads", icon: UserPlus },
+        { label: "Add Property", href: "/sales#add-property", icon: Plus },
+        ...(userRole === "admin"
+          ? [{ label: "Admin Users", href: "/admin/users", icon: ShieldCheck }]
+          : []),
+      ];
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-slate-50">

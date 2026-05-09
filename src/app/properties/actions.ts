@@ -16,13 +16,13 @@ import {
 } from "@/lib/property-media";
 import {
   createClient,
-  requireApprovedUser,
+  requireOperatorUser,
 } from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "property-media";
 
 async function requireUser() {
-  const { supabase, user } = await requireApprovedUser();
+  const { supabase, user } = await requireOperatorUser();
 
   return { supabase, user };
 }

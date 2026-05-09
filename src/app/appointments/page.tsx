@@ -21,7 +21,7 @@ import {
   type AppointmentRecord,
 } from "@/lib/appointments";
 import { hasSupabaseEnv } from "@/lib/env";
-import { requireApprovedUser } from "@/lib/supabase/server";
+import { requireOperatorUser } from "@/lib/supabase/server";
 
 type AppointmentsPageProps = {
   searchParams: Promise<{
@@ -144,7 +144,7 @@ export default async function AppointmentsPage({
   }
 
   const params = await searchParams;
-  const { profile, supabase, user } = await requireApprovedUser();
+  const { profile, supabase, user } = await requireOperatorUser();
 
   const [propertyResult, profileResult, appointmentResult] = await Promise.all([
     supabase

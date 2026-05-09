@@ -4,6 +4,7 @@ import {
   Building2,
   CalendarClock,
   ImageUp,
+  Landmark,
   Plus,
   Search,
   SlidersHorizontal,
@@ -27,7 +28,7 @@ import {
 } from "@/lib/property-filters";
 import { normalizeAppointments } from "@/lib/appointments";
 import type { PropertyRecord } from "@/lib/properties";
-import { requireApprovedUser } from "@/lib/supabase/server";
+import { isOperatorRole, requireApprovedUser } from "@/lib/supabase/server";
 
 type PropertiesPageProps = {
   searchParams: Promise<PropertySearchParams>;
@@ -147,6 +148,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   const params = await searchParams;
   const filters = parsePropertyFilters(params);
   const { profile, supabase, user } = await requireApprovedUser();
+  const canManage = isOperatorRole(profile.role);
 
   let propertiesQuery = supabase
     .from("properties")
@@ -199,11 +201,13 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   const [propertyResult, cityResult, appointmentResult] = await Promise.all([
     propertiesQuery,
     supabase.from("properties").select("city").order("city", { ascending: true }),
-    supabase
-      .from("appointments")
-      .select(appointmentSelect)
-      .order("starts_at", { ascending: true })
-      .limit(75),
+    canManage
+      ? supabase
+          .from("appointments")
+          .select(appointmentSelect)
+          .order("starts_at", { ascending: true })
+          .limit(75)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const { data: properties, error, count } = propertyResult;
@@ -238,6 +242,9 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   const missingMediaCount = typedProperties.filter(
     (item) => (item.property_media?.length || 0) === 0,
   );
+  const developmentLandCount = typedProperties.filter(
+    (item) => item.type === "development_land",
+  ).length;
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
@@ -248,7 +255,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white">
                   <Building2 className="h-3.5 w-3.5" />
-                  PRONA X sales
+                  {canManage ? "PRONA X sales" : "PRONA X viewer"}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
                   <BadgeCheck className="h-3.5 w-3.5" />
@@ -256,11 +263,12 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                 </span>
               </div>
               <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
-                Sales Inventory
+                {canManage ? "Sales Inventory" : "Available Properties"}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Manage PRONA X properties for sale, viewings, buyer interest, offers,
-                and deal progress from one internal workspace.
+                {canManage
+                  ? "Manage PRONA X properties for sale, viewings, buyer interest, offers, and deal progress from one internal workspace."
+                  : "Review approved sales, rental, and development land opportunities shared by the PRONA X team."}
               </p>
             </div>
 
@@ -283,11 +291,15 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
               </div>
               <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-2.5 sm:p-3">
                 <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-700 sm:tracking-[0.12em]">
-                  <ImageUp className="h-3.5 w-3.5" />
-                  Missing Media
+                  {canManage ? (
+                    <ImageUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <Landmark className="h-3.5 w-3.5" />
+                  )}
+                  {canManage ? "Missing Media" : "Land"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
-                  {missingMediaCount.length}
+                  {canManage ? missingMediaCount.length : developmentLandCount}
                 </p>
               </div>
             </div>
@@ -306,7 +318,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
           </div>
         ) : null}
 
-        {!appointmentResult.error ? (
+        {canManage && !appointmentResult.error ? (
           <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
@@ -397,22 +409,26 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   }
                 </p>
               </div>
-              <a
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"
-                href="#add-property"
-              >
-                <Plus className="h-4 w-4" />
-                Add property
-              </a>
+              {canManage ? (
+                <a
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"
+                  href="#add-property"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add property
+                </a>
+              ) : null}
             </div>
 
-            <PropertyGrid properties={typedProperties} />
+            <PropertyGrid canManage={canManage} properties={typedProperties} />
           </section>
         </div>
 
-        <PropertyIntakePanel defaultOpen={Boolean(params.message)}>
-          <PropertyForm action={createPropertyAction} submitLabel="Create property" />
-        </PropertyIntakePanel>
+        {canManage ? (
+          <PropertyIntakePanel defaultOpen={Boolean(params.message)}>
+            <PropertyForm action={createPropertyAction} submitLabel="Create property" />
+          </PropertyIntakePanel>
+        ) : null}
       </section>
     </DashboardShell>
   );

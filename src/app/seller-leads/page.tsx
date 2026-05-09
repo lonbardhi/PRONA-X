@@ -4,14 +4,14 @@ import { ArrowRight, Building2, ClipboardList, UserPlus } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
-import { requireApprovedUser } from "@/lib/supabase/server";
+import { requireOperatorUser } from "@/lib/supabase/server";
 
 export default async function SellerLeadsPage() {
   if (!hasSupabaseEnv()) {
     return <SetupNotice />;
   }
 
-  const { profile, user } = await requireApprovedUser();
+  const { profile, user } = await requireOperatorUser();
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>

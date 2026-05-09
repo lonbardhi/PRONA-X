@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { type AppRole, requireAdminUser } from "@/lib/supabase/server";
 
-const roleOptions: AppRole[] = ["viewer", "agent", "manager", "admin"];
+const roleOptions: AppRole[] = ["pending", "viewer", "agent", "manager", "admin"];
 
 export async function updateUserRoleAction(formData: FormData) {
   const { supabase, user } = await requireAdminUser();

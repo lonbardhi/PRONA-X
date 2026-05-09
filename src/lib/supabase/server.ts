@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { getSupabaseEnv } from "@/lib/env";
 
-export type AppRole = "admin" | "manager" | "agent" | "viewer";
+export type AppRole = "admin" | "manager" | "agent" | "viewer" | "pending";
 
 export type AuthProfile = {
   id: string;
@@ -14,7 +14,14 @@ export type AuthProfile = {
   created_at?: string;
 };
 
-export const approvedAppRoles: AppRole[] = ["admin", "manager", "agent"];
+export const approvedAppRoles: AppRole[] = [
+  "admin",
+  "manager",
+  "agent",
+  "viewer",
+];
+
+export const operatorAppRoles: AppRole[] = ["admin", "manager", "agent"];
 
 export async function createClient() {
   const { url, anonKey } = getSupabaseEnv();
@@ -103,6 +110,14 @@ export function isApprovedProfile(profile: AuthProfile | null) {
   return Boolean(profile && approvedAppRoles.includes(profile.role));
 }
 
+export function isOperatorRole(role: AppRole | null | undefined) {
+  return Boolean(role && operatorAppRoles.includes(role));
+}
+
+export function isOperatorProfile(profile: AuthProfile | null) {
+  return Boolean(profile && isOperatorRole(profile.role));
+}
+
 export async function requireApprovedUser() {
   const { authError, profile, supabase, user } = await getCurrentUserWithProfile();
 
@@ -124,6 +139,16 @@ export async function requireApprovedUser() {
   }
 
   return { profile: profile as AuthProfile, supabase, user };
+}
+
+export async function requireOperatorUser() {
+  const context = await requireApprovedUser();
+
+  if (!isOperatorProfile(context.profile)) {
+    redirect("/sales?message=This account has read-only viewer access.");
+  }
+
+  return context;
 }
 
 export async function requireAdminUser() {

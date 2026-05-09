@@ -30,6 +30,7 @@ import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 import { SharePropertyButton } from "@/components/SharePropertyButton";
 
 type PropertyGridProps = {
+  canManage?: boolean;
   properties: PropertyRecord[];
 };
 
@@ -87,7 +88,7 @@ function shouldIgnoreCardOpen(event: MouseEvent<HTMLElement>) {
   );
 }
 
-export function PropertyGrid({ properties }: PropertyGridProps) {
+export function PropertyGrid({ canManage = true, properties }: PropertyGridProps) {
   const [selectedProperty, setSelectedProperty] = useState<PropertyRecord | null>(null);
 
   if (properties.length === 0) {
@@ -178,7 +179,7 @@ export function PropertyGrid({ properties }: PropertyGridProps) {
                   >
                     {formatStatusLabel(property.status)}
                   </span>
-                  {(property.property_media?.length || 0) === 0 ? (
+                  {canManage && (property.property_media?.length || 0) === 0 ? (
                     <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
                       Missing Media
                     </span>
@@ -266,34 +267,37 @@ export function PropertyGrid({ properties }: PropertyGridProps) {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 min-[420px]:flex min-[420px]:flex-wrap min-[420px]:items-center">
-                <Link
-                  href={`/properties/${property.id}/edit`}
-                  prefetch={false}
-                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  Edit
-                </Link>
-                <form action={deletePropertyAction}>
-                  <input type="hidden" name="property_id" value={property.id} />
-                  <button className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </button>
-                </form>
-                <SharePropertyButton
-                  isPublished={property.status === "published"}
-                  propertyId={property.id}
-                  title={property.title}
-                />
-              </div>
+              {canManage ? (
+                <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 min-[420px]:flex min-[420px]:flex-wrap min-[420px]:items-center">
+                  <Link
+                    href={`/properties/${property.id}/edit`}
+                    prefetch={false}
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Edit
+                  </Link>
+                  <form action={deletePropertyAction}>
+                    <input type="hidden" name="property_id" value={property.id} />
+                    <button className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </form>
+                  <SharePropertyButton
+                    isPublished={property.status === "published"}
+                    propertyId={property.id}
+                    title={property.title}
+                  />
+                </div>
+              ) : null}
             </div>
             </article>
           );
         })}
       </div>
       <PropertyQuickViewDialog
+        canManage={canManage}
         onClose={() => setSelectedProperty(null)}
         property={selectedProperty}
       />

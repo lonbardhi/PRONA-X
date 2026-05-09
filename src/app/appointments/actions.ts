@@ -9,10 +9,10 @@ import {
   appointmentStatuses,
   formDataToAppointmentInput,
 } from "@/lib/appointments";
-import { requireApprovedUser } from "@/lib/supabase/server";
+import { requireOperatorUser } from "@/lib/supabase/server";
 
 async function requireUser() {
-  const { supabase, user } = await requireApprovedUser();
+  const { supabase, user } = await requireOperatorUser();
 
   return { supabase, user };
 }
