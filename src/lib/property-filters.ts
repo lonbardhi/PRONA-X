@@ -4,6 +4,7 @@ import {
   type PropertyStatus,
   type PropertyType,
 } from "@/lib/properties";
+import type { Locale } from "@/lib/i18n";
 
 export const propertySortOptions = [
   { value: "newest", label: "Newest" },
@@ -14,6 +15,20 @@ export const propertySortOptions = [
 ] as const;
 
 export type PropertySort = (typeof propertySortOptions)[number]["value"];
+
+export function getPropertySortOptions(locale: Locale) {
+  if (locale === "sq") {
+    return [
+      { value: "newest", label: "Më të rejat" },
+      { value: "price_asc", label: "Çmimi nga i ulëti" },
+      { value: "price_desc", label: "Çmimi nga i larti" },
+      { value: "area_desc", label: "Sipërfaqja më e madhe" },
+      { value: "status", label: "Statusi" },
+    ] as const;
+  }
+
+  return propertySortOptions;
+}
 
 export type PropertyFilters = {
   q: string;

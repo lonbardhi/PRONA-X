@@ -13,9 +13,11 @@ import {
   standardPropertyStatuses,
 } from "@/lib/properties";
 import { propertyMediaAccept, propertyMediaHelpText } from "@/lib/property-media";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyFormProps = {
   action: (formData: FormData) => void | Promise<void>;
+  locale?: Locale;
   property?: PropertyRecord;
   submitLabel: string;
 };
@@ -72,7 +74,12 @@ function numberValue(value: number | null | undefined) {
   return value ?? "";
 }
 
-export function PropertyForm({ action, property, submitLabel }: PropertyFormProps) {
+export function PropertyForm({
+  action,
+  locale = defaultLocale,
+  property,
+  submitLabel,
+}: PropertyFormProps) {
   const initialType = property?.type || "apartment";
   const [selectedType, setSelectedType] = useState<PropertyType>(initialType);
   const developmentLand = isDevelopmentLand(selectedType);
@@ -104,7 +111,9 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
       property.price_eur != null
     ) {
       const confirmed = window.confirm(
-        "Changing this listing to Development Land will remove the asking price from the active form and switch validation to percentage-based terms.",
+        locale === "sq"
+          ? "Ndryshimi i këtij listimi në Tokë Zhvillimi do të heqë çmimin nga formulari aktiv dhe do ta kalojë validimin në kushte me përqindje."
+          : "Changing this listing to Development Land will remove the asking price from the active form and switch validation to percentage-based terms.",
       );
 
       if (!confirmed) {
@@ -126,12 +135,27 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
       <Section
         description={
           developmentLand
-            ? "Development Land is tracked as a percentage-based landowner-to-developer opportunity. No fixed asking price is used."
-            : "Create a standard sales listing with price, size, rooms, media, and publishing status."
+            ? locale === "sq"
+              ? "Toka për zhvillim ndiqet si mundësi me përqindje midis pronarit të tokës dhe zhvilluesit. Nuk përdoret çmim fiks."
+              : "Development Land is tracked as a percentage-based landowner-to-developer opportunity. No fixed asking price is used."
+            : locale === "sq"
+              ? "Krijo një listim standard shitjeje me çmim, sipërfaqe, dhoma, media dhe status publikimi."
+              : "Create a standard sales listing with price, size, rooms, media, and publishing status."
         }
-        title={developmentLand ? "Basic Land Details" : "Property details"}
+        title={
+          developmentLand
+            ? locale === "sq"
+              ? "Detajet bazë të tokës"
+              : "Basic Land Details"
+            : locale === "sq"
+              ? "Detajet e pronës"
+              : "Property details"
+        }
       >
-        <Field className="md:col-span-2" label="Property title">
+        <Field
+          className="md:col-span-2"
+          label={locale === "sq" ? "Titulli i pronës" : "Property title"}
+        >
           <input
             className={inputClass}
             defaultValue={property?.title}
@@ -139,13 +163,15 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
             placeholder={
               developmentLand
                 ? "Development land in Kodra Priftit"
-                : "Modern apartment in Blloku"
+                : locale === "sq"
+                  ? "Apartament modern në Blloku"
+                  : "Modern apartment in Blloku"
             }
             required
           />
         </Field>
 
-        <Field label="Type">
+        <Field label={locale === "sq" ? "Tipi" : "Type"}>
           <select
             className={inputClass}
             name="type"
@@ -155,13 +181,13 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
           >
             {propertyTypes.map((type) => (
               <option key={type} value={type}>
-                {formatPropertyType(type)}
+                {formatPropertyType(type, locale)}
               </option>
             ))}
           </select>
         </Field>
 
-        <Field label="Status">
+        <Field label={locale === "sq" ? "Statusi" : "Status"}>
           <select
             className={inputClass}
             name="status"
@@ -171,13 +197,13 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
-                {formatStatusLabel(status)}
+                {formatStatusLabel(status, locale)}
               </option>
             ))}
           </select>
         </Field>
 
-        <Field label="City">
+        <Field label={locale === "sq" ? "Qyteti" : "City"}>
           <input
             className={inputClass}
             defaultValue={property?.city}
@@ -187,7 +213,17 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
           />
         </Field>
 
-        <Field label={developmentLand ? "Zone / neighborhood" : "Neighborhood"}>
+        <Field
+          label={
+            developmentLand
+              ? locale === "sq"
+                ? "Zona / lagjja"
+                : "Zone / neighborhood"
+              : locale === "sq"
+                ? "Lagjja"
+                : "Neighborhood"
+          }
+        >
           <input
             className={inputClass}
             defaultValue={property?.neighborhood || ""}
@@ -196,7 +232,14 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
           />
         </Field>
 
-        <Field className="md:col-span-2" label="Address or approximate location">
+        <Field
+          className="md:col-span-2"
+          label={
+            locale === "sq"
+              ? "Adresa ose vendndodhja e përafërt"
+              : "Address or approximate location"
+          }
+        >
           <input
             className={inputClass}
             defaultValue={property?.address || ""}
@@ -605,8 +648,12 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
           </Section>
         </>
       ) : (
-        <Section title="Sales Listing Information">
-          <Field label="Price EUR">
+        <Section
+          title={
+            locale === "sq" ? "Informacioni i listimit për shitje" : "Sales Listing Information"
+          }
+        >
+          <Field label={locale === "sq" ? "Çmimi EUR" : "Price EUR"}>
             <input
               className={inputClass}
               defaultValue={numberValue(property?.price_eur)}
@@ -619,7 +666,7 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
             />
           </Field>
 
-          <Field label="Area m2">
+          <Field label={locale === "sq" ? "Sipërfaqe m2" : "Area m2"}>
             <input
               className={inputClass}
               defaultValue={numberValue(property?.area_m2)}
@@ -631,7 +678,7 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
             />
           </Field>
 
-          <Field label="Bedrooms">
+          <Field label={locale === "sq" ? "Dhoma gjumi" : "Bedrooms"}>
             <input
               className={inputClass}
               defaultValue={numberValue(property?.bedrooms)}
@@ -641,7 +688,7 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
             />
           </Field>
 
-          <Field label="Bathrooms">
+          <Field label={locale === "sq" ? "Banjo" : "Bathrooms"}>
             <input
               className={inputClass}
               defaultValue={numberValue(property?.bathrooms)}
@@ -651,7 +698,7 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
             />
           </Field>
 
-          <Field label="Year built">
+          <Field label={locale === "sq" ? "Viti i ndërtimit" : "Year built"}>
             <input
               className={inputClass}
               defaultValue={numberValue(property?.year_built)}
@@ -664,8 +711,28 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
         </Section>
       )}
 
-      <Section title={developmentLand ? "Documents / Media / Maps" : "Media and notes"}>
-        <Field label={developmentLand ? "Land media and documents" : "Property media"}>
+      <Section
+        title={
+          developmentLand
+            ? locale === "sq"
+              ? "Dokumente / Media / Harta"
+              : "Documents / Media / Maps"
+            : locale === "sq"
+              ? "Media dhe shënime"
+              : "Media and notes"
+        }
+      >
+        <Field
+          label={
+            developmentLand
+              ? locale === "sq"
+                ? "Media dhe dokumente të tokës"
+                : "Land media and documents"
+              : locale === "sq"
+                ? "Media e pronës"
+                : "Property media"
+          }
+        >
           <input
             accept={propertyMediaAccept}
             className="w-full min-w-0 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-orange-700"
@@ -678,15 +745,26 @@ export function PropertyForm({ action, property, submitLabel }: PropertyFormProp
           </span>
         </Field>
 
-        <Field className="md:col-span-2" label="Description / internal notes">
+        <Field
+          className="md:col-span-2"
+          label={
+            locale === "sq"
+              ? "Përshkrimi / shënime të brendshme"
+              : "Description / internal notes"
+          }
+        >
           <textarea
             className={textareaClass}
             defaultValue={property?.description || ""}
             name="description"
             placeholder={
               developmentLand
-                ? "Land opportunity summary, ownership notes, planning context, and next action."
-                : "Key selling points, finishes, view, parking, and legal status."
+                ? locale === "sq"
+                  ? "Përmbledhje e mundësisë së tokës, shënime pronësie, kontekst planifikimi dhe hapi i radhës."
+                  : "Land opportunity summary, ownership notes, planning context, and next action."
+                : locale === "sq"
+                  ? "Pikat kryesore të shitjes, rifiniturat, pamja, parkimi dhe statusi ligjor."
+                  : "Key selling points, finishes, view, parking, and legal status."
             }
             rows={4}
           />

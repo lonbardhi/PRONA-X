@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { AppointmentRecord } from "@/lib/appointments";
+import { defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
 
 export const propertyTypes = [
   "apartment",
@@ -333,8 +334,8 @@ export function createSlug(title: string) {
   return `${base || "property"}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
-export function formatEuro(value: number) {
-  return new Intl.NumberFormat("en-US", {
+export function formatEuro(value: number, locale: Locale = defaultLocale) {
+  return new Intl.NumberFormat(getIntlLocale(locale), {
     style: "currency",
     currency: "EUR",
     maximumFractionDigits: 0,
@@ -347,26 +348,73 @@ export function isDevelopmentLand(property: PropertyRecord | PropertyType) {
     : property.type === "development_land";
 }
 
-export function formatPropertyType(type: PropertyType) {
-  if (type === "development_land") {
-    return "Development Land";
-  }
+export function formatPropertyType(type: PropertyType, locale: Locale = defaultLocale) {
+  const labels: Record<Locale, Record<PropertyType, string>> = {
+    sq: {
+      apartment: "Apartament",
+      commercial: "Komerciale",
+      development_land: "Tokë Zhvillimi",
+      house: "Shtëpi",
+      land: "Tokë",
+      office: "Zyrë",
+      villa: "Vilë",
+    },
+    en: {
+      apartment: "Apartment",
+      commercial: "Commercial",
+      development_land: "Development Land",
+      house: "House",
+      land: "Land",
+      office: "Office",
+      villa: "Villa",
+    },
+  };
 
-  return type
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return labels[locale][type];
 }
 
-export function formatStatusLabel(status: PropertyStatus) {
+export function formatStatusLabel(status: PropertyStatus, locale: Locale = defaultLocale) {
+  const labels: Record<Locale, Partial<Record<PropertyStatus, string>>> = {
+    sq: {
+      agreement_in_principle: "Marrëveshje Parimore",
+      agreement_signed: "Marrëveshje e Nënshkruar",
+      archived: "Arkivuar",
+      completed: "Përfunduar",
+      contract_drafting: "Draft Kontrate",
+      developer_interested: "Zhvillues i Interesuar",
+      documents_pending: "Dokumente në Pritje",
+      documents_verified: "Dokumente të Verifikuara",
+      draft: "Draft",
+      feasibility_review: "Rishikim Fizibiliteti",
+      landowner_contacted: "Pronari i Kontaktuar",
+      negotiation: "Negocim",
+      offer_received: "Ofertë e Marrë",
+      presented_to_developers: "Prezantuar Zhvilluesve",
+      project_in_progress: "Projekt në Proces",
+      published: "Publikuar",
+      ready_for_developers: "Gati për Zhvillues",
+      rejected: "Refuzuar",
+      rented: "Dhënë me Qira",
+      reserved: "Rezervuar",
+      sold: "Shitur",
+      withdrawn: "Tërhequr",
+    },
+    en: {},
+  };
+
+  const label = labels[locale][status];
+  if (label) {
+    return label;
+  }
+
   return status
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }
 
-export function formatPercentage(value: number) {
-  return `${Number(value).toLocaleString("en-US", {
+export function formatPercentage(value: number, locale: Locale = defaultLocale) {
+  return `${Number(value).toLocaleString(getIntlLocale(locale), {
     maximumFractionDigits: 2,
   })}%`;
 }
@@ -382,18 +430,25 @@ export function calculateGrossBuildableArea(
   return Math.round(plotSize * coefficient * 100) / 100;
 }
 
-export function formatDevelopmentAgreement(property: PropertyRecord) {
+export function formatDevelopmentAgreement(
+  property: PropertyRecord,
+  locale: Locale = defaultLocale,
+) {
   if (property.landowner_requested_percentage != null) {
-    return `Owner request: ${formatPercentage(
+    return `${locale === "sq" ? "Kërkesa e pronarit" : "Owner request"}: ${formatPercentage(
       property.landowner_requested_percentage,
-    )} of developed area`;
+      locale,
+    )} ${locale === "sq" ? "e sipërfaqes së zhvilluar" : "of developed area"}`;
   }
 
   if (property.developer_offered_percentage != null) {
-    return `Developer offer: ${formatPercentage(
+    return `${locale === "sq" ? "Oferta e zhvilluesit" : "Developer offer"}: ${formatPercentage(
       property.developer_offered_percentage,
-    )} of developed area`;
+      locale,
+    )} ${locale === "sq" ? "e sipërfaqes së zhvilluar" : "of developed area"}`;
   }
 
-  return "Percentage-based development agreement";
+  return locale === "sq"
+    ? "Marrëveshje zhvillimi me përqindje"
+    : "Percentage-based development agreement";
 }

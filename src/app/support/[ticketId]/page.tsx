@@ -22,15 +22,17 @@ import {
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
+import { t } from "@/lib/i18n";
+import { getCurrentLocale } from "@/lib/i18n-server";
 import {
   formatSupportDate,
   formatSupportFileSize,
+  getSupportActivityLabels,
   getSupportPriorityTone,
+  getSupportPriorityLabels,
   getSupportStatusTone,
-  supportActivityLabels,
+  getSupportStatusLabels,
   supportAttachmentBucket,
-  supportPriorityLabels,
-  supportStatusLabels,
   supportTicketPriorities,
   supportTicketStatuses,
   type SupportProfileSummary,
@@ -99,8 +101,12 @@ export default async function SupportTicketDetailPage({
   }
 
   const [{ ticketId }, query] = await Promise.all([params, searchParams]);
+  const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireApprovedUser();
   const canManageSupport = isSupportRole(profile.role);
+  const activityLabels = getSupportActivityLabels(locale);
+  const priorityLabels = getSupportPriorityLabels(locale);
+  const statusLabels = getSupportStatusLabels(locale);
   const supportUsersResult = canManageSupport
     ? supabase
         .from("profiles")
@@ -184,18 +190,18 @@ export default async function SupportTicketDetailPage({
             prefetch={false}
           >
             <ArrowLeft className="h-4 w-4" />
-            Support
+            {t(locale, "support.heading")}
           </Link>
           <div className="flex flex-wrap gap-2">
             <span
               className={`rounded-full px-3 py-1.5 text-xs font-semibold ${getSupportStatusTone(ticket.status)}`}
             >
-              {supportStatusLabels[ticket.status]}
+              {statusLabels[ticket.status]}
             </span>
             <span
               className={`rounded-full px-3 py-1.5 text-xs font-semibold ${getSupportPriorityTone(ticket.priority)}`}
             >
-              {supportPriorityLabels[ticket.priority]}
+              {priorityLabels[ticket.priority]}
             </span>
           </div>
         </div>
@@ -217,34 +223,34 @@ export default async function SupportTicketDetailPage({
               </h1>
               <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-2">
                 <p>
-                  <span className="font-semibold text-slate-950">Created:</span>{" "}
-                  {formatSupportDate(ticket.created_at)}
+                  <span className="font-semibold text-slate-950">{t(locale, "common.created")}:</span>{" "}
+                  {formatSupportDate(ticket.created_at, locale)}
                 </p>
                 <p>
                   <span className="font-semibold text-slate-950">
-                    Last update:
+                    {t(locale, "support.lastUpdate")}:
                   </span>{" "}
-                  {formatSupportDate(ticket.updated_at)}
+                  {formatSupportDate(ticket.updated_at, locale)}
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-950">Requester:</span>{" "}
+                  <span className="font-semibold text-slate-950">{t(locale, "support.requester")}:</span>{" "}
                   {getAuthorName(ticket.creator)}
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-950">Assigned:</span>{" "}
-                  {ticket.assignee?.full_name || "Unassigned"}
+                  <span className="font-semibold text-slate-950">{t(locale, "support.assigned")}:</span>{" "}
+                  {ticket.assignee?.full_name || t(locale, "support.unassigned")}
                 </p>
               </div>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <h2 className="text-base font-semibold text-slate-950">
-                Ticket information
+                {t(locale, "support.ticketInfo")}
               </h2>
               <div className="mt-4 grid gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-                    Description
+                    {t(locale, "support.description")}
                   </p>
                   <p className="mt-2 whitespace-pre-line break-words text-sm leading-7 text-slate-600">
                     {ticket.description}
@@ -253,7 +259,7 @@ export default async function SupportTicketDetailPage({
                 {ticket.steps_to_reproduce ? (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-                      Steps to reproduce
+                      {t(locale, "support.steps")}
                     </p>
                     <p className="mt-2 whitespace-pre-line break-words text-sm leading-7 text-slate-600">
                       {ticket.steps_to_reproduce}
@@ -262,27 +268,27 @@ export default async function SupportTicketDetailPage({
                 ) : null}
                 <div className="grid gap-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 md:grid-cols-2">
                   <p className="break-words">
-                    <span className="font-semibold text-slate-950">Module:</span>{" "}
+                    <span className="font-semibold text-slate-950">{t(locale, "support.module")}:</span>{" "}
                     {ticket.related_module || "-"}
                   </p>
                   <p className="break-words">
-                    <span className="font-semibold text-slate-950">Property:</span>{" "}
+                    <span className="font-semibold text-slate-950">{t(locale, "support.property")}:</span>{" "}
                     {ticket.property?.title || "-"}
                   </p>
                   <p className="break-words">
-                    <span className="font-semibold text-slate-950">URL:</span>{" "}
+                    <span className="font-semibold text-slate-950">{t(locale, "support.url")}:</span>{" "}
                     {ticket.page_url || "-"}
                   </p>
                   <p className="break-words">
-                    <span className="font-semibold text-slate-950">Screen:</span>{" "}
+                    <span className="font-semibold text-slate-950">{t(locale, "support.screen")}:</span>{" "}
                     {ticket.screen_size || "-"}
                   </p>
                   <p className="break-words">
-                    <span className="font-semibold text-slate-950">Device:</span>{" "}
+                    <span className="font-semibold text-slate-950">{t(locale, "support.device")}:</span>{" "}
                     {[ticket.device, ticket.os].filter(Boolean).join(" / ") || "-"}
                   </p>
                   <p className="break-words">
-                    <span className="font-semibold text-slate-950">Browser:</span>{" "}
+                    <span className="font-semibold text-slate-950">{t(locale, "support.browser")}:</span>{" "}
                     {ticket.browser || "-"}
                   </p>
                 </div>
@@ -292,11 +298,11 @@ export default async function SupportTicketDetailPage({
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <h2 className="flex items-center gap-2 text-base font-semibold text-slate-950">
                 <Paperclip className="h-4 w-4 text-slate-400" />
-                Attachments
+                {t(locale, "support.attachments")}
               </h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {ticketAttachments.length === 0 ? (
-                  <p className="text-sm text-slate-500">No ticket attachments.</p>
+                  <p className="text-sm text-slate-500">{t(locale, "support.noAttachments")}</p>
                 ) : null}
                 {ticketAttachments.map((attachment) => {
                   const Icon = getAttachmentIcon(attachment.mime_type);
@@ -328,12 +334,12 @@ export default async function SupportTicketDetailPage({
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <h2 className="flex items-center gap-2 text-base font-semibold text-slate-950">
                 <MessageSquare className="h-4 w-4 text-slate-400" />
-                Messages
+                {t(locale, "support.messages")}
               </h2>
               <div className="mt-4 grid gap-3">
                 {messages.length === 0 ? (
                   <p className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">
-                    No replies yet.
+                    {t(locale, "support.noMessages")}
                   </p>
                 ) : null}
                 {messages.map((message) => {
@@ -360,7 +366,7 @@ export default async function SupportTicketDetailPage({
                           {getAuthorName(message.author)}
                         </p>
                         <span className="text-xs text-slate-500">
-                          {formatSupportDate(message.created_at)}
+                          {formatSupportDate(message.created_at, locale)}
                         </span>
                       </div>
                       <p className="mt-3 whitespace-pre-line break-words text-sm leading-7 text-slate-600">
@@ -394,12 +400,12 @@ export default async function SupportTicketDetailPage({
             >
               <input name="return_to" type="hidden" value={`/support/${ticket.id}`} />
               <h2 className="text-base font-semibold text-slate-950">
-                Add reply
+                {t(locale, "support.addReply")}
               </h2>
               <textarea
                 className="mt-3 min-h-28 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
                 name="body"
-                placeholder="Write a reply..."
+                placeholder={t(locale, "support.replyPlaceholder")}
                 required
               />
               <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -417,13 +423,13 @@ export default async function SupportTicketDetailPage({
                       name="is_internal"
                       type="checkbox"
                     />
-                    Internal note
+                    {t(locale, "support.internalNote")}
                   </label>
                 ) : null}
               </div>
               <button className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
                 <Send className="h-4 w-4" />
-                Send reply
+                {t(locale, "support.sendReply")}
               </button>
             </form>
           </section>
@@ -433,7 +439,7 @@ export default async function SupportTicketDetailPage({
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h2 className="flex items-center gap-2 text-base font-semibold text-slate-950">
                   <ShieldCheck className="h-4 w-4 text-blue-700" />
-                  Support controls
+                  {locale === "sq" ? "Kontrollet e support" : "Support controls"}
                 </h2>
                 <div className="mt-4 grid gap-3">
                   <form action={statusAction} className="grid gap-2">
@@ -443,7 +449,7 @@ export default async function SupportTicketDetailPage({
                       value={`/support/${ticket.id}`}
                     />
                     <label className="text-sm font-medium text-slate-700">
-                      Status
+                      {t(locale, "support.status")}
                     </label>
                     <select
                       className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
@@ -452,12 +458,12 @@ export default async function SupportTicketDetailPage({
                     >
                       {supportTicketStatuses.map((status) => (
                         <option key={status} value={status}>
-                          {supportStatusLabels[status]}
+                          {statusLabels[status]}
                         </option>
                       ))}
                     </select>
                     <button className="h-9 rounded-lg bg-slate-950 text-sm font-semibold text-white">
-                      Update status
+                      {locale === "sq" ? "Përditëso statusin" : "Update status"}
                     </button>
                   </form>
 
@@ -468,7 +474,7 @@ export default async function SupportTicketDetailPage({
                       value={`/support/${ticket.id}`}
                     />
                     <label className="text-sm font-medium text-slate-700">
-                      Priority
+                      {t(locale, "support.priority")}
                     </label>
                     <select
                       className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
@@ -477,12 +483,12 @@ export default async function SupportTicketDetailPage({
                     >
                       {supportTicketPriorities.map((priority) => (
                         <option key={priority} value={priority}>
-                          {supportPriorityLabels[priority]}
+                          {priorityLabels[priority]}
                         </option>
                       ))}
                     </select>
                     <button className="h-9 rounded-lg bg-slate-950 text-sm font-semibold text-white">
-                      Update priority
+                      {locale === "sq" ? "Përditëso prioritetin" : "Update priority"}
                     </button>
                   </form>
 
@@ -493,14 +499,14 @@ export default async function SupportTicketDetailPage({
                       value={`/support/${ticket.id}`}
                     />
                     <label className="text-sm font-medium text-slate-700">
-                      Assign ticket
+                      {t(locale, "support.assignTicket")}
                     </label>
                     <select
                       className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
                       defaultValue={ticket.assigned_to || ""}
                       name="assigned_to"
                     >
-                      <option value="">Unassigned</option>
+                      <option value="">{t(locale, "support.unassigned")}</option>
                       {supportProfiles.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.full_name || item.role}
@@ -508,7 +514,7 @@ export default async function SupportTicketDetailPage({
                       ))}
                     </select>
                     <button className="h-9 rounded-lg bg-slate-950 text-sm font-semibold text-white">
-                      Update assignee
+                      {locale === "sq" ? "Përditëso personin" : "Update assignee"}
                     </button>
                   </form>
                 </div>
@@ -518,7 +524,7 @@ export default async function SupportTicketDetailPage({
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="flex items-center gap-2 text-base font-semibold text-slate-950">
                 <History className="h-4 w-4 text-slate-400" />
-                Activity history
+                {t(locale, "support.activity")}
               </h2>
               <div className="mt-4 grid gap-3">
                 {activities.map((activity) => (
@@ -527,13 +533,13 @@ export default async function SupportTicketDetailPage({
                     key={activity.id}
                   >
                     <p className="text-sm font-semibold text-slate-950">
-                      {supportActivityLabels[activity.activity_type] ||
+                      {activityLabels[activity.activity_type] ||
                         activity.activity_type}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {formatSupportDate(activity.created_at)}
+                      {formatSupportDate(activity.created_at, locale)}
                       {activity.actor?.full_name
-                        ? ` by ${activity.actor.full_name}`
+                        ? ` ${locale === "sq" ? "nga" : "by"} ${activity.actor.full_name}`
                         : ""}
                     </p>
                     {activity.from_value || activity.to_value ? (

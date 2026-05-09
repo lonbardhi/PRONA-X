@@ -10,6 +10,7 @@ import { AuthEntry } from "@/components/AuthEntry";
 import { SetupNotice } from "@/components/SetupNotice";
 import { getAuthDisplayMessage } from "@/lib/auth-messages";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getCurrentLocale } from "@/lib/i18n-server";
 import {
   getClearSessionPath,
   getCurrentUserWithProfile,
@@ -48,9 +49,11 @@ export default async function Home({ searchParams }: HomePageProps) {
   }
 
   const params = await searchParams;
+  const locale = await getCurrentLocale();
 
   return (
     <AuthEntry
+      locale={locale}
       message={getAuthDisplayMessage(params)}
       requestPasswordResetAction={requestPasswordResetAction}
       signInAction={signInAction}

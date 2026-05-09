@@ -15,7 +15,10 @@ import {
 
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { SessionTimeout } from "@/components/SessionTimeout";
+import { t } from "@/lib/i18n";
+import { getCurrentLocale } from "@/lib/i18n-server";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -23,32 +26,33 @@ type DashboardShellProps = {
   userRole?: string | null;
 };
 
-export function DashboardShell({
+export async function DashboardShell({
   children,
   userEmail,
   userRole,
 }: DashboardShellProps) {
+  const locale = await getCurrentLocale();
   const isViewer = userRole === "viewer";
   const isSupportOnly = userRole === "support";
   const navItems = isSupportOnly
-    ? [{ label: "Support", href: "/support", icon: LifeBuoy }]
+    ? [{ label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy }]
     : isViewer
     ? [
-        { label: "Sales", href: "/sales", icon: Building2 },
-        { label: "Rentals", href: "/sales?status=rented", icon: Building2 },
-        { label: "Land", href: "/sales?type=development_land", icon: Landmark },
-        { label: "Support", href: "/support", icon: LifeBuoy },
+        { label: t(locale, "nav.sales"), href: "/sales", icon: Building2 },
+        { label: t(locale, "nav.rentals"), href: "/sales?status=rented", icon: Building2 },
+        { label: t(locale, "nav.land"), href: "/sales?type=development_land", icon: Landmark },
+        { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
       ]
     : [
-        { label: "Dashboard", href: "/dashboard", icon: Home },
-        { label: "Sales", href: "/sales", icon: Building2 },
-        { label: "Rentals", href: "/rentals", icon: Building2 },
-        { label: "Calendar", href: "/appointments", icon: CalendarDays },
-        { label: "Seller Leads", href: "/seller-leads", icon: UserPlus },
-        { label: "Add Property", href: "/sales#add-property", icon: Plus },
-        { label: "Support", href: "/support", icon: LifeBuoy },
+        { label: t(locale, "nav.dashboard"), href: "/dashboard", icon: Home },
+        { label: t(locale, "nav.sales"), href: "/sales", icon: Building2 },
+        { label: t(locale, "nav.rentals"), href: "/rentals", icon: Building2 },
+        { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarDays },
+        { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: UserPlus },
+        { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: Plus },
+        { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
         ...(userRole === "admin"
-          ? [{ label: "Admin Users", href: "/admin/users", icon: ShieldCheck }]
+          ? [{ label: t(locale, "nav.adminUsers"), href: "/admin/users", icon: ShieldCheck }]
           : []),
       ];
 
@@ -78,7 +82,7 @@ export function DashboardShell({
 
           <div className="flex shrink-0 items-center gap-2">
             <button
-              aria-label="Notifications"
+              aria-label={t(locale, "notifications")}
               className="hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100 md:flex"
               type="button"
             >
@@ -86,14 +90,15 @@ export function DashboardShell({
             </button>
             <div className="hidden max-w-56 text-right lg:block">
               <p className="text-sm font-medium text-slate-900">{userEmail}</p>
-              <p className="text-xs text-slate-500">Workspace account</p>
+              <p className="text-xs text-slate-500">{t(locale, "account.workspace")}</p>
             </div>
+            <LanguageToggle locale={locale} />
             <span className="hidden h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 md:flex">
               <UserCircle className="h-5 w-5" />
             </span>
             <form action={signOutAction}>
               <button
-                aria-label="Sign out"
+                aria-label={t(locale, "pending.signOut")}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100"
               >
                 <LogOut className="h-4 w-4" />

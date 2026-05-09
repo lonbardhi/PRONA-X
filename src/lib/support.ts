@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { getIntlLocale, type Locale } from "@/lib/i18n";
+
 export const supportTicketCategories = [
   "technical_issue",
   "property_listing_issue",
@@ -64,11 +66,33 @@ export const supportCategoryLabels: Record<SupportTicketCategory, string> = {
   other: "Other",
 };
 
+const supportCategoryLabelsSq: Record<SupportTicketCategory, string> = {
+  technical_issue: "Problem teknik",
+  property_listing_issue: "Problem me listimin e pronës",
+  image_media_upload_issue: "Problem me ngarkimin e imazheve/medias",
+  calendar_appointment_issue: "Problem me kalendarin ose takimet",
+  sales_workflow_issue: "Problem me procesin e shitjes",
+  rental_workflow_issue: "Problem me procesin e qirasë",
+  seller_lead_issue: "Problem me lead të shitësit",
+  user_account_issue: "Problem me përdoruesin/llogarinë",
+  permission_access_issue: "Problem me lejet/aksesin",
+  feature_request: "Kërkesë për veçori",
+  data_correction_request: "Kërkesë për korrigjim të dhënash",
+  other: "Tjetër",
+};
+
 export const supportPriorityLabels: Record<SupportTicketPriority, string> = {
   low: "Low",
   medium: "Medium",
   high: "High",
   critical: "Critical",
+};
+
+const supportPriorityLabelsSq: Record<SupportTicketPriority, string> = {
+  low: "I ulët",
+  medium: "Mesatar",
+  high: "I lartë",
+  critical: "Kritik",
 };
 
 export const supportStatusLabels: Record<SupportTicketStatus, string> = {
@@ -81,6 +105,16 @@ export const supportStatusLabels: Record<SupportTicketStatus, string> = {
   rejected: "Rejected",
 };
 
+const supportStatusLabelsSq: Record<SupportTicketStatus, string> = {
+  open: "Hapur",
+  in_review: "Në shqyrtim",
+  waiting_for_user: "Në pritje të përdoruesit",
+  in_progress: "Në proces",
+  resolved: "Zgjidhur",
+  closed: "Mbyllur",
+  rejected: "Refuzuar",
+};
+
 export const supportActivityLabels: Record<string, string> = {
   ticket_created: "Ticket created",
   status_changed: "Status changed",
@@ -91,6 +125,50 @@ export const supportActivityLabels: Record<string, string> = {
   ticket_resolved: "Ticket resolved",
   ticket_reopened: "Ticket reopened",
 };
+
+const supportActivityLabelsSq: Record<string, string> = {
+  ticket_created: "Bileta u krijua",
+  status_changed: "Statusi ndryshoi",
+  priority_changed: "Prioriteti ndryshoi",
+  assigned_user_changed: "Përdoruesi i caktuar ndryshoi",
+  reply_added: "U shtua përgjigje",
+  internal_note_added: "U shtua shënim i brendshëm",
+  ticket_resolved: "Bileta u zgjidh",
+  ticket_reopened: "Bileta u rihap",
+};
+
+const supportModuleLabelsSq: Record<string, string> = {
+  Calendar: "Kalendari",
+  Dashboard: "Paneli",
+  "Development Land": "Tokë Zhvillimi",
+  "Media Uploads": "Ngarkime Media",
+  Other: "Tjetër",
+  Rentals: "Qira",
+  Sales: "Shitje",
+  "Seller Leads": "Leads Shitësish",
+  Sharing: "Shpërndarje",
+  "User Access": "Akses Përdoruesish",
+};
+
+export function getSupportCategoryLabels(locale: Locale) {
+  return locale === "sq" ? supportCategoryLabelsSq : supportCategoryLabels;
+}
+
+export function getSupportPriorityLabels(locale: Locale) {
+  return locale === "sq" ? supportPriorityLabelsSq : supportPriorityLabels;
+}
+
+export function getSupportStatusLabels(locale: Locale) {
+  return locale === "sq" ? supportStatusLabelsSq : supportStatusLabels;
+}
+
+export function getSupportActivityLabels(locale: Locale) {
+  return locale === "sq" ? supportActivityLabelsSq : supportActivityLabels;
+}
+
+export function getSupportModuleLabel(locale: Locale, module: string) {
+  return locale === "sq" ? supportModuleLabelsSq[module] || module : module;
+}
 
 export const supportAttachmentMimeTypes = [
   "image/png",
@@ -225,8 +303,8 @@ export function formDataToSupportTicketInput(formData: FormData) {
   });
 }
 
-export function formatSupportDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatSupportDate(value: string, locale: Locale = "en") {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",

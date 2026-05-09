@@ -3,14 +3,18 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { ChevronDown, Plus } from "lucide-react";
 
+import { defaultLocale, type Locale } from "@/lib/i18n";
+
 type PropertyIntakePanelProps = {
   children: ReactNode;
   defaultOpen?: boolean;
+  locale?: Locale;
 };
 
 export function PropertyIntakePanel({
   children,
   defaultOpen = false,
+  locale = defaultLocale,
 }: PropertyIntakePanelProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const contentId = useId();
@@ -62,14 +66,22 @@ export function PropertyIntakePanel({
           </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700">
-              Sales intake
+              {locale === "sq" ? "Regjistrim shitjeje" : "Sales intake"}
             </p>
-            <h2 className="mt-1 text-xl font-semibold text-slate-950">Add property</h2>
+            <h2 className="mt-1 text-xl font-semibold text-slate-950">
+              {locale === "sq" ? "Shto pronë" : "Add property"}
+            </h2>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <span className="hidden text-sm text-slate-500 md:inline">
-            {isOpen ? "Collapse form" : "Open form"}
+            {isOpen
+              ? locale === "sq"
+                ? "Mbyll formularin"
+                : "Collapse form"
+              : locale === "sq"
+                ? "Hap formularin"
+                : "Open form"}
           </span>
           <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600">
             <ChevronDown
@@ -88,8 +100,9 @@ export function PropertyIntakePanel({
         <div className="overflow-hidden">
           <div className="border-t border-slate-200 p-4 sm:p-5">
             <div className="mb-5 max-w-3xl text-sm leading-6 text-slate-500">
-              New records enter the same searchable inventory and can be filtered,
-              shared, updated, or archived as the portfolio grows.
+              {locale === "sq"
+                ? "Regjistrimet e reja futen në të njëjtin inventar të kërkueshëm dhe mund të filtrohen, shpërndahen, përditësohen ose arkivohen ndërsa portofoli rritet."
+                : "New records enter the same searchable inventory and can be filtered, shared, updated, or archived as the portfolio grows."}
             </div>
             {children}
           </div>

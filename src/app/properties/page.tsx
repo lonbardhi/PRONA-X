@@ -20,13 +20,15 @@ import { PropertyGrid } from "@/components/PropertyGrid";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
 import {
+  getPropertySortOptions,
   getIlikeSearchTerm,
   parsePropertyFilters,
-  propertySortOptions,
   type PropertyFilters as PropertyFilterState,
   type PropertySearchParams,
 } from "@/lib/property-filters";
 import { normalizeAppointments } from "@/lib/appointments";
+import { t } from "@/lib/i18n";
+import { getCurrentLocale } from "@/lib/i18n-server";
 import type { PropertyRecord } from "@/lib/properties";
 import { isOperatorRole, requireApprovedUser } from "@/lib/supabase/server";
 
@@ -103,6 +105,14 @@ function formatResultCount(count: number) {
   return `${count} ${count === 1 ? "sales property" : "sales properties"} found`;
 }
 
+function formatLocalizedResultCount(count: number, locale: "sq" | "en") {
+  if (locale === "sq") {
+    return `${count} ${count === 1 ? "pronë shitjeje u gjet" : "prona shitjeje u gjetën"}`;
+  }
+
+  return formatResultCount(count);
+}
+
 function applySort<
   T extends {
     order: (
@@ -146,6 +156,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   }
 
   const params = await searchParams;
+  const locale = await getCurrentLocale();
   const filters = parsePropertyFilters(params);
   const { profile, supabase, user } = await requireApprovedUser();
   const canManage = isOperatorRole(profile.role);
@@ -245,6 +256,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   const developmentLandCount = typedProperties.filter(
     (item) => item.type === "development_land",
   ).length;
+  const localizedSortOptions = getPropertySortOptions(locale);
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
@@ -255,27 +267,41 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white">
                   <Building2 className="h-3.5 w-3.5" />
-                  {canManage ? "PRONA X sales" : "PRONA X viewer"}
+                  {canManage
+                    ? locale === "sq"
+                      ? "PRONA X Shitje"
+                      : "PRONA X Sales"
+                    : t(locale, "property.viewer")}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
                   <BadgeCheck className="h-3.5 w-3.5" />
-                  Team CRM
+                  {t(locale, "property.teamCrm")}
                 </span>
               </div>
               <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
-                {canManage ? "Sales Inventory" : "Available Properties"}
+                {canManage
+                  ? locale === "sq"
+                    ? "Inventari i Shitjeve"
+                    : "Sales Inventory"
+                  : locale === "sq"
+                    ? "Prona të Disponueshme"
+                    : "Available Properties"}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 {canManage
-                  ? "Manage PRONA X properties for sale, viewings, buyer interest, offers, and deal progress from one internal workspace."
-                  : "Review approved sales, rental, and development land opportunities shared by the PRONA X team."}
+                  ? locale === "sq"
+                    ? "Menaxho pronat për shitje, vizitat, interesin e blerësve, ofertat dhe progresin e marrëveshjeve nga një hapësirë e brendshme."
+                    : "Manage PRONA X properties for sale, viewings, buyer interest, offers, and deal progress from one internal workspace."
+                  : locale === "sq"
+                    ? "Shiko mundësitë e miratuara për shitje, qira dhe tokë zhvillimi të ndara nga ekipi PRONA X."
+                    : "Review approved sales, rental, and development land opportunities shared by the PRONA X team."}
               </p>
             </div>
 
             <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[420px]">
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 sm:tracking-[0.12em]">
-                  Sales Properties
+                  {t(locale, "property.salesProperties")}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {resultCount}
@@ -283,7 +309,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
               </div>
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:tracking-[0.12em]">
-                  Published
+                  {locale === "sq" ? "Publikuar" : "Published"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {publishedCount}
@@ -296,7 +322,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   ) : (
                     <Landmark className="h-3.5 w-3.5" />
                   )}
-                  {canManage ? "Missing Media" : "Land"}
+                  {canManage ? t(locale, "property.missingMedia") : t(locale, "property.land")}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {canManage ? missingMediaCount.length : developmentLandCount}
@@ -327,10 +353,12 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                 </span>
                 <div className="min-w-0">
                   <h2 className="text-base font-semibold text-slate-950">
-                    Upcoming appointments
+                    {locale === "sq" ? "Takimet e ardhshme" : "Upcoming appointments"}
                   </h2>
                   <p className="text-sm text-slate-500">
-                    The next scheduled viewings, calls, and follow-ups.
+                    {locale === "sq"
+                      ? "Vizitat, telefonatat dhe ndjekjet e radhës."
+                      : "The next scheduled viewings, calls, and follow-ups."}
                   </p>
                 </div>
               </div>
@@ -338,21 +366,22 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 sm:w-auto"
                 href="/appointments"
               >
-                Open calendar
+                {locale === "sq" ? "Hap kalendarin" : "Open calendar"}
               </a>
             </div>
             <AppointmentAgenda
               appointments={upcomingAppointments}
               density="compact"
-              emptyLabel="No upcoming appointments yet."
+              emptyLabel={locale === "sq" ? "Ende nuk ka takime të ardhshme." : "No upcoming appointments yet."}
               layout="grid"
+              locale={locale}
               returnTo="/sales"
             />
           </section>
         ) : null}
 
         <div className="grid items-start gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
-          <PropertyFilters cities={cities} filters={filters} />
+          <PropertyFilters cities={cities} filters={filters} locale={locale} />
 
           <section className="grid min-w-0 content-start gap-4">
             <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -363,13 +392,13 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                 />
 
                 <label className="relative min-w-0">
-                  <span className="sr-only">Search properties</span>
+                  <span className="sr-only">{t(locale, "property.searchPlaceholder")}</span>
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     className="h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                     defaultValue={filters.q}
                     name="q"
-                    placeholder="Search title, city, neighborhood, description"
+                    placeholder={t(locale, "property.searchPlaceholder")}
                   />
                 </label>
 
@@ -381,7 +410,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                     defaultValue={filters.sort}
                     name="sort"
                   >
-                    {propertySortOptions.map((option) => (
+                    {localizedSortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -391,7 +420,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
 
                 <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 xl:w-auto">
                   <SlidersHorizontal className="h-4 w-4" />
-                  Search
+                  {t(locale, "common.search")}
                 </button>
               </form>
             </div>
@@ -399,12 +428,12 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-slate-950">
-                  {formatResultCount(resultCount)}
+                  {formatLocalizedResultCount(resultCount, locale)}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Sorted by{" "}
+                  {locale === "sq" ? "Renditur sipas" : "Sorted by"}{" "}
                   {
-                    propertySortOptions.find((option) => option.value === filters.sort)
+                    localizedSortOptions.find((option) => option.value === filters.sort)
                       ?.label
                   }
                 </p>
@@ -415,18 +444,22 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   href="#add-property"
                 >
                   <Plus className="h-4 w-4" />
-                  Add property
+                  {t(locale, "property.add")}
                 </a>
               ) : null}
             </div>
 
-            <PropertyGrid canManage={canManage} properties={typedProperties} />
+            <PropertyGrid canManage={canManage} locale={locale} properties={typedProperties} />
           </section>
         </div>
 
         {canManage ? (
-          <PropertyIntakePanel defaultOpen={Boolean(params.message)}>
-            <PropertyForm action={createPropertyAction} submitLabel="Create property" />
+          <PropertyIntakePanel defaultOpen={Boolean(params.message)} locale={locale}>
+            <PropertyForm
+              action={createPropertyAction}
+              locale={locale}
+              submitLabel={locale === "sq" ? "Krijo pronën" : "Create property"}
+            />
           </PropertyIntakePanel>
         ) : null}
       </section>

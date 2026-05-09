@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PropertyForm } from "@/components/PropertyForm";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getCurrentLocale } from "@/lib/i18n-server";
 import type { PropertyRecord } from "@/lib/properties";
 import { requireOperatorUser } from "@/lib/supabase/server";
 
@@ -29,6 +30,7 @@ export default async function EditPropertyPage({
   }
 
   const { id } = await params;
+  const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireOperatorUser();
 
   const { data: property } = await supabase
@@ -50,13 +52,15 @@ export default async function EditPropertyPage({
       <section className="mx-auto max-w-4xl px-3 py-5 sm:px-6 sm:py-8">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-            Edit listing
+            {locale === "sq" ? "Ndrysho listimin" : "Edit listing"}
           </p>
           <h1 className="mt-2 break-words text-2xl font-semibold leading-tight text-slate-950 sm:text-3xl">
             {typedProperty.title}
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Update property details or append more photos, videos, and PDF files.
+            {locale === "sq"
+              ? "Përditëso detajet e pronës ose shto foto, video dhe skedarë PDF."
+              : "Update property details or append more photos, videos, and PDF files."}
           </p>
 
           {query.message ? (
@@ -68,8 +72,9 @@ export default async function EditPropertyPage({
           <div className="mt-6">
             <PropertyForm
               action={updateAction}
+              locale={locale}
               property={typedProperty}
-              submitLabel="Save changes"
+              submitLabel={locale === "sq" ? "Ruaj ndryshimet" : "Save changes"}
             />
           </div>
         </div>

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
+
 export const appointmentTypes = [
   "viewing",
   "call",
@@ -34,6 +36,30 @@ export const appointmentStatusLabels: Record<AppointmentStatus, string> = {
   cancelled: "Cancelled",
   no_show: "No-show",
 };
+
+const appointmentTypeLabelsSq: Record<AppointmentType, string> = {
+  viewing: "Vizitë",
+  call: "Telefonatë",
+  follow_up: "Ndjekje",
+  photoshoot: "Fotosesion",
+  document_signing: "Nënshkrim dokumentesh",
+  open_house: "Ditë e hapur",
+};
+
+const appointmentStatusLabelsSq: Record<AppointmentStatus, string> = {
+  scheduled: "Planifikuar",
+  completed: "Përfunduar",
+  cancelled: "Anuluar",
+  no_show: "Nuk u paraqit",
+};
+
+export function getAppointmentTypeLabels(locale: Locale) {
+  return locale === "sq" ? appointmentTypeLabelsSq : appointmentTypeLabels;
+}
+
+export function getAppointmentStatusLabels(locale: Locale) {
+  return locale === "sq" ? appointmentStatusLabelsSq : appointmentStatusLabels;
+}
 
 export const appointmentSchema = z.object({
   property_id: z.string().uuid("Choose a property"),
@@ -127,15 +153,22 @@ export function formDataToAppointmentInput(formData: FormData) {
   });
 }
 
-export function formatAppointmentDateTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatAppointmentDateTime(
+  value: string,
+  locale: Locale = defaultLocale,
+) {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
 
-export function formatAppointmentTimeRange(startsAt: string, endsAt: string) {
-  const formatter = new Intl.DateTimeFormat("en-US", {
+export function formatAppointmentTimeRange(
+  startsAt: string,
+  endsAt: string,
+  locale: Locale = defaultLocale,
+) {
+  const formatter = new Intl.DateTimeFormat(getIntlLocale(locale), {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -156,13 +189,14 @@ export function getDefaultAppointmentStart() {
 
 export function getAppointmentLocation(
   appointment: Pick<AppointmentRecord, "location" | "property">,
+  locale: Locale = defaultLocale,
 ) {
   if (appointment.location) {
     return appointment.location;
   }
 
   if (!appointment.property) {
-    return "No location set";
+    return locale === "sq" ? "Pa vendndodhje" : "No location set";
   }
 
   return (

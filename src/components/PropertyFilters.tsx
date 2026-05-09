@@ -19,10 +19,12 @@ import {
   getActivePropertyFilterCount,
   type PropertyFilters as PropertyFilterState,
 } from "@/lib/property-filters";
+import { defaultLocale, type Locale, t } from "@/lib/i18n";
 
 type PropertyFiltersProps = {
   cities: string[];
   filters: PropertyFilterState;
+  locale?: Locale;
 };
 
 function HiddenSearchFields({ filters }: { filters: PropertyFilterState }) {
@@ -37,9 +39,11 @@ function HiddenSearchFields({ filters }: { filters: PropertyFilterState }) {
 function FilterHeader({
   activeFilterCount,
   compact = false,
+  locale = defaultLocale,
 }: {
   activeFilterCount: number;
   compact?: boolean;
+  locale?: Locale;
 }) {
   return (
     <div className="flex min-w-0 items-center gap-2">
@@ -48,15 +52,17 @@ function FilterHeader({
       </span>
       <div className="min-w-0">
         <h2 className="text-sm font-semibold text-slate-950">
-          {compact ? "Filters" : "Sales filters"}
+          {compact ? t(locale, "property.filters") : t(locale, "property.salesFilters")}
         </h2>
-        <p className="text-xs text-slate-500">{activeFilterCount} active</p>
+        <p className="text-xs text-slate-500">
+          {activeFilterCount} {locale === "sq" ? "aktiv" : "active"}
+        </p>
       </div>
     </div>
   );
 }
 
-function FilterControls({ cities, filters }: PropertyFiltersProps) {
+function FilterControls({ cities, filters, locale = defaultLocale }: PropertyFiltersProps) {
   return (
     <>
       <HiddenSearchFields filters={filters} />
@@ -64,11 +70,11 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
       <div className="grid gap-3 border-b border-slate-200 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <Euro className="h-4 w-4 text-slate-500" />
-          Property price
+          {locale === "sq" ? "Çmimi i pronës" : "Property price"}
         </div>
         <div className="grid grid-cols-2 gap-2 max-[380px]:grid-cols-1">
           <label className="grid gap-1 text-xs font-medium text-slate-500">
-            Min EUR
+            {locale === "sq" ? "Min EUR" : "Min EUR"}
             <input
               className="h-10 min-w-0 rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
               defaultValue={filters.minPrice}
@@ -80,7 +86,7 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
             />
           </label>
           <label className="grid gap-1 text-xs font-medium text-slate-500">
-            Max EUR
+            {locale === "sq" ? "Max EUR" : "Max EUR"}
             <input
               className="h-10 min-w-0 rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
               defaultValue={filters.maxPrice}
@@ -97,7 +103,7 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
       <div className="grid gap-3 border-b border-slate-200 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <Building2 className="h-4 w-4 text-slate-500" />
-          Property type
+          {locale === "sq" ? "Tipi i pronës" : "Property type"}
         </div>
         <div className="grid gap-2">
           {propertyTypes.map((type) => (
@@ -109,7 +115,7 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
                 type="checkbox"
                 value={type}
               />
-              {formatPropertyType(type)}
+              {formatPropertyType(type, locale)}
             </label>
           ))}
         </div>
@@ -118,14 +124,14 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
       <div className="grid gap-3 border-b border-slate-200 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <MapPin className="h-4 w-4 text-slate-500" />
-          City / location
+          {locale === "sq" ? "Qyteti / lokacioni" : "City / location"}
         </div>
         <select
           className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
           defaultValue={filters.city}
           name="city"
         >
-          <option value="">All locations</option>
+          <option value="">{locale === "sq" ? "Të gjitha lokacionet" : "All locations"}</option>
           {cities.map((city) => (
             <option key={city} value={city}>
               {city}
@@ -137,25 +143,25 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
       <div className="grid gap-3 border-b border-slate-200 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <BedDouble className="h-4 w-4 text-slate-500" />
-          Property rooms
+          {locale === "sq" ? "Dhomat e pronës" : "Property rooms"}
         </div>
         <select
           className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
           defaultValue={filters.minBedrooms}
           name="minBedrooms"
         >
-          <option value="">Any bedrooms</option>
-          <option value="1">1+ bedroom</option>
-          <option value="2">2+ bedrooms</option>
-          <option value="3">3+ bedrooms</option>
-          <option value="4">4+ bedrooms</option>
+          <option value="">{locale === "sq" ? "Çdo numër dhomash" : "Any bedrooms"}</option>
+          <option value="1">1+ {locale === "sq" ? "dhomë" : "bedroom"}</option>
+          <option value="2">2+ {locale === "sq" ? "dhoma" : "bedrooms"}</option>
+          <option value="3">3+ {locale === "sq" ? "dhoma" : "bedrooms"}</option>
+          <option value="4">4+ {locale === "sq" ? "dhoma" : "bedrooms"}</option>
         </select>
       </div>
 
       <div className="grid gap-3 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <Tag className="h-4 w-4 text-slate-500" />
-          Status
+          {locale === "sq" ? "Statusi" : "Status"}
         </div>
         <div className="grid gap-2">
           {propertyStatuses.map((status) => (
@@ -170,7 +176,7 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
                 type="checkbox"
                 value={status}
               />
-              {formatStatusLabel(status)}
+              {formatStatusLabel(status, locale)}
             </label>
           ))}
         </div>
@@ -179,51 +185,55 @@ function FilterControls({ cities, filters }: PropertyFiltersProps) {
       <div className="border-t border-slate-200 p-4">
         <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
           <Filter className="h-4 w-4" />
-          Apply filters
+          {locale === "sq" ? "Apliko filtrat" : "Apply filters"}
         </button>
       </div>
     </>
   );
 }
 
-export function PropertyFilters({ cities, filters }: PropertyFiltersProps) {
+export function PropertyFilters({
+  cities,
+  filters,
+  locale = defaultLocale,
+}: PropertyFiltersProps) {
   const activeFilterCount = getActivePropertyFilterCount(filters);
 
   return (
     <>
       <details className="rounded-xl border border-slate-200 bg-white shadow-sm lg:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 [&::-webkit-details-marker]:hidden">
-          <FilterHeader activeFilterCount={activeFilterCount} compact />
+          <FilterHeader activeFilterCount={activeFilterCount} compact locale={locale} />
           <div className="flex shrink-0 items-center gap-3">
             <Link
               className="text-xs font-semibold text-emerald-700 transition hover:text-emerald-800"
               href="/sales"
               prefetch={false}
             >
-              Clear
+              {t(locale, "common.clear")}
             </Link>
             <ChevronDown className="h-4 w-4 text-slate-500" />
           </div>
         </summary>
         <form action="/sales" className="grid gap-0 border-t border-slate-200">
-          <FilterControls cities={cities} filters={filters} />
+          <FilterControls cities={cities} filters={filters} locale={locale} />
         </form>
       </details>
 
       <aside className="hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:sticky lg:top-24 lg:block lg:h-fit">
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-4">
-          <FilterHeader activeFilterCount={activeFilterCount} />
+          <FilterHeader activeFilterCount={activeFilterCount} locale={locale} />
           <Link
             className="text-xs font-semibold text-emerald-700 transition hover:text-emerald-800"
             href="/sales"
             prefetch={false}
           >
-            Clear all
+            {t(locale, "common.clearAll")}
           </Link>
         </div>
 
         <form action="/sales" className="grid gap-0">
-          <FilterControls cities={cities} filters={filters} />
+          <FilterControls cities={cities} filters={filters} locale={locale} />
         </form>
       </aside>
     </>

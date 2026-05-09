@@ -28,9 +28,11 @@ import {
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 import { SharePropertyButton } from "@/components/SharePropertyButton";
+import { defaultLocale, type Locale, t } from "@/lib/i18n";
 
 type PropertyGridProps = {
   canManage?: boolean;
+  locale?: Locale;
   properties: PropertyRecord[];
 };
 
@@ -88,15 +90,21 @@ function shouldIgnoreCardOpen(event: MouseEvent<HTMLElement>) {
   );
 }
 
-export function PropertyGrid({ canManage = true, properties }: PropertyGridProps) {
+export function PropertyGrid({
+  canManage = true,
+  locale = defaultLocale,
+  properties,
+}: PropertyGridProps) {
   const [selectedProperty, setSelectedProperty] = useState<PropertyRecord | null>(null);
 
   if (properties.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center sm:p-8">
-        <h2 className="text-lg font-semibold text-slate-950">No properties yet</h2>
+        <h2 className="text-lg font-semibold text-slate-950">
+          {t(locale, "property.noProperties")}
+        </h2>
         <p className="mt-2 text-sm text-slate-500">
-          Adjust the filters or add the first property for sale.
+          {t(locale, "property.noPropertiesHint")}
         </p>
       </div>
     );
@@ -128,7 +136,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
 
           return (
             <article
-              aria-label={`Open details for ${property.title}`}
+              aria-label={`${locale === "sq" ? "Hap detajet për" : "Open details for"} ${property.title}`}
               className="min-w-0 cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-emerald-100"
               key={property.id}
               onClick={(event) => {
@@ -142,7 +150,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
             >
             <div className="relative h-48 w-full overflow-hidden bg-slate-100">
               <PropertyMediaPreview
-                emptyLabel="No media"
+                emptyLabel={t(locale, "property.noMedia")}
                 fit="cover"
                 media={cover}
                 priority={index === 0}
@@ -170,18 +178,18 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                     {property.title}
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
-                    {formatPropertyType(property.type)}
+                    {formatPropertyType(property.type, locale)}
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusTone(property.status)}`}
                   >
-                    {formatStatusLabel(property.status)}
+                      {formatStatusLabel(property.status, locale)}
                   </span>
                   {canManage && (property.property_media?.length || 0) === 0 ? (
                     <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                      Missing Media
+                      {t(locale, "property.missingMedia")}
                     </span>
                   ) : null}
                 </div>
@@ -190,8 +198,8 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
               <div className="flex items-center justify-between gap-3">
                 <p className="min-w-0 break-words text-lg font-semibold text-slate-950">
                   {developmentLand
-                    ? formatDevelopmentAgreement(property)
-                    : formatEuro(property.price_eur || 0)}
+                    ? formatDevelopmentAgreement(property, locale)
+                    : formatEuro(property.price_eur || 0, locale)}
                 </p>
                 <div className="flex shrink-0 items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
                   <Images className="h-3.5 w-3.5 text-slate-400" />
@@ -204,7 +212,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                   <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
                     <p className="flex items-center gap-1 text-slate-400">
                       <Landmark className="h-3.5 w-3.5" />
-                      Plot
+                      {t(locale, "property.plot")}
                     </p>
                     <p className="mt-1 truncate font-semibold text-slate-950">
                       {property.plot_size_m2 != null
@@ -215,7 +223,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                   <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
                     <p className="flex items-center gap-1 text-slate-400">
                       <Percent className="h-3.5 w-3.5" />
-                      Owner %
+                      {t(locale, "property.ownerPercent")}
                     </p>
                     <p className="mt-1 font-semibold text-slate-950">
                       {property.landowner_requested_percentage != null
@@ -226,7 +234,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                   <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
                     <p className="flex items-center gap-1 text-slate-400">
                       <Ruler className="h-3.5 w-3.5" />
-                      Buildable
+                      {t(locale, "property.buildable")}
                     </p>
                     <p className="mt-1 truncate font-semibold text-slate-950">
                       {property.estimated_gross_buildable_area_m2 != null
@@ -240,7 +248,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                   <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
                     <p className="flex items-center gap-1 text-slate-400">
                       <BedDouble className="h-3.5 w-3.5" />
-                      Beds
+                      {t(locale, "property.beds")}
                     </p>
                     <p className="mt-1 font-semibold text-slate-950">
                       {property.bedrooms ?? "-"}
@@ -249,7 +257,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                   <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
                     <p className="flex items-center gap-1 text-slate-400">
                       <Bath className="h-3.5 w-3.5" />
-                      Baths
+                      {t(locale, "property.baths")}
                     </p>
                     <p className="mt-1 font-semibold text-slate-950">
                       {property.bathrooms ?? "-"}
@@ -258,7 +266,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                   <div className="min-w-0 rounded-lg bg-slate-50 p-2.5">
                     <p className="flex items-center gap-1 text-slate-400">
                       <Ruler className="h-3.5 w-3.5" />
-                      Area
+                      {t(locale, "property.area")}
                     </p>
                     <p className="mt-1 truncate font-semibold text-slate-950">
                       {property.area_m2 != null ? `${property.area_m2} m2` : "-"}
@@ -275,13 +283,13 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
                   >
                     <Edit3 className="h-4 w-4" />
-                    Edit
+                    {locale === "sq" ? "Ndrysho" : "Edit"}
                   </Link>
                   <form action={deletePropertyAction}>
                     <input type="hidden" name="property_id" value={property.id} />
                     <button className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
                       <Trash2 className="h-4 w-4" />
-                      Delete
+                      {locale === "sq" ? "Fshi" : "Delete"}
                     </button>
                   </form>
                   <SharePropertyButton
@@ -298,6 +306,7 @@ export function PropertyGrid({ canManage = true, properties }: PropertyGridProps
       </div>
       <PropertyQuickViewDialog
         canManage={canManage}
+        locale={locale}
         onClose={() => setSelectedProperty(null)}
         property={selectedProperty}
       />

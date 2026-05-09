@@ -17,8 +17,11 @@ import {
 } from "lucide-react";
 
 import { LogoMark } from "@/components/BrandLogo";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { getAuthHeroSlides, type Locale, t } from "@/lib/i18n";
 
 type AuthEntryProps = {
+  locale: Locale;
   message?: string;
   requestPasswordResetAction: (formData: FormData) => void | Promise<void>;
   signInAction: (formData: FormData) => void | Promise<void>;
@@ -29,38 +32,8 @@ type AuthEntryProps = {
 
 type AuthMode = "login" | "signup" | "recovery";
 
-const heroSlides = [
-  {
-    image: "/brand/albania-beach-properties-for-sale-2-1920x1920.jpg",
-    alt: "Albanian coastal villa on a cliff above the sea",
-    quote:
-      "Turn scattered listings, WhatsApp chats, photos, documents, viewings, and offers into one polished operating system for your agency.",
-    title: "Sales | Rentals | Development Land",
-    subtitle:
-      "Manage premium properties, landowner agreements, buyer interest, appointments, offers, documents, and private sharing.",
-    note: "",
-  },
-  {
-    image: "/brand/albania-beachfront-properties-for-sale-1920x1920.jpg",
-    alt: "Beachfront modern property overlooking the Albanian coastline",
-    quote:
-      "Create, manage, and share polished property pages with the confidence of a branded workspace.",
-    title: "PRONA X Cloud",
-    subtitle: "Property operations platform",
-    note: "Inventory, media, roles, and public sharing",
-  },
-  {
-    image: "/brand/albania-beach-properties-for-sale-2-1920x1920.jpg",
-    alt: "Mediterranean villa with sea views and cliffside landscaping",
-    quote:
-      "Turn every listing into a controlled, shareable sales experience without exposing admin tools.",
-    title: "Sales-Ready Listings",
-    subtitle: "WhatsApp-ready property links",
-    note: "Public pages stay view-only by design",
-  },
-];
-
 export function AuthEntry({
+  locale,
   message,
   requestPasswordResetAction,
   signInAction,
@@ -71,6 +44,7 @@ export function AuthEntry({
   const [mode, setMode] = useState<AuthMode>("signup");
   const [showPassword, setShowPassword] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
+  const heroSlides = getAuthHeroSlides(locale);
   const action =
     mode === "login"
       ? signInAction
@@ -114,18 +88,18 @@ export function AuthEntry({
                   PRONA X
                 </p>
                 <p className="mt-1 text-sm font-semibold text-slate-600">
-                  Albanian Property CRM
+                  {t(locale, "brand.subtitle")}
                 </p>
               </div>
             </div>
             <div className="mt-4 inline-flex max-w-full items-center overflow-hidden rounded-full border border-slate-950/10 bg-slate-950 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-sm shadow-slate-950/10">
-              <span>Sell</span>
+              <span>{t(locale, "nav.sales")}</span>
               <span className="mx-2 text-white/35">|</span>
-              <span>Rent</span>
+              <span>{t(locale, "nav.rentals")}</span>
               <span className="mx-2 text-white/35">|</span>
-              <span>Land</span>
+              <span>{t(locale, "nav.land")}</span>
               <span className="mx-2 text-white/35">|</span>
-              <span>Share</span>
+              <span>{t(locale, "nav.share")}</span>
             </div>
           </div>
 
@@ -134,21 +108,23 @@ export function AuthEntry({
               PRONA X Platform
             </p>
             <h2 className="mt-3 text-4xl font-black leading-tight tracking-normal sm:text-5xl">
-              Albanian property operations, branded end to end.
+              {t(locale, "brand.tagline")}
             </h2>
             <p className="mt-4 max-w-md text-sm font-medium leading-6 text-white/85">
-              A premium CRM for agencies managing sales, rentals, development land,
-              media, documents, viewings, offers, and client sharing from one secure
-              workspace.
+              {locale === "sq"
+                ? "Një CRM premium për agjenci që menaxhojnë shitje, qira, tokë zhvillimi, media, dokumente, vizita, oferta dhe shpërndarje me klientë nga një hapësirë e sigurt."
+                : "A premium CRM for agencies managing sales, rentals, development land, media, documents, viewings, offers, and client sharing from one secure workspace."}
             </p>
           </div>
 
           <div className="absolute bottom-36 right-6 hidden rounded-2xl border border-white/25 bg-white/18 px-4 py-3 text-white shadow-xl backdrop-blur-md xl:block">
             <p className="text-xs uppercase tracking-[0.18em] text-white/70">
-              Market focus
+              {locale === "sq" ? "Fokusi i tregut" : "Market focus"}
             </p>
             <p className="mt-1 text-lg font-semibold">Albanian Riviera</p>
-            <p className="text-sm text-white/75">Premium listings, sales-ready</p>
+            <p className="text-sm text-white/75">
+              {locale === "sq" ? "Listime premium, gati për shitje" : "Premium listings, sales-ready"}
+            </p>
           </div>
 
           <div className="absolute bottom-6 left-6 flex gap-2 sm:left-8">
@@ -200,7 +176,7 @@ export function AuthEntry({
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/12 px-4 py-3">
                 <p className="text-xs uppercase tracking-[0.18em] text-white/60">
-                  Brand signal
+                  {locale === "sq" ? "Sinjal marke" : "Brand signal"}
                 </p>
                 <p className="mt-1 text-lg font-semibold">PRONA X</p>
               </div>
@@ -221,12 +197,13 @@ export function AuthEntry({
                   PRONA X
                 </p>
                 <p className="truncate text-xs font-medium text-slate-500">
-                  Albanian Property CRM
+                  {t(locale, "brand.subtitle")}
                 </p>
               </div>
             </div>
 
-            <div className="mx-auto flex w-fit rounded-lg bg-slate-100 p-1">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <div className="flex w-fit rounded-lg bg-slate-100 p-1">
               <button
                 className={`inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold transition ${
                   mode === "login"
@@ -237,7 +214,7 @@ export function AuthEntry({
                 type="button"
               >
                 <LogIn className="h-4 w-4" />
-                Login
+                {t(locale, "auth.login")}
               </button>
               <button
                 className={`inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold transition ${
@@ -249,24 +226,26 @@ export function AuthEntry({
                 type="button"
               >
                 <UserPlus className="h-4 w-4" />
-                Sign Up
+                {t(locale, "auth.signUp")}
               </button>
+              </div>
+              <LanguageToggle locale={locale} returnTo="/login" />
             </div>
 
             <div className="mt-8 text-center">
               <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
                 {mode === "login"
-                  ? "Sign in to PRONA X"
+                  ? t(locale, "auth.loginHeading")
                   : mode === "recovery"
-                    ? "Reset your password"
-                    : "Create your PRONA X account"}
+                    ? t(locale, "auth.recoveryHeading")
+                    : t(locale, "auth.createHeading")}
               </h1>
               <p className="mt-2 text-sm leading-6 text-slate-500">
                 {mode === "login"
-                  ? "Sign in to manage inventory, media, roles, and public shares."
+                  ? t(locale, "auth.loginIntro")
                   : mode === "recovery"
-                    ? "Enter your email and we will send a secure reset link."
-                    : "Create an account, then an admin will approve workspace access."}
+                    ? t(locale, "auth.recoveryIntro")
+                    : t(locale, "auth.createIntro")}
               </p>
             </div>
 
@@ -284,7 +263,7 @@ export function AuthEntry({
                     type="submit"
                   >
                     <span className="text-base font-bold">G</span>
-                    Continue with Google
+                    {t(locale, "auth.google")}
                   </button>
                 </form>
 
@@ -294,7 +273,7 @@ export function AuthEntry({
                     type="submit"
                   >
                     <Apple className="h-4 w-4" />
-                    Continue with Apple
+                    {t(locale, "auth.apple")}
                   </button>
                 </form>
 
@@ -305,7 +284,7 @@ export function AuthEntry({
                   type="button"
                 >
                   <Building2 className="h-4 w-4" />
-                  Continue with Binance
+                  {t(locale, "auth.binance")}
                 </button>
 
                 <button
@@ -315,7 +294,7 @@ export function AuthEntry({
                   type="button"
                 >
                   <WalletCards className="h-4 w-4" />
-                  Continue with Wallet
+                  {t(locale, "auth.wallet")}
                 </button>
               </div>
             ) : null}
@@ -323,7 +302,7 @@ export function AuthEntry({
             <div className={`${mode === "recovery" ? "my-6" : "my-6"} flex items-center gap-3`}>
               <span className="h-px flex-1 bg-slate-200" />
               <span className="text-xs font-medium uppercase text-slate-400">
-                {mode === "recovery" ? "email reset" : "or"}
+                {mode === "recovery" ? t(locale, "auth.emailReset") : t(locale, "auth.or")}
               </span>
               <span className="h-px flex-1 bg-slate-200" />
             </div>
@@ -331,13 +310,13 @@ export function AuthEntry({
             <form action={action} className="grid gap-4">
               {mode === "signup" ? (
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Full name
+                  {t(locale, "auth.fullName")}
                   <div className="relative">
                     <UserPlus className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
                       className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                       name="full_name"
-                      placeholder="Enter your full name"
+                      placeholder={t(locale, "auth.fullNamePlaceholder")}
                       required
                     />
                   </div>
@@ -345,13 +324,13 @@ export function AuthEntry({
               ) : null}
 
               <label className="grid gap-2 text-sm font-medium text-slate-700">
-                Email address
+                {t(locale, "auth.email")}
                 <div className="relative">
                   <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                     name="email"
-                    placeholder="Enter your email address"
+                    placeholder={t(locale, "auth.emailPlaceholder")}
                     required
                     type="email"
                   />
@@ -361,14 +340,14 @@ export function AuthEntry({
               {mode !== "recovery" ? (
                 <div className="grid gap-2 text-sm font-medium text-slate-700">
                   <div className="flex items-center justify-between gap-3">
-                    <label htmlFor="auth-password">Password</label>
+                    <label htmlFor="auth-password">{t(locale, "auth.password")}</label>
                     {mode === "login" ? (
                       <button
                         className="text-xs font-semibold text-orange-600 transition hover:text-orange-700"
                         onClick={() => setMode("recovery")}
                         type="button"
                       >
-                        Forgot password?
+                        {t(locale, "auth.forgotPassword")}
                       </button>
                     ) : null}
                   </div>
@@ -379,12 +358,12 @@ export function AuthEntry({
                       id="auth-password"
                       minLength={6}
                       name="password"
-                      placeholder="Enter your password"
+                      placeholder={t(locale, "auth.passwordPlaceholder")}
                       required
                       type={showPassword ? "text" : "password"}
                     />
                     <button
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={showPassword ? t(locale, "auth.hidePassword") : t(locale, "auth.showPassword")}
                       className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                       onClick={() => setShowPassword((value) => !value)}
                       type="button"
@@ -406,32 +385,31 @@ export function AuthEntry({
                     name="updates"
                     type="checkbox"
                   />
-                  Keep me updated with platform news, property workflow updates,
-                  and PRONA X release notes.
+                  {t(locale, "auth.updates")}
                 </label>
               ) : null}
 
               <button className="mt-2 h-12 rounded-lg bg-slate-950 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">
                 {mode === "login"
-                  ? "Sign in"
+                  ? t(locale, "auth.signIn")
                   : mode === "recovery"
-                    ? "Send reset link"
-                    : "Create account"}
+                    ? t(locale, "auth.sendReset")
+                    : t(locale, "auth.createAccount")}
               </button>
             </form>
 
             <p className="mt-8 text-center text-sm text-slate-500">
               {mode === "login"
-                ? "New to PRONA X?"
+                ? t(locale, "auth.newAccount")
                 : mode === "recovery"
-                  ? "Remember your password?"
-                  : "Already have an account?"}{" "}
+                  ? t(locale, "auth.rememberPassword")
+                  : t(locale, "auth.alreadyAccount")}{" "}
               <button
                 className="font-semibold text-slate-950 underline-offset-4 hover:underline"
                 onClick={() => setMode(mode === "login" ? "signup" : "login")}
                 type="button"
               >
-                {mode === "login" ? "Create account" : "Sign in"}
+                {mode === "login" ? t(locale, "auth.createAccount") : t(locale, "auth.signIn")}
               </button>
             </p>
           </div>

@@ -4,6 +4,8 @@ import { updateUserRoleAction } from "@/app/admin/users/actions";
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getIntlLocale, getRoleLabel, type Locale, t } from "@/lib/i18n";
+import { getCurrentLocale } from "@/lib/i18n-server";
 import { type AppRole, requireAdminUser } from "@/lib/supabase/server";
 
 type AdminUsersPageProps = {
@@ -29,8 +31,8 @@ const roleOptions: Array<{ value: AppRole; label: string }> = [
   { value: "admin", label: "Admin" },
 ];
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatDate(value: string, locale: Locale) {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -45,6 +47,7 @@ export default async function AdminUsersPage({
   }
 
   const params = await searchParams;
+  const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireAdminUser();
   const { data, error } = await supabase
     .from("profiles")
@@ -65,22 +68,20 @@ export default async function AdminUsersPage({
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Admin approval
+                {t(locale, "admin.subtitle")}
               </span>
               <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
-                Admin Users
+                {t(locale, "admin.heading")}
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                Review new signups and approve CRM access by assigning Viewer,
-                Agent, Manager, Support, or Admin roles. Pending accounts stay
-                locked out.
+                {t(locale, "admin.copy.description")}
               </p>
             </div>
 
             <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[420px]">
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-amber-700 sm:tracking-[0.12em]">
-                  Pending
+                  {t(locale, "admin.stat.pending")}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {pendingCount}
@@ -88,7 +89,7 @@ export default async function AdminUsersPage({
               </div>
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:tracking-[0.12em]">
-                  Approved
+                  {t(locale, "admin.stat.approved")}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {approvedCount}
@@ -96,7 +97,7 @@ export default async function AdminUsersPage({
               </div>
               <div className="rounded-xl border border-blue-200 bg-blue-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-blue-700 sm:tracking-[0.12em]">
-                  Admins
+                  {t(locale, "admin.stat.admins")}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {adminCount}
@@ -108,19 +109,28 @@ export default async function AdminUsersPage({
 
         <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm md:grid-cols-3">
           <p>
-            <span className="font-semibold text-slate-950">Pending</span> users
-            can only see the approval screen.
+            <span className="font-semibold text-slate-950">
+              {t(locale, "admin.stat.pending")}
+            </span>{" "}
+            {locale === "sq"
+              ? "shohin vetëm ekranin e miratimit."
+              : "users can only see the approval screen."}
           </p>
           <p>
             <span className="font-semibold text-slate-950">
-              Viewers ({viewerCount})
+              {getRoleLabel(locale, "viewer")} ({viewerCount})
             </span>{" "}
-            are approved external users with read-only inventory access.
+            {locale === "sq"
+              ? "janë përdorues të jashtëm të miratuar me akses vetëm për lexim."
+              : "are approved external users with read-only inventory access."}
           </p>
           <p>
-            <span className="font-semibold text-slate-950">Operators</span>{" "}
-            are agents, managers, and admins who can manage CRM work. Support
-            users manage ticket triage without broader operator access.
+            <span className="font-semibold text-slate-950">
+              {locale === "sq" ? "Operatorët" : "Operators"}
+            </span>{" "}
+            {locale === "sq"
+              ? "janë agjentët, menaxherët dhe adminët. Support menaxhon biletat pa akses më të gjerë."
+              : "are agents, managers, and admins. Support users manage ticket triage without broader access."}
           </p>
         </div>
 
@@ -139,17 +149,17 @@ export default async function AdminUsersPage({
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 p-4 sm:p-5">
             <h2 className="text-lg font-semibold text-slate-950">
-              Workspace accounts
+              {t(locale, "admin.userAccounts")}
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Promote only people who should access PRONA X internal CRM data.
+              {t(locale, "admin.usersIntro")}
             </p>
           </div>
 
           <div className="grid gap-3 p-3 sm:p-4">
             {profiles.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-                No user profiles found yet.
+                {t(locale, "admin.usersEmpty")}
               </div>
             ) : null}
 
@@ -175,14 +185,14 @@ export default async function AdminUsersPage({
                         ) : (
                           <UserRoundX className="h-3.5 w-3.5" />
                         )}
-                        {approved ? "Approved" : "Pending"}
+                        {approved ? t(locale, "admin.stat.approved") : t(locale, "admin.stat.pending")}
                       </span>
                       <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-slate-600">
-                        {item.role}
+                        {getRoleLabel(locale, item.role)}
                       </span>
                       {item.role === "viewer" ? (
                         <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
-                          Read-only
+                          {locale === "sq" ? "Vetëm lexim" : "Read-only"}
                         </span>
                       ) : null}
                     </div>
@@ -193,7 +203,7 @@ export default async function AdminUsersPage({
                       {item.id}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                      <span>Joined {formatDate(item.created_at)}</span>
+                      <span>{locale === "sq" ? "U bashkua" : "Joined"} {formatDate(item.created_at, locale)}</span>
                       {item.phone ? <span>{item.phone}</span> : null}
                       <span className="font-mono">{item.id.slice(0, 8)}</span>
                     </div>
@@ -207,7 +217,7 @@ export default async function AdminUsersPage({
                     <label className="grid gap-2 text-sm font-medium text-slate-700">
                       <span className="inline-flex items-center gap-2">
                         <UserCog className="h-4 w-4 text-slate-400" />
-                        Access role
+                        {t(locale, "admin.role")}
                       </span>
                       <select
                         className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold capitalize text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
@@ -216,13 +226,13 @@ export default async function AdminUsersPage({
                       >
                         {roleOptions.map((role) => (
                           <option key={role.value} value={role.value}>
-                            {role.label}
+                            {getRoleLabel(locale, role.value)}
                           </option>
                         ))}
                       </select>
                     </label>
                     <button className="h-10 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
-                      Save role
+                      {t(locale, "admin.saveRole")}
                     </button>
                   </form>
                 </div>

@@ -12,20 +12,22 @@ import {
 
 import { updateAppointmentStatusAction } from "@/app/appointments/actions";
 import {
-  appointmentStatusLabels,
   appointmentStatuses,
-  appointmentTypeLabels,
   formatAppointmentDateTime,
   formatAppointmentTimeRange,
+  getAppointmentStatusLabels,
   getAppointmentLocation,
+  getAppointmentTypeLabels,
   type AppointmentRecord,
 } from "@/lib/appointments";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type AppointmentAgendaProps = {
   appointments: AppointmentRecord[];
   density?: "comfortable" | "compact";
   emptyLabel?: string;
   layout?: "grid" | "stack";
+  locale?: Locale;
   returnTo?: string;
   showProperty?: boolean;
 };
@@ -40,18 +42,22 @@ const statusTone: Record<AppointmentRecord["status"], string> = {
 function AppointmentStatusSelect({
   appointment,
   compact = false,
+  locale,
   returnTo,
 }: {
   appointment: AppointmentRecord;
   compact?: boolean;
+  locale: Locale;
   returnTo: string;
 }) {
+  const statusLabels = getAppointmentStatusLabels(locale);
+
   return (
     <form action={updateAppointmentStatusAction} className="shrink-0">
       <input name="appointment_id" type="hidden" value={appointment.id} />
       <input name="return_to" type="hidden" value={returnTo} />
       <label className="sr-only" htmlFor={`status-${appointment.id}`}>
-        Appointment status
+        {locale === "sq" ? "Statusi i takimit" : "Appointment status"}
       </label>
       <select
         className={`rounded-lg border border-slate-200 bg-white font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 ${
@@ -64,7 +70,7 @@ function AppointmentStatusSelect({
       >
         {appointmentStatuses.map((status) => (
           <option key={status} value={status}>
-            {appointmentStatusLabels[status]}
+            {statusLabels[status]}
           </option>
         ))}
       </select>
@@ -77,10 +83,13 @@ export function AppointmentAgenda({
   density = "comfortable",
   emptyLabel = "No appointments scheduled.",
   layout = "stack",
+  locale = defaultLocale,
   returnTo = "/appointments",
   showProperty = true,
 }: AppointmentAgendaProps) {
   const isCompact = density === "compact";
+  const statusLabels = getAppointmentStatusLabels(locale);
+  const typeLabels = getAppointmentTypeLabels(locale);
 
   if (appointments.length === 0) {
     return (
@@ -119,12 +128,13 @@ export function AppointmentAgenda({
               <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
                 <Clock3 className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">
-                  {appointmentTypeLabels[appointment.appointment_type]}
+                  {typeLabels[appointment.appointment_type]}
                 </span>
               </span>
               <AppointmentStatusSelect
                 appointment={appointment}
                 compact
+                locale={locale}
                 returnTo={returnTo}
               />
             </div>
@@ -133,10 +143,14 @@ export function AppointmentAgenda({
               {appointment.title}
             </h3>
             <p className="mt-2 text-xs font-medium text-slate-700">
-              {formatAppointmentDateTime(appointment.starts_at)}
+              {formatAppointmentDateTime(appointment.starts_at, locale)}
             </p>
             <p className="mt-1 text-xs text-slate-500">
-              {formatAppointmentTimeRange(appointment.starts_at, appointment.ends_at)}
+              {formatAppointmentTimeRange(
+                appointment.starts_at,
+                appointment.ends_at,
+                locale,
+              )}
             </p>
 
             <div className="mt-3 grid gap-1.5 text-xs text-slate-600">
@@ -151,7 +165,7 @@ export function AppointmentAgenda({
               <div className="flex min-w-0 items-start gap-1.5">
                 <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
                 <span className="line-clamp-1 min-w-0">
-                  {getAppointmentLocation(appointment)}
+                  {getAppointmentLocation(appointment, locale)}
                 </span>
               </div>
               <div className="flex min-w-0 items-start gap-1.5">
@@ -177,26 +191,34 @@ export function AppointmentAgenda({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                   <Clock3 className="h-3.5 w-3.5" />
-                  {appointmentTypeLabels[appointment.appointment_type]}
+                  {typeLabels[appointment.appointment_type]}
                 </span>
                 <span
                   className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone[appointment.status]}`}
                 >
-                  {appointmentStatusLabels[appointment.status]}
+                  {statusLabels[appointment.status]}
                 </span>
               </div>
               <h3 className="mt-3 break-words text-base font-semibold text-slate-950">
                 {appointment.title}
               </h3>
               <p className="mt-1 text-sm font-medium text-slate-700">
-                {formatAppointmentDateTime(appointment.starts_at)}
+                {formatAppointmentDateTime(appointment.starts_at, locale)}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                {formatAppointmentTimeRange(appointment.starts_at, appointment.ends_at)}
+                {formatAppointmentTimeRange(
+                  appointment.starts_at,
+                  appointment.ends_at,
+                  locale,
+                )}
               </p>
             </div>
 
-            <AppointmentStatusSelect appointment={appointment} returnTo={returnTo} />
+            <AppointmentStatusSelect
+              appointment={appointment}
+              locale={locale}
+              returnTo={returnTo}
+            />
           </div>
 
           <div className="mt-4 grid gap-2 text-sm text-slate-600">
@@ -210,14 +232,16 @@ export function AppointmentAgenda({
             ) : null}
             <div className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-              <span className="break-words">{getAppointmentLocation(appointment)}</span>
+              <span className="break-words">
+                {getAppointmentLocation(appointment, locale)}
+              </span>
             </div>
             <div className="flex items-start gap-2">
               <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
               <span className="break-words">
                 {appointment.client_name}
                 {appointment.agent?.full_name
-                  ? ` / Agent: ${appointment.agent.full_name}`
+                  ? ` / ${locale === "sq" ? "Agjent" : "Agent"}: ${appointment.agent.full_name}`
                   : ""}
               </span>
             </div>

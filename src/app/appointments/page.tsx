@@ -14,13 +14,15 @@ import { AppointmentForm, type AppointmentAgentOption } from "@/components/Appoi
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import {
-  appointmentTypeLabels,
   formatAppointmentTimeRange,
+  getAppointmentTypeLabels,
   normalizeAppointments,
   type AppointmentPropertySummary,
   type AppointmentRecord,
 } from "@/lib/appointments";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getIntlLocale } from "@/lib/i18n";
+import { getCurrentLocale } from "@/lib/i18n-server";
 import { requireOperatorUser } from "@/lib/supabase/server";
 
 type AppointmentsPageProps = {
@@ -80,8 +82,8 @@ function sameDay(left: Date, right: Date) {
   );
 }
 
-function formatDayLabel(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatDayLabel(date: Date, locale: "sq" | "en") {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: "numeric",
     month: "short",
     weekday: "short",
@@ -144,7 +146,9 @@ export default async function AppointmentsPage({
   }
 
   const params = await searchParams;
+  const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireOperatorUser();
+  const appointmentTypeLabels = getAppointmentTypeLabels(locale);
 
   const [propertyResult, profileResult, appointmentResult] = await Promise.all([
     supabase
@@ -187,21 +191,22 @@ export default async function AppointmentsPage({
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
                 <CalendarDays className="h-3.5 w-3.5" />
-                Calendar / appointments
+                {locale === "sq" ? "Kalendari / takimet" : "Calendar / appointments"}
               </span>
               <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
-                Agent schedule
+                {locale === "sq" ? "Agjenda e agjentëve" : "Agent schedule"}
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                Plan viewings, calls, follow-ups, media shoots, document signings,
-                and open houses around the property portfolio.
+                {locale === "sq"
+                  ? "Planifiko vizita, telefonata, ndjekje, fotosesione, nënshkrime dokumentesh dhe open house rreth portofolit të pronave."
+                  : "Plan viewings, calls, follow-ups, media shoots, document signings, and open houses around the property portfolio."}
               </p>
             </div>
 
             <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[420px]">
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 sm:tracking-[0.12em]">
-                  Upcoming
+                  {locale === "sq" ? "Të ardhshme" : "Upcoming"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {upcoming.length}
@@ -209,7 +214,7 @@ export default async function AppointmentsPage({
               </div>
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-amber-700 sm:tracking-[0.12em]">
-                  Today
+                  {locale === "sq" ? "Sot" : "Today"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {today.length}
@@ -217,7 +222,7 @@ export default async function AppointmentsPage({
               </div>
               <div className="rounded-xl border border-blue-200 bg-blue-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-blue-700 sm:tracking-[0.12em]">
-                  Completed
+                  {locale === "sq" ? "Përfunduar" : "Completed"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {completed.length}
@@ -251,12 +256,14 @@ export default async function AppointmentsPage({
               <Database className="h-6 w-6" />
             </span>
             <h2 className="mt-4 text-xl font-semibold text-slate-950">
-              Enable the appointments database table
+              {locale === "sq"
+                ? "Aktivizo tabelën e takimeve në databazë"
+                : "Enable the appointments database table"}
             </h2>
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              The calendar UI is ready, but Supabase still needs the appointments
-              migration. I copied the SQL to your clipboard; paste it into Supabase SQL
-              Editor and run it once.
+              {locale === "sq"
+                ? "Ndërfaqja e kalendarit është gati, por Supabase ka ende nevojë për migrimin e takimeve. Hape SQL Editor dhe ekzekuto migrimin një herë."
+                : "The calendar UI is ready, but Supabase still needs the appointments migration. Open Supabase SQL Editor and run it once."}
             </p>
           </section>
         ) : (
@@ -267,10 +274,12 @@ export default async function AppointmentsPage({
                   <div className="mb-3 grid gap-3 sm:mb-4 sm:flex sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-slate-950">
-                        7-day calendar
+                        {locale === "sq" ? "Kalendari 7-ditor" : "7-day calendar"}
                       </h2>
                       <p className="mt-1 text-sm text-slate-500">
-                        Scheduled appointment blocks by start date.
+                        {locale === "sq"
+                          ? "Blloqet e takimeve të planifikuara sipas datës së fillimit."
+                          : "Scheduled appointment blocks by start date."}
                       </p>
                     </div>
                     <Link
@@ -279,8 +288,12 @@ export default async function AppointmentsPage({
                       prefetch={false}
                     >
                       <Plus className="h-4 w-4" />
-                      <span className="sm:hidden">New</span>
-                      <span className="hidden sm:inline">New appointment</span>
+                      <span className="sm:hidden">
+                        {locale === "sq" ? "I ri" : "New"}
+                      </span>
+                      <span className="hidden sm:inline">
+                        {locale === "sq" ? "Takim i ri" : "New appointment"}
+                      </span>
                     </Link>
                   </div>
 
@@ -296,11 +309,13 @@ export default async function AppointmentsPage({
                           key={day.toISOString()}
                         >
                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                            {formatDayLabel(day)}
+                            {formatDayLabel(day, locale)}
                           </p>
                           <div className="mt-3 grid gap-2">
                             {dayAppointments.length === 0 ? (
-                              <p className="text-xs text-slate-400">No bookings</p>
+                              <p className="text-xs text-slate-400">
+                                {locale === "sq" ? "Pa rezervime" : "No bookings"}
+                              </p>
                             ) : null}
                             {dayAppointments.map((appointment) => (
                               <div
@@ -311,6 +326,7 @@ export default async function AppointmentsPage({
                                   {formatAppointmentTimeRange(
                                     appointment.starts_at,
                                     appointment.ends_at,
+                                    locale,
                                   )}
                                 </p>
                                 <p className="mt-1 line-clamp-2 text-slate-600">
@@ -332,14 +348,19 @@ export default async function AppointmentsPage({
                   <div className="flex items-center gap-2">
                     <Clock3 className="h-5 w-5 text-emerald-700" />
                     <h2 className="text-lg font-semibold text-slate-950">
-                      Upcoming appointments
+                      {locale === "sq" ? "Takimet e ardhshme" : "Upcoming appointments"}
                     </h2>
                   </div>
                   <AppointmentAgenda
                     appointments={upcoming}
                     density="compact"
-                    emptyLabel="No upcoming appointments yet."
+                    emptyLabel={
+                      locale === "sq"
+                        ? "Ende nuk ka takime të ardhshme."
+                        : "No upcoming appointments yet."
+                    }
                     layout="grid"
+                    locale={locale}
                     returnTo="/appointments"
                   />
                 </section>
@@ -353,12 +374,13 @@ export default async function AppointmentsPage({
                   <div className="flex items-center gap-2">
                     <CalendarClock className="h-5 w-5 text-emerald-700" />
                     <h2 className="text-lg font-semibold text-slate-950">
-                      Create appointment
+                      {locale === "sq" ? "Krijo takim" : "Create appointment"}
                     </h2>
                   </div>
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Attach every viewing, call, follow-up, shoot, signing, and open
-                    house to a property and responsible agent.
+                    {locale === "sq"
+                      ? "Lidh çdo vizitë, telefonatë, ndjekje, fotosesion, nënshkrim dhe open house me pronën dhe agjentin përgjegjës."
+                      : "Attach every viewing, call, follow-up, shoot, signing, and open house to a property and responsible agent."}
                   </p>
                 </div>
 
@@ -367,12 +389,15 @@ export default async function AppointmentsPage({
                     action={createAppointmentAction}
                     agents={agents}
                     defaultPropertyId={params.property_id || ""}
+                    locale={locale}
                     properties={properties}
                     returnTo="/appointments"
                   />
                 ) : (
                   <div className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500">
-                    Add a property before scheduling appointments.
+                    {locale === "sq"
+                      ? "Shto një pronë para se të planifikosh takime."
+                      : "Add a property before scheduling appointments."}
                   </div>
                 )}
               </aside>
@@ -383,14 +408,19 @@ export default async function AppointmentsPage({
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-blue-700" />
                   <h2 className="text-lg font-semibold text-slate-950">
-                    All appointment history
+                    {locale === "sq" ? "Historia e të gjitha takimeve" : "All appointment history"}
                   </h2>
                 </div>
                 <AppointmentAgenda
                   appointments={appointments}
                   density="compact"
-                  emptyLabel="No appointment history yet."
+                  emptyLabel={
+                    locale === "sq"
+                      ? "Ende nuk ka histori takimesh."
+                      : "No appointment history yet."
+                  }
                   layout="grid"
+                  locale={locale}
                   returnTo="/appointments"
                 />
               </section>

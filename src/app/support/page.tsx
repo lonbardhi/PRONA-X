@@ -17,13 +17,16 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import { SupportReportModal } from "@/components/SupportReportModal";
 import { hasSupabaseEnv } from "@/lib/env";
+import { t } from "@/lib/i18n";
+import { getCurrentLocale } from "@/lib/i18n-server";
 import {
   formatSupportDate,
+  getSupportCategoryLabels,
+  getSupportModuleLabel,
   getSupportPriorityTone,
+  getSupportPriorityLabels,
   getSupportStatusTone,
-  supportCategoryLabels,
-  supportPriorityLabels,
-  supportStatusLabels,
+  getSupportStatusLabels,
   supportTicketCategories,
   supportTicketPriorities,
   supportTicketStatuses,
@@ -112,8 +115,12 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
   }
 
   const params = await searchParams;
+  const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireApprovedUser();
   const canManageSupport = isSupportRole(profile.role);
+  const categoryLabels = getSupportCategoryLabels(locale);
+  const priorityLabels = getSupportPriorityLabels(locale);
+  const statusLabels = getSupportStatusLabels(locale);
   const activeTab = params.tab || "tickets";
   const status = getValidParam(params.status, supportTicketStatuses);
   const priority = getValidParam(params.priority, supportTicketPriorities);
@@ -168,17 +175,17 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white">
                 <LifeBuoy className="h-3.5 w-3.5" />
-                PRONA X Support
+                PRONA X {t(locale, "support.heading")}
               </span>
               <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
-                Support
+                {t(locale, "support.heading")}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Report problems, request help, and track support tickets.
+                {t(locale, "support.subtitle")}
               </p>
             </div>
 
-            <SupportReportModal properties={propertyOptions} />
+            <SupportReportModal locale={locale} properties={propertyOptions} />
           </div>
         </div>
 
@@ -198,7 +205,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
               <Ticket className="h-4 w-4" />
-              Open
+              {t(locale, "support.open")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">
               {getStatCount(statsRows, "open")}
@@ -207,7 +214,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
               <Clock3 className="h-4 w-4" />
-              In Progress
+              {t(locale, "support.inProgress")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">
               {getStatCount(statsRows, "in_progress")}
@@ -216,7 +223,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
-              Resolved
+              {t(locale, "support.resolved")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">
               {getStatCount(statsRows, "resolved")}
@@ -225,7 +232,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
           <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">
               <AlertTriangle className="h-4 w-4" />
-              Critical
+              {t(locale, "support.critical")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">
               {getStatCount(statsRows, "critical")}
@@ -236,9 +243,9 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex gap-1 overflow-x-auto border-b border-slate-200 p-2">
             {[
-              ["tickets", "My Tickets", MessageSquare],
-              ["knowledge", "Knowledge Base", BookOpen],
-              ["contact", "Contact Support", Mail],
+              ["tickets", locale === "sq" ? "Biletat e mia" : "My Tickets", MessageSquare],
+              ["knowledge", t(locale, "support.knowledge"), BookOpen],
+              ["contact", t(locale, "support.contact"), Mail],
             ].map(([value, label, Icon]) => {
               const TabIcon = Icon as typeof MessageSquare;
               const active = activeTab === value;
@@ -265,16 +272,22 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
             <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-3">
               {[
                 [
-                  "Uploading property media",
-                  "Use JPG, PNG, WebP, PDF, or MP4 files and keep large videos short.",
+                  locale === "sq" ? "Ngarkimi i medias së pronës" : "Uploading property media",
+                  locale === "sq"
+                    ? "Përdor JPG, PNG, WebP, PDF ose MP4 dhe mbaji videot e mëdha sa më të shkurtra."
+                    : "Use JPG, PNG, WebP, PDF, or MP4 files and keep large videos short.",
                 ],
                 [
-                  "User access and approvals",
-                  "Pending users must be approved as Viewer, Agent, Manager, Support, or Admin.",
+                  locale === "sq" ? "Akses përdoruesish dhe miratime" : "User access and approvals",
+                  locale === "sq"
+                    ? "Përdoruesit Pending duhet të miratohen si Viewer, Agent, Manager, Support ose Admin."
+                    : "Pending users must be approved as Viewer, Agent, Manager, Support, or Admin.",
                 ],
                 [
-                  "Calendar troubleshooting",
-                  "If appointments are missing, check the related property and assigned agent.",
+                  locale === "sq" ? "Probleme me kalendarin" : "Calendar troubleshooting",
+                  locale === "sq"
+                    ? "Nëse takimet mungojnë, kontrollo pronën e lidhur dhe agjentin e caktuar."
+                    : "If appointments are missing, check the related property and assigned agent.",
                 ],
               ].map(([title, body]) => (
                 <article
@@ -294,11 +307,10 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
             <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-2">
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <h2 className="text-base font-semibold text-slate-950">
-                  Contact support
+                  {t(locale, "support.contactTitle")}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Create a ticket for traceable support. For urgent account lockout
-                  cases, email support with the affected user email and workspace.
+                  {t(locale, "support.contactBody")}
                 </p>
                 <a
                   className="mt-4 inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
@@ -309,13 +321,13 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
               </div>
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <h2 className="text-base font-semibold text-slate-950">
-                  What to include
+                  {t(locale, "support.uploadContext")}
                 </h2>
                 <ul className="mt-2 grid gap-2 text-sm text-slate-600">
-                  <li>Ticket title and affected module</li>
-                  <li>Steps to reproduce</li>
-                  <li>Screenshots or screen recording</li>
-                  <li>Expected result and actual result</li>
+                  <li>{t(locale, "support.whatInclude")}</li>
+                  <li>{t(locale, "support.steps")}</li>
+                  <li>{locale === "sq" ? "Screenshot ose regjistrim ekrani" : "Screenshots or screen recording"}</li>
+                  <li>{locale === "sq" ? "Rezultati i pritur dhe rezultati aktual" : "Expected result and actual result"}</li>
                 </ul>
               </div>
             </div>
@@ -325,13 +337,13 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
             <div className="grid gap-4 p-4 sm:p-5">
               <form className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_180px_180px_220px_auto]">
                 <label className="relative min-w-0">
-                  <span className="sr-only">Search tickets</span>
+                  <span className="sr-only">{t(locale, "support.searchPlaceholder")}</span>
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                     defaultValue={params.q}
                     name="q"
-                    placeholder="Search ticket ID, title, description"
+                    placeholder={t(locale, "support.searchPlaceholder")}
                   />
                 </label>
 
@@ -340,10 +352,10 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                   defaultValue={status}
                   name="status"
                 >
-                  <option value="">All statuses</option>
+                  <option value="">{t(locale, "support.allStatuses")}</option>
                   {supportTicketStatuses.map((item) => (
                     <option key={item} value={item}>
-                      {supportStatusLabels[item]}
+                      {statusLabels[item]}
                     </option>
                   ))}
                 </select>
@@ -353,10 +365,10 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                   defaultValue={priority}
                   name="priority"
                 >
-                  <option value="">All priorities</option>
+                  <option value="">{t(locale, "support.allPriorities")}</option>
                   {supportTicketPriorities.map((item) => (
                     <option key={item} value={item}>
-                      {supportPriorityLabels[item]}
+                      {priorityLabels[item]}
                     </option>
                   ))}
                 </select>
@@ -366,17 +378,17 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                   defaultValue={category}
                   name="category"
                 >
-                  <option value="">All categories</option>
+                  <option value="">{t(locale, "support.allCategories")}</option>
                   {supportTicketCategories.map((item) => (
                     <option key={item} value={item}>
-                      {supportCategoryLabels[item]}
+                      {categoryLabels[item]}
                     </option>
                   ))}
                 </select>
 
                 <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
                   <Filter className="h-4 w-4" />
-                  Filter
+                  {t(locale, "common.filter")}
                 </button>
               </form>
 
@@ -385,10 +397,10 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                   <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
                     <Ticket className="mx-auto h-8 w-8 text-slate-300" />
                     <h2 className="mt-3 text-base font-semibold text-slate-950">
-                      No support tickets found
+                      {t(locale, "support.noTickets")}
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                      Report an issue or clear filters to see more tickets.
+                      {t(locale, "support.noTicketsHint")}
                     </p>
                   </div>
                 ) : null}
@@ -408,29 +420,29 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSupportStatusTone(ticket.status)}`}
                         >
-                          {supportStatusLabels[ticket.status]}
+                          {statusLabels[ticket.status]}
                         </span>
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSupportPriorityTone(ticket.priority)}`}
                         >
-                          {supportPriorityLabels[ticket.priority]}
+                          {priorityLabels[ticket.priority]}
                         </span>
                       </div>
                       <h2 className="mt-3 break-words text-base font-semibold text-slate-950">
                         {ticket.title}
                       </h2>
                       <p className="mt-1 text-sm text-slate-500">
-                        {supportCategoryLabels[ticket.category]}
+                        {categoryLabels[ticket.category]}
                         {ticket.related_module
-                          ? ` / ${ticket.related_module}`
+                          ? ` / ${getSupportModuleLabel(locale, ticket.related_module)}`
                           : ""}
                       </p>
                     </div>
                     <div className="grid gap-1 text-sm text-slate-500 md:text-right">
-                      <span>Created {formatSupportDate(ticket.created_at)}</span>
-                      <span>Updated {formatSupportDate(ticket.updated_at)}</span>
+                      <span>{t(locale, "common.created")} {formatSupportDate(ticket.created_at, locale)}</span>
+                      <span>{t(locale, "common.updated")} {formatSupportDate(ticket.updated_at, locale)}</span>
                       {canManageSupport && ticket.creator?.full_name ? (
-                        <span>By {ticket.creator.full_name}</span>
+                        <span>{locale === "sq" ? "Nga" : "By"} {ticket.creator.full_name}</span>
                       ) : null}
                     </div>
                   </Link>
@@ -443,7 +455,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
         {canManageSupport ? (
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
             <ShieldCheck className="mr-2 inline h-4 w-4" />
-            Support/admin view: you can see all workspace tickets and internal notes.
+            {t(locale, "support.adminView")}
           </div>
         ) : null}
       </section>

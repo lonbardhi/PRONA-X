@@ -38,9 +38,11 @@ import {
   isDevelopmentLand,
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyQuickViewDialogProps = {
   canManage?: boolean;
+  locale?: Locale;
   onClose: () => void;
   property: PropertyRecord | null;
 };
@@ -131,6 +133,7 @@ function getMediaButtonLabel(
 
 export function PropertyQuickViewDialog({
   canManage = true,
+  locale = defaultLocale,
   onClose,
   property,
 }: PropertyQuickViewDialogProps) {
@@ -215,18 +218,18 @@ export function PropertyQuickViewDialog({
                 <span
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusTone(property.status)}`}
                 >
-                  {formatStatusLabel(property.status)}
+                  {formatStatusLabel(property.status, locale)}
                 </span>
               </div>
               <h2 className="mt-2 break-words text-xl font-semibold leading-tight text-slate-950 sm:text-2xl">
                 {property.title}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                {formatPropertyType(property.type)}
+                {formatPropertyType(property.type, locale)}
               </p>
             </div>
             <button
-              aria-label="Close property details"
+              aria-label={locale === "sq" ? "Mbyll detajet e pronës" : "Close property details"}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100"
               onClick={onClose}
               type="button"
@@ -279,12 +282,18 @@ export function PropertyQuickViewDialog({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                      {developmentLand ? "Development exchange" : "Asking price"}
+                      {developmentLand
+                        ? locale === "sq"
+                          ? "Marrëveshje zhvillimi"
+                          : "Development exchange"
+                        : locale === "sq"
+                          ? "Çmimi i kërkuar"
+                          : "Asking price"}
                     </p>
                     <p className="mt-1 text-2xl font-semibold text-slate-950 sm:text-3xl">
                       {developmentLand
-                        ? formatDevelopmentAgreement(property)
-                        : formatEuro(property.price_eur || 0)}
+                        ? formatDevelopmentAgreement(property, locale)
+                        : formatEuro(property.price_eur || 0, locale)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -344,24 +353,24 @@ export function PropertyQuickViewDialog({
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 max-[360px]:grid-cols-1">
                     <DetailMetric
                       icon={BedDouble}
-                      label="Beds"
+                      label={locale === "sq" ? "Dhoma" : "Beds"}
                       value={property.bedrooms ?? "-"}
                     />
                     <DetailMetric
                       icon={Bath}
-                      label="Baths"
+                      label={locale === "sq" ? "Banjo" : "Baths"}
                       value={property.bathrooms ?? "-"}
                     />
                     <DetailMetric
                       icon={Ruler}
-                      label="Area"
+                      label={locale === "sq" ? "Sipërfaqe" : "Area"}
                       value={
                         property.area_m2 != null ? `${property.area_m2} m2` : "-"
                       }
                     />
                     <DetailMetric
                       icon={Calendar}
-                      label="Built"
+                      label={locale === "sq" ? "Ndërtuar" : "Built"}
                       value={property.year_built ?? "-"}
                     />
                   </div>
@@ -371,7 +380,7 @@ export function PropertyQuickViewDialog({
                   <div className="grid gap-3">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-sm font-semibold text-slate-950">
-                        More media
+                        {locale === "sq" ? "Media shtesë" : "More media"}
                       </h3>
                       <p className="text-xs text-slate-400">Scroll to inspect all</p>
                     </div>
@@ -420,7 +429,7 @@ export function PropertyQuickViewDialog({
             <aside className="grid min-w-0 content-start gap-4 bg-white p-3 sm:gap-5 sm:p-6 lg:border-l lg:border-slate-200">
               <div className="grid min-w-0 gap-3">
                 <h3 className="text-base font-semibold text-slate-950">
-                  Property details
+                  {locale === "sq" ? "Detajet e pronës" : "Property details"}
                 </h3>
                 <div className="grid min-w-0 gap-3 text-sm">
                   <div className="flex min-w-0 items-start gap-2 rounded-lg bg-slate-50 p-3">
@@ -437,8 +446,8 @@ export function PropertyQuickViewDialog({
                   <div className="grid min-w-0 gap-3 sm:grid-cols-2">
                     <DetailMetric
                       icon={Home}
-                      label="Type"
-                      value={formatPropertyType(property.type)}
+                      label={locale === "sq" ? "Tipi" : "Type"}
+                      value={formatPropertyType(property.type, locale)}
                     />
                     <DetailMetric
                       icon={Calendar}
@@ -450,10 +459,14 @@ export function PropertyQuickViewDialog({
               </div>
 
               <div className="min-w-0 rounded-lg border border-slate-200 p-4">
-                <h3 className="text-base font-semibold text-slate-950">Description</h3>
+                <h3 className="text-base font-semibold text-slate-950">
+                  {locale === "sq" ? "Përshkrimi" : "Description"}
+                </h3>
                 <p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-slate-600">
                   {property.description ||
-                    "No description has been added for this property yet."}
+                    (locale === "sq"
+                      ? "Ende nuk është shtuar përshkrim për këtë pronë."
+                      : "No description has been added for this property yet.")}
                 </p>
               </div>
 
@@ -550,21 +563,26 @@ export function PropertyQuickViewDialog({
                   <div className="min-w-0 rounded-lg border border-slate-200 p-4">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                       <h3 className="text-base font-semibold text-slate-950">
-                        Appointments
+                        {locale === "sq" ? "Takimet" : "Appointments"}
                       </h3>
                       <Link
                         className="inline-flex h-8 items-center rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-700"
                         href={`/appointments?property_id=${property.id}#new-appointment`}
                         prefetch={false}
                       >
-                        Schedule
+                        {locale === "sq" ? "Planifiko" : "Schedule"}
                       </Link>
                     </div>
                     <AppointmentAgenda
                       appointments={appointments}
                       density="compact"
-                      emptyLabel="No appointments for this property yet."
+                      emptyLabel={
+                        locale === "sq"
+                          ? "Ende nuk ka takime për këtë pronë."
+                          : "No appointments for this property yet."
+                      }
                       layout="stack"
+                      locale={locale}
                       returnTo="/sales"
                       showProperty={false}
                     />
@@ -577,13 +595,13 @@ export function PropertyQuickViewDialog({
                       prefetch={false}
                     >
                       <Edit3 className="h-4 w-4" />
-                      Edit
+                      {locale === "sq" ? "Ndrysho" : "Edit"}
                     </Link>
                     <form action={deletePropertyAction}>
                       <input name="property_id" type="hidden" value={property.id} />
                       <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
                         <Trash2 className="h-4 w-4" />
-                        Delete
+                        {locale === "sq" ? "Fshi" : "Delete"}
                       </button>
                     </form>
                     <SharePropertyButton
