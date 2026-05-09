@@ -25,6 +25,7 @@ const roleOptions: Array<{ value: AppRole; label: string }> = [
   { value: "viewer", label: "Viewer" },
   { value: "agent", label: "Agent" },
   { value: "manager", label: "Manager" },
+  { value: "support", label: "Support" },
   { value: "admin", label: "Admin" },
 ];
 

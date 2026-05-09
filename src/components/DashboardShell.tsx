@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Home,
   Landmark,
+  LifeBuoy,
   LogOut,
   Plus,
   ShieldCheck,
@@ -28,11 +29,15 @@ export function DashboardShell({
   userRole,
 }: DashboardShellProps) {
   const isViewer = userRole === "viewer";
-  const navItems = isViewer
+  const isSupportOnly = userRole === "support";
+  const navItems = isSupportOnly
+    ? [{ label: "Support", href: "/support", icon: LifeBuoy }]
+    : isViewer
     ? [
         { label: "Sales", href: "/sales", icon: Building2 },
         { label: "Rentals", href: "/sales?status=rented", icon: Building2 },
         { label: "Land", href: "/sales?type=development_land", icon: Landmark },
+        { label: "Support", href: "/support", icon: LifeBuoy },
       ]
     : [
         { label: "Dashboard", href: "/dashboard", icon: Home },
@@ -41,6 +46,7 @@ export function DashboardShell({
         { label: "Calendar", href: "/appointments", icon: CalendarDays },
         { label: "Seller Leads", href: "/seller-leads", icon: UserPlus },
         { label: "Add Property", href: "/sales#add-property", icon: Plus },
+        { label: "Support", href: "/support", icon: LifeBuoy },
         ...(userRole === "admin"
           ? [{ label: "Admin Users", href: "/admin/users", icon: ShieldCheck }]
           : []),
@@ -68,12 +74,6 @@ export function DashboardShell({
                 </Link>
               );
             })}
-            <a
-              className="inline-flex h-9 shrink-0 items-center rounded-full px-3 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-slate-950"
-              href="mailto:support@pronax.al"
-            >
-              Support
-            </a>
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">

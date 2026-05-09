@@ -4,7 +4,13 @@ import { redirect } from "next/navigation";
 
 import { getSupabaseEnv } from "@/lib/env";
 
-export type AppRole = "admin" | "manager" | "agent" | "viewer" | "pending";
+export type AppRole =
+  | "admin"
+  | "manager"
+  | "agent"
+  | "viewer"
+  | "support"
+  | "pending";
 
 export type AuthProfile = {
   id: string;
@@ -19,9 +25,11 @@ export const approvedAppRoles: AppRole[] = [
   "manager",
   "agent",
   "viewer",
+  "support",
 ];
 
 export const operatorAppRoles: AppRole[] = ["admin", "manager", "agent"];
+export const supportAppRoles: AppRole[] = ["admin", "support"];
 
 export async function createClient() {
   const { url, anonKey } = getSupabaseEnv();
@@ -116,6 +124,14 @@ export function isOperatorRole(role: AppRole | null | undefined) {
 
 export function isOperatorProfile(profile: AuthProfile | null) {
   return Boolean(profile && isOperatorRole(profile.role));
+}
+
+export function isSupportRole(role: AppRole | null | undefined) {
+  return Boolean(role && supportAppRoles.includes(role));
+}
+
+export function isSupportProfile(profile: AuthProfile | null) {
+  return Boolean(profile && isSupportRole(profile.role));
 }
 
 export async function requireApprovedUser() {
