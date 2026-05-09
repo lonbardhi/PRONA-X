@@ -1,6 +1,9 @@
 -- Run 0006a_add_pending_role.sql first, then run this migration.
 
 alter table public.profiles
+  add column if not exists email text;
+
+alter table public.profiles
   alter column role set default 'pending';
 
 update public.profiles
@@ -14,7 +17,8 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, full_name, email, role)
+  begin
+    insert into public.profiles as profile (id, full_name, email, role)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'full_name', new.email),
@@ -22,8 +26,12 @@ begin
     'pending'
   )
   on conflict (id) do update
-  set email = excluded.email,
-      full_name = coalesce(profiles.full_name, excluded.full_name);
+    set email = coalesce(profile.email, excluded.email),
+        full_name = coalesce(profile.full_name, excluded.full_name);
+  exception
+    when others then
+      raise log 'handle_new_user failed for user %: %', new.id, sqlerrm;
+  end;
 
   return new;
 end;

@@ -8,6 +8,7 @@ import {
 } from "@/app/login/actions";
 import { AuthEntry } from "@/components/AuthEntry";
 import { SetupNotice } from "@/components/SetupNotice";
+import { getAuthDisplayMessage } from "@/lib/auth-messages";
 import { hasSupabaseEnv } from "@/lib/env";
 import {
   getClearSessionPath,
@@ -18,6 +19,9 @@ import {
 
 type HomePageProps = {
   searchParams: Promise<{
+    error?: string;
+    error_code?: string;
+    error_description?: string;
     message?: string;
   }>;
 };
@@ -47,7 +51,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
   return (
     <AuthEntry
-      message={params.message}
+      message={getAuthDisplayMessage(params)}
       requestPasswordResetAction={requestPasswordResetAction}
       signInAction={signInAction}
       signInWithAppleAction={signInWithOAuthAction.bind(null, "apple")}
