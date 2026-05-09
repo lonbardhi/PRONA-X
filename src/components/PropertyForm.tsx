@@ -98,6 +98,7 @@ export function PropertyForm({
   const [coefficient, setCoefficient] = useState(
     String(property?.building_coefficient ?? ""),
   );
+  const isSq = locale === "sq";
 
   const grossBuildableArea = useMemo(() => {
     return calculateGrossBuildableArea(toNumber(plotSize), toNumber(coefficient));
@@ -162,8 +163,10 @@ export function PropertyForm({
             name="title"
             placeholder={
               developmentLand
-                ? "Development land in Kodra Priftit"
-                : locale === "sq"
+                ? isSq
+                  ? "Tokë zhvillimi në Kodra Priftit"
+                  : "Development land in Kodra Priftit"
+                : isSq
                   ? "Apartament modern në Blloku"
                   : "Modern apartment in Blloku"
             }
@@ -244,7 +247,11 @@ export function PropertyForm({
             className={inputClass}
             defaultValue={property?.address || ""}
             name="address"
-            placeholder="Street, boundary, or site access details"
+            placeholder={
+              isSq
+                ? "Rruga, kufijtë ose detajet e aksesit në parcelë"
+                : "Street, boundary, or site access details"
+            }
           />
         </Field>
       </Section>
@@ -252,10 +259,14 @@ export function PropertyForm({
       {developmentLand ? (
         <>
           <Section
-            description="These fields help the team evaluate feasibility before presenting the opportunity to developers."
-            title="Location & Cadastral Information"
+            description={
+              isSq
+                ? "Këto fusha ndihmojnë ekipin të vlerësojë fizibilitetin para se mundësia t'u prezantohet zhvilluesve."
+                : "These fields help the team evaluate feasibility before presenting the opportunity to developers."
+            }
+            title={isSq ? "Vendndodhja & informacioni kadastral" : "Location & Cadastral Information"}
           >
-            <Field label="Plot size m2">
+            <Field label={isSq ? "Sipërfaqja e parcelës m2" : "Plot size m2"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.plot_size_m2 ?? property?.area_m2)}
@@ -269,7 +280,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Cadastral zone">
+            <Field label={isSq ? "Zona kadastrale" : "Cadastral zone"}>
               <input
                 className={inputClass}
                 defaultValue={property?.cadastral_zone || ""}
@@ -278,34 +289,38 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Parcel number">
+            <Field label={isSq ? "Numri i parcelës" : "Parcel number"}>
               <input
                 className={inputClass}
                 defaultValue={property?.parcel_number || ""}
                 name="parcel_number"
-                placeholder="Parcel / reference ID"
+                placeholder={isSq ? "Parcela / ID reference" : "Parcel / reference ID"}
               />
             </Field>
 
-            <Field label="Land certificate number">
+            <Field label={isSq ? "Numri i certifikatës së pronësisë" : "Land certificate number"}>
               <input
                 className={inputClass}
                 defaultValue={property?.land_certificate_number || ""}
                 name="land_certificate_number"
-                placeholder="Certificate number"
+                placeholder={isSq ? "Numri i certifikatës" : "Certificate number"}
               />
             </Field>
 
-            <Field label="Ownership status">
+            <Field label={isSq ? "Statusi i pronësisë" : "Ownership status"}>
               <input
                 className={inputClass}
                 defaultValue={property?.ownership_status || ""}
                 name="ownership_status"
-                placeholder="Single owner, shared, disputed, verified"
+                placeholder={
+                  isSq
+                    ? "Një pronar, e përbashkët, në konflikt, e verifikuar"
+                    : "Single owner, shared, disputed, verified"
+                }
               />
             </Field>
 
-            <Field label="Number of landowners">
+            <Field label={isSq ? "Numri i pronarëve të tokës" : "Number of landowners"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.landowners_count)}
@@ -316,26 +331,26 @@ export function PropertyForm({
             </Field>
           </Section>
 
-          <Section title="Plot & Development Potential">
-            <Field label="Current land use">
+          <Section title={isSq ? "Parcela & potenciali i zhvillimit" : "Plot & Development Potential"}>
+            <Field label={isSq ? "Përdorimi aktual i tokës" : "Current land use"}>
               <input
                 className={inputClass}
                 defaultValue={property?.current_land_use || ""}
                 name="current_land_use"
-                placeholder="Residential, mixed, agricultural"
+                placeholder={isSq ? "Rezidenciale, e përzier, bujqësore" : "Residential, mixed, agricultural"}
               />
             </Field>
 
-            <Field label="Development zone">
+            <Field label={isSq ? "Zona e zhvillimit" : "Development zone"}>
               <input
                 className={inputClass}
                 defaultValue={property?.development_zone || ""}
                 name="development_zone"
-                placeholder="Urban zone / planning designation"
+                placeholder={isSq ? "Zonë urbane / destinacion planifikimi" : "Urban zone / planning designation"}
               />
             </Field>
 
-            <Field label="Building coefficient">
+            <Field label={isSq ? "Koeficienti i ndërtimit" : "Building coefficient"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.building_coefficient)}
@@ -348,7 +363,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Maximum floors allowed">
+            <Field label={isSq ? "Numri maksimal i kateve" : "Maximum floors allowed"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.max_floors)}
@@ -359,7 +374,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Estimated gross buildable area m2">
+            <Field label={isSq ? "Sipërfaqja bruto e ndërtueshme m2" : "Estimated gross buildable area m2"}>
               <input
                 className={inputClass}
                 name="estimated_gross_buildable_area_m2"
@@ -372,7 +387,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Estimated net sellable area m2">
+            <Field label={isSq ? "Sipërfaqja neto e shitshme m2" : "Estimated net sellable area m2"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_net_sellable_area_m2)}
@@ -384,7 +399,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Estimated apartments">
+            <Field label={isSq ? "Apartamente të vlerësuara" : "Estimated apartments"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_apartments)}
@@ -394,7 +409,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Estimated garages">
+            <Field label={isSq ? "Garazhe të vlerësuara" : "Estimated garages"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_garages)}
@@ -404,7 +419,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Parking spaces">
+            <Field label={isSq ? "Vende parkimi" : "Parking spaces"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_parking_spaces)}
@@ -414,7 +429,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Commercial units">
+            <Field label={isSq ? "Njësi komerciale" : "Commercial units"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_commercial_units)}
@@ -425,8 +440,8 @@ export function PropertyForm({
             </Field>
           </Section>
 
-          <Section title="Landowner Agreement">
-            <Field label="Landowner requested percentage">
+          <Section title={isSq ? "Marrëveshja me pronarin e tokës" : "Landowner Agreement"}>
+            <Field label={isSq ? "Përqindja e kërkuar nga pronari" : "Landowner requested percentage"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.landowner_requested_percentage)}
@@ -440,7 +455,7 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Minimum acceptable percentage">
+            <Field label={isSq ? "Përqindja minimale e pranueshme" : "Minimum acceptable percentage"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.minimum_acceptable_percentage)}
@@ -453,78 +468,86 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Preferred compensation type">
+            <Field label={isSq ? "Forma e preferuar e kompensimit" : "Preferred compensation type"}>
               <select
                 className={inputClass}
                 defaultValue={property?.preferred_compensation_type || ""}
                 name="preferred_compensation_type"
               >
-                <option value="">Choose compensation</option>
-                <option value="apartments">Apartments</option>
-                <option value="garages">Garages</option>
-                <option value="commercial_units">Commercial units</option>
-                <option value="mixed_units">Mixed units</option>
+                <option value="">
+                  {isSq ? "Zgjidh kompensimin" : "Choose compensation"}
+                </option>
+                <option value="apartments">{isSq ? "Apartamente" : "Apartments"}</option>
+                <option value="garages">{isSq ? "Garazhe" : "Garages"}</option>
+                <option value="commercial_units">
+                  {isSq ? "Njësi komerciale" : "Commercial units"}
+                </option>
+                <option value="mixed_units">{isSq ? "Njësi të përziera" : "Mixed units"}</option>
               </select>
             </Field>
 
-            <Field label="Preferred floor allocation">
+            <Field label={isSq ? "Shpërndarja e preferuar e kateve" : "Preferred floor allocation"}>
               <input
                 className={inputClass}
                 defaultValue={property?.preferred_floor_allocation || ""}
                 name="preferred_floor_allocation"
-                placeholder="Middle floors, top floor, mixed"
+                placeholder={isSq ? "Kate të mesme, kati i fundit, të përziera" : "Middle floors, top floor, mixed"}
               />
             </Field>
 
-            <Field label="Preferred orientation">
+            <Field label={isSq ? "Orientimi i preferuar" : "Preferred orientation"}>
               <input
                 className={inputClass}
                 defaultValue={property?.preferred_unit_orientation || ""}
                 name="preferred_unit_orientation"
-                placeholder="South-facing, sea view, street side"
+                placeholder={isSq ? "Nga jugu, pamje deti, nga rruga" : "South-facing, sea view, street side"}
               />
             </Field>
 
-            <Field label="Negotiation status">
+            <Field label={isSq ? "Statusi i negociimit" : "Negotiation status"}>
               <input
                 className={inputClass}
                 defaultValue={property?.negotiation_status || ""}
                 name="negotiation_status"
-                placeholder="Open, under review, agreed, rejected"
+                placeholder={isSq ? "Hapur, në shqyrtim, dakordësuar, refuzuar" : "Open, under review, agreed, rejected"}
               />
             </Field>
 
-            <Field className="md:col-span-2" label="Agreement notes">
+            <Field className="md:col-span-2" label={isSq ? "Shënime marrëveshjeje" : "Agreement notes"}>
               <textarea
                 className={textareaClass}
                 defaultValue={property?.agreement_notes || ""}
                 name="agreement_notes"
-                placeholder="Owner expectations, risks, agreed terms, and constraints."
+                placeholder={
+                  isSq
+                    ? "Pritshmëritë e pronarit, rreziqet, kushtet e dakordësuara dhe kufizimet."
+                    : "Owner expectations, risks, agreed terms, and constraints."
+                }
                 rows={4}
               />
             </Field>
           </Section>
 
-          <Section title="Developer Interest">
-            <Field label="Developer name">
+          <Section title={isSq ? "Interesi i zhvilluesit" : "Developer Interest"}>
+            <Field label={isSq ? "Emri i zhvilluesit" : "Developer name"}>
               <input
                 className={inputClass}
                 defaultValue={property?.developer_name || ""}
                 name="developer_name"
-                placeholder="Developer company or contact"
+                placeholder={isSq ? "Kompania zhvilluese ose kontakti" : "Developer company or contact"}
               />
             </Field>
 
-            <Field label="Developer contact">
+            <Field label={isSq ? "Kontakti i zhvilluesit" : "Developer contact"}>
               <input
                 className={inputClass}
                 defaultValue={property?.developer_contact || ""}
                 name="developer_contact"
-                placeholder="Phone, email, or notes"
+                placeholder={isSq ? "Telefon, email ose shënime" : "Phone, email, or notes"}
               />
             </Field>
 
-            <Field label="Developer offered percentage">
+            <Field label={isSq ? "Përqindja e ofruar nga zhvilluesi" : "Developer offered percentage"}>
               <input
                 className={inputClass}
                 defaultValue={numberValue(property?.developer_offered_percentage)}
@@ -537,111 +560,113 @@ export function PropertyForm({
               />
             </Field>
 
-            <Field label="Offer status">
+            <Field label={isSq ? "Statusi i ofertës" : "Offer status"}>
               <input
                 className={inputClass}
                 defaultValue={property?.developer_offer_status || ""}
                 name="developer_offer_status"
-                placeholder="Received, presented, accepted, rejected"
+                placeholder={isSq ? "Marrë, prezantuar, pranuar, refuzuar" : "Received, presented, accepted, rejected"}
               />
             </Field>
 
-            <Field label="Proposed project size">
+            <Field label={isSq ? "Madhësia e propozuar e projektit" : "Proposed project size"}>
               <input
                 className={inputClass}
                 defaultValue={property?.developer_proposed_project_size || ""}
                 name="developer_proposed_project_size"
-                placeholder="Approx. 2,000 m2 / 24 units"
+                placeholder={isSq ? "Afërsisht 2,000 m2 / 24 njësi" : "Approx. 2,000 m2 / 24 units"}
               />
             </Field>
 
-            <Field label="Delivery timeline">
+            <Field label={isSq ? "Afati i dorëzimit" : "Delivery timeline"}>
               <input
                 className={inputClass}
                 defaultValue={property?.developer_proposed_delivery_timeline || ""}
                 name="developer_proposed_delivery_timeline"
-                placeholder="24 months after permit"
+                placeholder={isSq ? "24 muaj pas lejes" : "24 months after permit"}
               />
             </Field>
 
-            <Field className="md:col-span-2" label="Proposed unit allocation">
+            <Field className="md:col-span-2" label={isSq ? "Shpërndarja e propozuar e njësive" : "Proposed unit allocation"}>
               <input
                 className={inputClass}
                 defaultValue={property?.developer_proposed_unit_allocation || ""}
                 name="developer_proposed_unit_allocation"
-                placeholder="6 apartments, 2 garages, 1 commercial unit"
+                placeholder={isSq ? "6 apartamente, 2 garazhe, 1 njësi komerciale" : "6 apartments, 2 garages, 1 commercial unit"}
               />
             </Field>
 
-            <Field className="md:col-span-2" label="Developer conditions">
+            <Field className="md:col-span-2" label={isSq ? "Kushtet e zhvilluesit" : "Developer conditions"}>
               <textarea
                 className={textareaClass}
                 defaultValue={property?.developer_conditions || ""}
                 name="developer_conditions"
-                placeholder="Permit, road access, document verification, payment terms."
+                placeholder={isSq ? "Leja, aksesi në rrugë, verifikimi i dokumenteve, kushtet e pagesës." : "Permit, road access, document verification, payment terms."}
                 rows={4}
               />
             </Field>
           </Section>
 
-          <Section title="Planning, Access & Visibility">
-            <Field label="Road access">
+          <Section title={isSq ? "Planifikimi, aksesi & dukshmëria" : "Planning, Access & Visibility"}>
+            <Field label={isSq ? "Aksesi në rrugë" : "Road access"}>
               <input
                 className={inputClass}
                 defaultValue={property?.road_access || ""}
                 name="road_access"
-                placeholder="Public road, private access, pending"
+                placeholder={isSq ? "Rrugë publike, akses privat, në pritje" : "Public road, private access, pending"}
               />
             </Field>
 
-            <Field label="Utilities access">
+            <Field label={isSq ? "Aksesi në utilitete" : "Utilities access"}>
               <input
                 className={inputClass}
                 defaultValue={property?.utilities_access || ""}
                 name="utilities_access"
-                placeholder="Water, electricity, sewage, pending"
+                placeholder={isSq ? "Ujë, energji elektrike, kanalizime, në pritje" : "Water, electricity, sewage, pending"}
               />
             </Field>
 
-            <Field label="Planning permission status">
+            <Field label={isSq ? "Statusi i lejes së planifikimit" : "Planning permission status"}>
               <input
                 className={inputClass}
                 defaultValue={property?.planning_permission_status || ""}
                 name="planning_permission_status"
-                placeholder="Unknown, pending, approved"
+                placeholder={isSq ? "I panjohur, në pritje, miratuar" : "Unknown, pending, approved"}
               />
             </Field>
 
-            <Field label="Construction permit status">
+            <Field label={isSq ? "Statusi i lejes së ndërtimit" : "Construction permit status"}>
               <input
                 className={inputClass}
                 defaultValue={property?.construction_permit_status || ""}
                 name="construction_permit_status"
-                placeholder="Not started, pending, approved"
+                placeholder={isSq ? "E pafilluar, në pritje, miratuar" : "Not started, pending, approved"}
               />
             </Field>
 
-            <Field label="Urban study status">
+            <Field label={isSq ? "Statusi i studimit urbanistik" : "Urban study status"}>
               <input
                 className={inputClass}
                 defaultValue={property?.urban_study_status || ""}
                 name="urban_study_status"
-                placeholder="Required, in review, approved"
+                placeholder={isSq ? "Kërkohet, në shqyrtim, miratuar" : "Required, in review, approved"}
               />
             </Field>
 
-            <Field label="Visibility">
+            <Field label={isSq ? "Dukshmëria" : "Visibility"}>
               <select
                 className={inputClass}
                 defaultValue={property?.visibility || "internal_only"}
                 name="visibility"
               >
-                <option value="internal_only">Internal Only</option>
+                <option value="internal_only">
+                  {isSq ? "Vetëm e brendshme" : "Internal Only"}
+                </option>
                 <option value="available_to_developers">
-                  Available to Developers
+                  {isSq ? "E disponueshme për zhvillues" : "Available to Developers"}
                 </option>
                 <option value="manager_approved_public">
-                  Manager Approved Public
+                  {isSq ? "Publike me miratim menaxheri" : "Manager Approved Public"}
                 </option>
               </select>
             </Field>
@@ -741,7 +766,9 @@ export function PropertyForm({
             type="file"
           />
           <span className="text-xs font-normal leading-5 text-slate-500">
-            {propertyMediaHelpText}
+            {isSq
+              ? "Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV. Dokumente: PDF."
+              : propertyMediaHelpText}
           </span>
         </Field>
 
