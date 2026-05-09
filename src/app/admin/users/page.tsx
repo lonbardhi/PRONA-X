@@ -14,7 +14,6 @@ type AdminUsersPageProps = {
 
 type ProfileRow = {
   id: string;
-  email: string | null;
   full_name: string | null;
   phone: string | null;
   role: AppRole;
@@ -47,7 +46,7 @@ export default async function AdminUsersPage({
   const { profile, supabase, user } = await requireAdminUser();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id,email,full_name,phone,role,created_at")
+    .select("id,full_name,phone,role,created_at")
     .order("created_at", { ascending: false });
 
   const profiles = (data || []) as ProfileRow[];
@@ -161,10 +160,10 @@ export default async function AdminUsersPage({
                       </span>
                     </div>
                     <h3 className="mt-3 break-words text-base font-semibold text-slate-950">
-                      {item.full_name || item.email || item.id}
+                      {item.full_name || item.id}
                     </h3>
-                    <p className="mt-1 break-words text-sm text-slate-500">
-                      {item.email || "No email stored"}
+                    <p className="mt-1 break-all font-mono text-xs text-slate-500">
+                      {item.id}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                       <span>Joined {formatDate(item.created_at)}</span>

@@ -8,7 +8,6 @@ export type AppRole = "admin" | "manager" | "agent" | "viewer";
 
 export type AuthProfile = {
   id: string;
-  email: string | null;
   full_name: string | null;
   phone: string | null;
   role: AppRole;
@@ -87,7 +86,7 @@ export async function getCurrentUserWithProfile() {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id,email,full_name,phone,role,created_at")
+    .select("id,full_name,phone,role,created_at")
     .eq("id", user.id)
     .single();
 

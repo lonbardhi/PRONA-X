@@ -12,12 +12,16 @@ import {
   isInvalidRefreshTokenError,
 } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PendingApprovalPage() {
   if (!hasSupabaseEnv()) {
     return <SetupNotice />;
   }
 
-  const { authError, profile, user } = await getCurrentUserWithProfile();
+  const { authError, profile, profileError, user } =
+    await getCurrentUserWithProfile();
 
   if (authError && isInvalidRefreshTokenError(authError)) {
     redirect(
@@ -78,6 +82,9 @@ export default async function PendingApprovalPage() {
               <p className="mt-1 break-words font-semibold text-slate-950">
                 {user.email}
               </p>
+              <p className="mt-1 break-all font-mono text-xs text-slate-500">
+                {user.id}
+              </p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -89,6 +96,12 @@ export default async function PendingApprovalPage() {
               </p>
             </div>
           </div>
+
+          {profileError ? (
+            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+              Profile lookup failed: {profileError.message}
+            </div>
+          ) : null}
 
           <p className="mt-5 text-sm leading-6 text-slate-500">
             Ask a PRONA X admin to open Admin Users and promote this account to
