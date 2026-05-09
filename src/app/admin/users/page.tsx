@@ -72,7 +72,8 @@ export default async function AdminUsersPage({
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                 Review new signups and approve CRM access by assigning Viewer,
-                Agent, Manager, or Admin roles. Pending accounts stay locked out.
+                Agent, Manager, Support, or Admin roles. Pending accounts stay
+                locked out.
               </p>
             </div>
 
@@ -118,7 +119,8 @@ export default async function AdminUsersPage({
           </p>
           <p>
             <span className="font-semibold text-slate-950">Operators</span>{" "}
-            are agents, managers, and admins who can manage CRM work.
+            are agents, managers, and admins who can manage CRM work. Support
+            users manage ticket triage without broader operator access.
           </p>
         </div>
 
