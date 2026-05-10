@@ -10,15 +10,17 @@ import {
   Plus,
   ShieldCheck,
   UserPlus,
-  UserCircle,
 } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePanel";
 import { SessionTimeout } from "@/components/SessionTimeout";
+import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
 import { t } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
+import { getCurrentUserWithProfile } from "@/lib/supabase/server";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -32,6 +34,15 @@ export async function DashboardShell({
   userRole,
 }: DashboardShellProps) {
   const locale = await getCurrentLocale();
+  const workspaceContext = await getCurrentUserWithProfile();
+  const workspaceData =
+    workspaceContext.user && workspaceContext.profile
+      ? await getAgentWorkspaceData(
+          workspaceContext.supabase,
+          workspaceContext.user,
+          workspaceContext.profile,
+        )
+      : null;
   const isViewer = userRole === "viewer";
   const isSupportOnly = userRole === "support";
   const navItems = isSupportOnly
@@ -81,21 +92,24 @@ export async function DashboardShell({
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
-            <button
+            <Link
               aria-label={t(locale, "notifications")}
               className="hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100 md:flex"
-              type="button"
+              href="/profile?section=notifications"
+              prefetch={false}
             >
               <Bell className="h-4 w-4" />
-            </button>
+            </Link>
             <div className="hidden max-w-56 text-right lg:block">
-              <p className="text-sm font-medium text-slate-900">{userEmail}</p>
+              <p className="text-sm font-medium text-slate-900">
+                {workspaceData?.profile.full_name || userEmail}
+              </p>
               <p className="text-xs text-slate-500">{t(locale, "account.workspace")}</p>
             </div>
             <LanguageToggle locale={locale} />
-            <span className="hidden h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 md:flex">
-              <UserCircle className="h-5 w-5" />
-            </span>
+            {workspaceData ? (
+              <ProfileWorkspacePanel data={workspaceData} locale={locale} />
+            ) : null}
             <form action={signOutAction}>
               <button
                 aria-label={t(locale, "pending.signOut")}
