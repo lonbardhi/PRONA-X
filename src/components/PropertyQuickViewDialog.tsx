@@ -308,7 +308,7 @@ export function PropertyQuickViewDialog({
                           ? "Çmimi i kërkuar"
                           : "Asking price"}
                     </p>
-                    <p className="mt-1 max-w-full break-words text-2xl font-semibold leading-tight text-slate-950 sm:text-3xl">
+                    <p className="mt-1 max-w-full break-words text-xl font-semibold leading-tight text-slate-950 [overflow-wrap:anywhere] sm:text-3xl">
                       {developmentLand
                         ? formatDevelopmentAgreement(property, locale)
                         : formatEuro(property.price_eur || 0, locale)}
@@ -333,7 +333,7 @@ export function PropertyQuickViewDialog({
                 </div>
 
                 {developmentLand ? (
-                  <div className="grid min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:grid-cols-4">
+                  <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <DetailMetric
                       icon={Landmark}
                       label={locale === "sq" ? "Trualli" : "Plot"}
@@ -368,7 +368,7 @@ export function PropertyQuickViewDialog({
                     />
                   </div>
                 ) : (
-                  <div className="grid min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:grid-cols-4">
+                  <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <DetailMetric
                       icon={BedDouble}
                       label={locale === "sq" ? "Dhoma" : "Beds"}
@@ -395,8 +395,8 @@ export function PropertyQuickViewDialog({
                 )}
 
                 {media.length > 0 ? (
-                  <div className="grid gap-3">
-                    <div className="flex items-center justify-between gap-3">
+                  <div className="grid min-w-0 gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <h3 className="text-sm font-semibold text-slate-950">
                         {locale === "sq" ? "Media shtesë" : "More media"}
                       </h3>
@@ -407,7 +407,7 @@ export function PropertyQuickViewDialog({
                     <div className="relative">
                       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white to-transparent" />
                       <div
-                        className="flex snap-x gap-3 overflow-x-auto pb-2"
+                        className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-3 pb-2 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                         onWheel={(event) => {
                           if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
                             event.currentTarget.scrollLeft += event.deltaY;
