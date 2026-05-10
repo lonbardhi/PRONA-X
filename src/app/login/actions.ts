@@ -77,7 +77,7 @@ export async function signUpAction(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/sales`,
+      emailRedirectTo: `${origin}/auth/confirm?next=/sales`,
       data: {
         full_name: fullName,
       },
@@ -151,7 +151,7 @@ export async function requestPasswordResetAction(formData: FormData) {
   const supabase = await createClient();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
+    redirectTo: `${origin}/auth/confirm?next=/auth/reset-password`,
   });
 
   if (error) {

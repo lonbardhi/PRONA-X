@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthEntry
       locale={locale}
-      message={getAuthDisplayMessage(params)}
+      message={getAuthDisplayMessage(params, locale)}
       requestPasswordResetAction={requestPasswordResetAction}
       signInAction={signInAction}
       signInWithAppleAction={signInWithOAuthAction.bind(null, "apple")}
