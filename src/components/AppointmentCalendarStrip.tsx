@@ -49,6 +49,7 @@ export function AppointmentCalendarStrip({
   locale,
   selectedDate,
 }: AppointmentCalendarStripProps) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
   const selectedRef = useRef<HTMLAnchorElement | null>(null);
   const copy =
     locale === "sq"
@@ -88,20 +89,32 @@ export function AppointmentCalendarStrip({
   const selectedAppointments = appointmentsByDate.get(selectedDay?.date || "") || [];
 
   useEffect(() => {
-    selectedRef.current?.scrollIntoView({
+    const scroller = scrollerRef.current;
+    const selected = selectedRef.current;
+
+    if (!scroller || !selected) {
+      return;
+    }
+
+    const nextScrollLeft =
+      selected.offsetLeft - scroller.clientWidth / 2 + selected.clientWidth / 2;
+
+    scroller.scrollTo({
       behavior: "smooth",
-      block: "nearest",
-      inline: "center",
+      left: Math.max(0, nextScrollLeft),
     });
   }, [selectedDate]);
 
   return (
-    <div className="grid gap-3">
+    <div className="grid min-w-0 gap-3 overflow-hidden">
       <p className="text-xs font-medium text-slate-500 lg:hidden">{copy.swipe}</p>
 
-      <div className="relative">
+      <div className="relative min-w-0 overflow-hidden">
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white to-transparent lg:hidden" />
-        <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-3 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] touch-pan-x lg:mx-0 lg:grid lg:grid-cols-7 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
+        <div
+          className="flex max-w-full snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-2 pr-8 [-ms-overflow-style:none] [scrollbar-width:none] touch-pan-x lg:grid lg:grid-cols-7 lg:overflow-visible lg:pr-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
+          ref={scrollerRef}
+        >
           {days.map((day) => {
             const dayAppointments = appointmentsByDate.get(day.date) || [];
             const isSelected = day.date === selectedDate;
@@ -110,7 +123,7 @@ export function AppointmentCalendarStrip({
               <Link
                 aria-current={isSelected ? "date" : undefined}
                 aria-label={`${copy.add}: ${day.label}`}
-                className={`flex min-h-44 min-w-[10.5rem] snap-start flex-col rounded-xl border p-3 text-left transition focus:outline-none focus:ring-4 focus:ring-emerald-100 lg:min-h-40 lg:min-w-0 ${
+                className={`flex min-h-44 w-[min(18rem,calc(100vw-5rem))] min-w-[min(18rem,calc(100vw-5rem))] snap-start flex-col rounded-xl border p-3 text-left transition focus:outline-none focus:ring-4 focus:ring-emerald-100 lg:min-h-40 lg:w-auto lg:min-w-0 ${
                   isSelected
                     ? "border-emerald-400 bg-emerald-50 shadow-sm"
                     : "border-slate-200 bg-slate-50 hover:border-emerald-200 hover:bg-white"
@@ -184,7 +197,7 @@ export function AppointmentCalendarStrip({
       </div>
 
       {selectedDay ? (
-        <div className="flex flex-col gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
               {copy.selected}
@@ -195,7 +208,7 @@ export function AppointmentCalendarStrip({
             <p className="mt-1 text-xs text-slate-600">{copy.selectedHelp}</p>
           </div>
           <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"
             href={`/appointments?date=${selectedDay.date}#new-appointment`}
             prefetch={false}
           >

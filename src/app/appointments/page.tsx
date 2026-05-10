@@ -295,7 +295,7 @@ export default async function AppointmentsPage({
           <>
             <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_430px]">
               <section className="grid min-w-0 content-start gap-5">
-                <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
                   <div className="mb-3 grid gap-3 sm:mb-4 sm:flex sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-slate-950">
