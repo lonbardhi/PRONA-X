@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -53,6 +54,7 @@ function MetricCard({
 
 export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelProps) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const statusLabels = getAvailabilityStatusLabels(locale);
   const unreadCount = data.productivity.unread_notifications;
@@ -72,10 +74,11 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
     }
 
     function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
       if (
-        panelRef.current &&
-        event.target instanceof Node &&
-        !panelRef.current.contains(event.target)
+        target instanceof Node &&
+        !panelRef.current?.contains(target) &&
+        !triggerRef.current?.contains(target)
       ) {
         setOpen(false);
       }
@@ -87,6 +90,34 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const scrollY = window.scrollY;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPosition = document.body.style.position;
+    const originalBodyTop = document.body.style.top;
+    const originalBodyWidth = document.body.style.width;
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
+    return () => {
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.position = originalBodyPosition;
+      document.body.style.top = originalBodyTop;
+      document.body.style.width = originalBodyWidth;
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -118,21 +149,18 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
     ...(role === "support" ? supportLinks : []),
   ];
 
-  return (
-    <div className="relative" ref={panelRef}>
-      <ProfileAvatarButton
-        onClick={() => setOpen((value) => !value)}
-        profile={data.profile}
-        unreadCount={unreadCount}
-      />
-
-      {open ? (
+  const profilePanel =
+    open
+      ? createPortal(
         <div
           aria-label={locale === "sq" ? "Paneli i profilit" : "Profile workspace"}
-          className="fixed inset-0 z-50 flex bg-slate-950/30 p-0 backdrop-blur-sm md:inset-auto md:right-6 md:top-20 md:block md:w-[440px] md:bg-transparent md:p-0 md:backdrop-blur-none"
+          className="fixed inset-0 z-[80] flex h-[100dvh] min-h-[100svh] bg-slate-950/35 p-0 backdrop-blur-sm md:items-start md:justify-end md:bg-transparent md:p-6 md:pt-20 md:backdrop-blur-none"
           role="dialog"
         >
-          <div className="flex h-full w-full flex-col overflow-hidden bg-slate-50 shadow-2xl md:max-h-[calc(100vh-6rem)] md:rounded-2xl md:border md:border-slate-200">
+          <div
+            className="flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-slate-50 shadow-2xl md:h-auto md:max-h-[calc(100dvh-6rem)] md:w-[440px] md:rounded-2xl md:border md:border-slate-200"
+            ref={panelRef}
+          >
             <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-white p-4">
               <div className="flex min-w-0 gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-950 text-sm font-bold text-white">
@@ -175,7 +203,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
               </button>
             </div>
 
-            <div className="grid gap-4 overflow-y-auto p-4">
+            <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto overscroll-contain p-4 [-webkit-overflow-scrolling:touch]">
               <section className="rounded-xl border border-slate-200 bg-white p-3">
                 <AvailabilityStatusSelector
                   locale={locale}
@@ -283,8 +311,19 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
               </form>
             </div>
           </div>
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+      : null;
+
+  return (
+    <div className="relative" ref={triggerRef}>
+      <ProfileAvatarButton
+        onClick={() => setOpen((value) => !value)}
+        profile={data.profile}
+        unreadCount={unreadCount}
+      />
+      {profilePanel}
     </div>
   );
 }
