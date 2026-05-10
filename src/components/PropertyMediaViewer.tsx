@@ -24,9 +24,11 @@ import {
 import { PropertyMediaPreview } from "@/components/PropertyMediaPreview";
 import type { PropertyMedia } from "@/lib/properties";
 import { getPropertyMediaKindFromUrl } from "@/lib/property-media";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyMediaViewerProps = {
   activeIndex: number;
+  locale?: Locale;
   media: PropertyMedia[];
   onActiveIndexChange: (index: number) => void;
   onClose: () => void;
@@ -55,6 +57,7 @@ function getWrappedIndex(index: number, total: number) {
 
 export function PropertyMediaViewer({
   activeIndex,
+  locale = defaultLocale,
   media,
   onActiveIndexChange,
   onClose,
@@ -73,6 +76,7 @@ export function PropertyMediaViewer({
     ? getPropertyMediaKindFromUrl(activeMedia.public_url)
     : "file";
   const canZoom = mediaKind === "image" && !imageError;
+  const isSq = locale === "sq";
 
   const showPrevious = useCallback(() => {
     onActiveIndexChange(getWrappedIndex(activeIndex - 1, total));
@@ -197,7 +201,9 @@ export function PropertyMediaViewer({
   function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
     const dragState = dragStateRef.current;
     dragStateRef.current = null;
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
 
     if (!dragState || dragState.mode !== "swipe") {
       return;
@@ -221,9 +227,9 @@ export function PropertyMediaViewer({
 
   return (
     <div
-      aria-label="Property media viewer"
+      aria-label={isSq ? "Shikuesi i medias së pronës" : "Property media viewer"}
       aria-modal="true"
-      className="fixed inset-0 z-[70] bg-slate-950/86 px-2 py-3 backdrop-blur-md sm:px-5 sm:py-5"
+      className="fixed inset-0 z-[70] overflow-hidden bg-slate-950/86 px-2 py-3 backdrop-blur-md sm:px-5 sm:py-5"
       onClick={(event) => {
         event.stopPropagation();
         onClose();
@@ -231,25 +237,25 @@ export function PropertyMediaViewer({
       role="dialog"
     >
       <div
-        className="mx-auto grid h-full max-w-7xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-xl border border-white/10 bg-slate-950 text-white shadow-2xl"
+        className="mx-auto grid h-full w-full max-w-7xl min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-xl border border-white/10 bg-slate-950 text-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         ref={viewerRef}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-3 py-3 sm:px-4">
-          <div className="min-w-0">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-white/10 px-3 py-3 sm:px-4">
+          <div className="min-w-0 overflow-hidden">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/50">
-              Media inspection
+              {isSq ? "Inspektim media" : "Media inspection"}
             </p>
-            <h2 className="mt-1 truncate text-base font-semibold text-white">
+            <h2 className="mt-1 line-clamp-2 break-words text-sm font-semibold leading-snug text-white sm:text-base">
               {title}
             </h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
-              {activeIndex + 1} of {total}
+              {activeIndex + 1} {isSq ? "nga" : "of"} {total}
             </span>
             <button
-              aria-label="Close media viewer"
+              aria-label={isSq ? "Mbyll shikuesin e medias" : "Close media viewer"}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white transition hover:bg-white/10"
               onClick={onClose}
               ref={closeButtonRef}
@@ -260,23 +266,17 @@ export function PropertyMediaViewer({
           </div>
         </div>
 
-        <div className="grid min-h-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 p-2 sm:gap-4 sm:p-4">
-          <button
-            aria-label="Show previous media"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/8 text-white transition hover:bg-white/15 sm:h-12 sm:w-12"
-            onClick={showPrevious}
-            type="button"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-
-          <div className="grid min-h-0 gap-3">
+        <div className="relative grid min-h-0 min-w-0 p-2 sm:p-4">
+          <div className="grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_auto] gap-3">
             <div
-              className={`relative min-h-[320px] overflow-hidden rounded-xl bg-black sm:min-h-[560px] ${
+              className={`relative min-h-0 overflow-hidden rounded-xl bg-black ${
                 scale > 1 ? "cursor-grab touch-none" : "cursor-default touch-pan-y"
               }`}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
+              onPointerCancel={() => {
+                dragStateRef.current = null;
+              }}
               onPointerUp={handlePointerUp}
             >
               {mediaKind === "image" && !imageError ? (
@@ -309,7 +309,7 @@ export function PropertyMediaViewer({
               {mediaKind === "video" ? (
                 <video
                   aria-label={mediaLabel}
-                  className="h-full min-h-[320px] w-full bg-black object-contain sm:min-h-[560px]"
+                  className="h-full min-h-0 w-full bg-black object-contain"
                   controls
                   preload="metadata"
                 >
@@ -318,7 +318,7 @@ export function PropertyMediaViewer({
               ) : null}
 
               {mediaKind === "pdf" ? (
-                <div className="grid h-full min-h-[320px] bg-slate-900 sm:min-h-[560px]">
+                <div className="grid h-full min-h-0 bg-slate-900">
                   <iframe
                     className="h-full w-full"
                     src={activeMedia.public_url}
@@ -328,10 +328,12 @@ export function PropertyMediaViewer({
               ) : null}
 
               {(mediaKind === "file" || imageError) && mediaKind !== "pdf" ? (
-                <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-3 p-6 text-center sm:min-h-[560px]">
+                <div className="flex h-full min-h-0 flex-col items-center justify-center gap-3 p-6 text-center">
                   <AlertTriangle className="h-10 w-10 text-amber-300" />
                   <p className="text-sm font-semibold text-white">
-                    This media item could not be previewed.
+                    {isSq
+                      ? "Ky element media nuk mund të shfaqej."
+                      : "This media item could not be previewed."}
                   </p>
                   <a
                     className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/15 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
@@ -339,53 +341,62 @@ export function PropertyMediaViewer({
                     rel="noreferrer"
                     target="_blank"
                   >
-                    Open original
+                    {isSq ? "Hap origjinalin" : "Open original"}
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </div>
               ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/65">
-              <span className="truncate">{mediaLabel}</span>
-              <div className="flex items-center gap-2">
+            <div className="grid min-w-0 gap-2 text-xs text-white/65 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+              <span className="min-w-0 break-words">{mediaLabel}</span>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <button
-                  aria-label="Zoom out"
+                  aria-label={isSq ? "Zvogëlo" : "Zoom out"}
                   className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={!canZoom || scale === 1}
                   onClick={zoomOut}
                   type="button"
                 >
                   <ZoomOut className="h-4 w-4" />
-                  Out
+                  {isSq ? "Zvogëlo" : "Out"}
                 </button>
                 <button
-                  aria-label="Reset media view"
+                  aria-label={isSq ? "Rivendos pamjen" : "Reset media view"}
                   className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={!canZoom || (scale === 1 && offset.x === 0 && offset.y === 0)}
                   onClick={resetView}
                   type="button"
                 >
                   <RotateCcw className="h-4 w-4" />
-                  Reset
+                  {isSq ? "Rivendos" : "Reset"}
                 </button>
                 <button
-                  aria-label="Zoom in"
+                  aria-label={isSq ? "Zmadho" : "Zoom in"}
                   className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={!canZoom || scale >= 3}
                   onClick={zoomIn}
                   type="button"
                 >
                   <ZoomIn className="h-4 w-4" />
-                  In
+                  {isSq ? "Zmadho" : "In"}
                 </button>
               </div>
             </div>
           </div>
 
           <button
-            aria-label="Show next media"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/8 text-white transition hover:bg-white/15 sm:h-12 sm:w-12"
+            aria-label={isSq ? "Shfaq median e mëparshme" : "Show previous media"}
+            className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/70 text-white shadow-lg backdrop-blur transition hover:bg-white/15 sm:h-12 sm:w-12"
+            onClick={showPrevious}
+            type="button"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <button
+            aria-label={isSq ? "Shfaq median tjetër" : "Show next media"}
+            className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/70 text-white shadow-lg backdrop-blur transition hover:bg-white/15 sm:h-12 sm:w-12"
             onClick={showNext}
             type="button"
           >
@@ -393,9 +404,9 @@ export function PropertyMediaViewer({
           </button>
         </div>
 
-        <div className="border-t border-white/10 px-3 py-3 sm:px-4">
+        <div className="min-w-0 border-t border-white/10 px-3 py-3 sm:px-4">
           <div
-            className="flex gap-2 overflow-x-auto pb-1"
+            className="flex min-w-0 snap-x gap-2 overflow-x-auto pb-1"
             onWheel={(event) => {
               if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
                 event.currentTarget.scrollLeft += event.deltaY;
@@ -409,7 +420,7 @@ export function PropertyMediaViewer({
 
               return (
                 <button
-                  aria-label={`Show ${label}`}
+                  aria-label={`${isSq ? "Shfaq" : "Show"} ${label}`}
                   className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-lg border bg-slate-900 transition ${
                     index === activeIndex
                       ? "border-emerald-300 ring-2 ring-emerald-300/60"

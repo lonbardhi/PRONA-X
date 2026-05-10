@@ -111,6 +111,24 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatVisibility(value: string | null | undefined, locale: Locale) {
+  if (!value) {
+    return "-";
+  }
+
+  if (locale !== "sq") {
+    return value.replaceAll("_", " ");
+  }
+
+  const labels: Record<string, string> = {
+    available_to_developers: "E hapur për zhvillues",
+    internal_only: "Vetëm e brendshme",
+    public: "Publike",
+  };
+
+  return labels[value] || value.replaceAll("_", " ");
+}
+
 function getOrderedMedia(media: PropertyMedia[]) {
   const sortedMedia = [...media].sort((a, b) => a.sort_order - b.sort_order);
   const cover = pickPrimaryPropertyMedia(sortedMedia);
@@ -441,7 +459,10 @@ export function PropertyQuickViewDialog({
                         {location}
                       </p>
                       <p className="mt-1 break-words text-slate-500">
-                        {property.address || "No street address added"}
+                        {property.address ||
+                          (locale === "sq"
+                            ? "Nuk është shtuar adresë rruge"
+                            : "No street address added")}
                       </p>
                     </div>
                   </div>
@@ -453,7 +474,7 @@ export function PropertyQuickViewDialog({
                     />
                     <DetailMetric
                       icon={Calendar}
-                      label="Created"
+                      label={locale === "sq" ? "Krijuar" : "Created"}
                       value={formatDate(property.created_at)}
                     />
                   </div>
@@ -476,36 +497,40 @@ export function PropertyQuickViewDialog({
                 <>
                   <div className="min-w-0 rounded-lg border border-slate-200 p-4">
                     <h3 className="text-base font-semibold text-slate-950">
-                      Development feasibility
+                      {locale === "sq"
+                        ? "Fizibiliteti i zhvillimit"
+                        : "Development feasibility"}
                     </h3>
                     <div className="mt-3 grid gap-2 text-sm text-slate-600">
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Cadastral zone:
+                          {locale === "sq" ? "Zona kadastrale:" : "Cadastral zone:"}
                         </span>{" "}
                         {property.cadastral_zone || "-"}
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Parcel:
+                          {locale === "sq" ? "Parcela:" : "Parcel:"}
                         </span>{" "}
                         {property.parcel_number || "-"}
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Coefficient:
+                          {locale === "sq" ? "Koeficienti:" : "Coefficient:"}
                         </span>{" "}
                         {property.building_coefficient ?? "-"}
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Planning:
+                          {locale === "sq" ? "Planifikimi:" : "Planning:"}
                         </span>{" "}
                         {property.planning_permission_status || "-"}
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Road / utilities:
+                          {locale === "sq"
+                            ? "Rruga / infrastruktura:"
+                            : "Road / utilities:"}
                         </span>{" "}
                         {[property.road_access, property.utilities_access]
                           .filter(Boolean)
@@ -516,12 +541,14 @@ export function PropertyQuickViewDialog({
 
                   <div className="min-w-0 rounded-lg border border-slate-200 p-4">
                     <h3 className="text-base font-semibold text-slate-950">
-                      Landowner and developer terms
+                      {locale === "sq"
+                        ? "Kushtet e pronarit dhe zhvilluesit"
+                        : "Landowner and developer terms"}
                     </h3>
                     <div className="mt-3 grid gap-2 text-sm text-slate-600">
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Owner request:
+                          {locale === "sq" ? "Kërkesa e pronarit:" : "Owner request:"}
                         </span>{" "}
                         {property.landowner_requested_percentage != null
                           ? `${property.landowner_requested_percentage}%`
@@ -529,7 +556,7 @@ export function PropertyQuickViewDialog({
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Minimum:
+                          {locale === "sq" ? "Minimumi:" : "Minimum:"}
                         </span>{" "}
                         {property.minimum_acceptable_percentage != null
                           ? `${property.minimum_acceptable_percentage}%`
@@ -537,13 +564,13 @@ export function PropertyQuickViewDialog({
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Developer:
+                          {locale === "sq" ? "Zhvilluesi:" : "Developer:"}
                         </span>{" "}
                         {property.developer_name || "-"}
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Developer offer:
+                          {locale === "sq" ? "Oferta e zhvilluesit:" : "Developer offer:"}
                         </span>{" "}
                         {property.developer_offered_percentage != null
                           ? `${property.developer_offered_percentage}%`
@@ -551,9 +578,9 @@ export function PropertyQuickViewDialog({
                       </p>
                       <p>
                         <span className="font-semibold text-slate-950">
-                          Visibility:
+                          {locale === "sq" ? "Dukshmëria:" : "Visibility:"}
                         </span>{" "}
-                        {property.visibility || "internal_only"}
+                        {formatVisibility(property.visibility, locale)}
                       </p>
                     </div>
                   </div>
@@ -608,6 +635,7 @@ export function PropertyQuickViewDialog({
                     </form>
                     <SharePropertyButton
                       isPublished={property.status === "published"}
+                      locale={locale}
                       propertyId={property.id}
                       title={property.title}
                     />
@@ -621,6 +649,7 @@ export function PropertyQuickViewDialog({
       {activeMediaIndex !== null ? (
         <PropertyMediaViewer
           activeIndex={activeMediaIndex}
+          locale={locale}
           media={media}
           onActiveIndexChange={setActiveMediaIndex}
           onClose={closeMediaViewer}

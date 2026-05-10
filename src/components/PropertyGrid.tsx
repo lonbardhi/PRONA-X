@@ -294,6 +294,7 @@ export function PropertyGrid({
                   </form>
                   <SharePropertyButton
                     isPublished={property.status === "published"}
+                    locale={locale}
                     propertyId={property.id}
                     title={property.title}
                   />
