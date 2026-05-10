@@ -71,7 +71,7 @@ export async function DashboardShell({
     <main className="min-h-screen overflow-x-hidden bg-slate-50">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6">
-          <BrandLockup />
+          <BrandLockup subtitle={t(locale, "brand.subtitle")} />
 
           <nav className="order-3 flex w-full gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:order-none lg:w-auto [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
