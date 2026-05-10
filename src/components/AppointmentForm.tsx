@@ -18,6 +18,7 @@ export type AppointmentAgentOption = {
 type AppointmentFormProps = {
   action: (formData: FormData) => void | Promise<void>;
   agents: AppointmentAgentOption[];
+  defaultDate?: string;
   defaultPropertyId?: string;
   locale?: Locale;
   properties: AppointmentPropertySummary[];
@@ -33,6 +34,7 @@ function getPropertyLabel(property: AppointmentPropertySummary) {
 export function AppointmentForm({
   action,
   agents,
+  defaultDate,
   defaultPropertyId = "",
   locale = defaultLocale,
   properties,
@@ -204,7 +206,7 @@ export function AppointmentForm({
           {labels.start}
           <input
             className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-            defaultValue={getDefaultAppointmentStart()}
+            defaultValue={getDefaultAppointmentStart(defaultDate)}
             name="starts_at"
             required
             type="datetime-local"

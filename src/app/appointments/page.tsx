@@ -10,11 +10,11 @@ import {
 
 import { createAppointmentAction } from "@/app/appointments/actions";
 import { AppointmentAgenda } from "@/components/AppointmentAgenda";
+import { AppointmentCalendarStrip } from "@/components/AppointmentCalendarStrip";
 import { AppointmentForm, type AppointmentAgentOption } from "@/components/AppointmentForm";
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import {
-  formatAppointmentTimeRange,
   getAppointmentTypeLabels,
   normalizeAppointments,
   type AppointmentPropertySummary,
@@ -27,6 +27,7 @@ import { requireOperatorUser } from "@/lib/supabase/server";
 
 type AppointmentsPageProps = {
   searchParams: Promise<{
+    date?: string;
     message?: string;
     property_id?: string;
   }>;
@@ -72,6 +73,24 @@ function getCalendarDays() {
     date.setDate(today.getDate() + index);
     return date;
   });
+}
+
+function formatDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getSelectedDateValue(value: string | undefined, days: Date[]) {
+  const fallback = formatDateValue(days[0] || startOfToday());
+
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return fallback;
+  }
+
+  return days.some((day) => formatDateValue(day) === value) ? value : fallback;
 }
 
 function sameDay(left: Date, right: Date) {
@@ -182,6 +201,12 @@ export default async function AppointmentsPage({
   );
   const agents = getAgentOptions(profiles, user.id, user.email);
   const days = getCalendarDays();
+  const selectedDate = getSelectedDateValue(params.date, days);
+  const calendarDays = days.map((day) => ({
+    date: formatDateValue(day),
+    isToday: sameDay(day, now),
+    label: formatDayLabel(day, locale),
+  }));
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
@@ -284,7 +309,7 @@ export default async function AppointmentsPage({
                     </div>
                     <Link
                       className="inline-flex h-9 w-fit items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:h-10 sm:px-4"
-                      href="#new-appointment"
+                      href={`/appointments?date=${selectedDate}#new-appointment`}
                       prefetch={false}
                     >
                       <Plus className="h-4 w-4" />
@@ -297,51 +322,13 @@ export default async function AppointmentsPage({
                     </Link>
                   </div>
 
-                  <div className="-mx-1 grid snap-x auto-cols-[8.25rem] grid-flow-col gap-2 overflow-x-auto px-1 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:auto-cols-[9.5rem] lg:mx-0 lg:grid-flow-row lg:grid-cols-7 lg:gap-3 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
-                    {days.map((day) => {
-                      const dayAppointments = appointments.filter((appointment) =>
-                        sameDay(new Date(appointment.starts_at), day),
-                      );
-
-                      return (
-                        <div
-                          className="min-h-28 snap-start rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3 lg:min-h-36"
-                          key={day.toISOString()}
-                        >
-                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                            {formatDayLabel(day, locale)}
-                          </p>
-                          <div className="mt-3 grid gap-2">
-                            {dayAppointments.length === 0 ? (
-                              <p className="text-xs text-slate-400">
-                                {locale === "sq" ? "Pa rezervime" : "No bookings"}
-                              </p>
-                            ) : null}
-                            {dayAppointments.map((appointment) => (
-                              <div
-                                className="rounded-lg bg-white p-2 text-xs shadow-sm"
-                                key={appointment.id}
-                              >
-                                <p className="font-semibold text-slate-950">
-                                  {formatAppointmentTimeRange(
-                                    appointment.starts_at,
-                                    appointment.ends_at,
-                                    locale,
-                                  )}
-                                </p>
-                                <p className="mt-1 line-clamp-2 text-slate-600">
-                                  {appointment.title}
-                                </p>
-                                <p className="mt-1 text-emerald-700">
-                                  {appointmentTypeLabels[appointment.appointment_type]}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <AppointmentCalendarStrip
+                    appointmentTypeLabels={appointmentTypeLabels}
+                    appointments={appointments}
+                    days={calendarDays}
+                    locale={locale}
+                    selectedDate={selectedDate}
+                  />
                 </div>
 
                 <section className="grid gap-3">
@@ -388,6 +375,7 @@ export default async function AppointmentsPage({
                   <AppointmentForm
                     action={createAppointmentAction}
                     agents={agents}
+                    defaultDate={selectedDate}
                     defaultPropertyId={params.property_id || ""}
                     locale={locale}
                     properties={properties}

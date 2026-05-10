@@ -176,10 +176,16 @@ export function formatAppointmentTimeRange(
   return `${formatter.format(new Date(startsAt))} - ${formatter.format(new Date(endsAt))}`;
 }
 
-export function getDefaultAppointmentStart() {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  date.setHours(10, 0, 0, 0);
+export function getDefaultAppointmentStart(dateValue?: string) {
+  const date =
+    dateValue && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)
+      ? new Date(`${dateValue}T10:00:00`)
+      : new Date();
+
+  if (!dateValue) {
+    date.setDate(date.getDate() + 1);
+    date.setHours(10, 0, 0, 0);
+  }
 
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60_000);
