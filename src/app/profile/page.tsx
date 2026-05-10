@@ -11,15 +11,17 @@ import { UserNotificationsPreview } from "@/components/profile/UserNotifications
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
 import {
+  agentWorkspaceMigrationMessage,
   formatWorkspaceDateTime,
   getAvailabilityStatusLabels,
   getInitials,
+  isMissingAgentWorkspaceSchemaError,
 } from "@/lib/agent-workspace";
 import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getRoleLabel } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
-import { requireApprovedUser } from "@/lib/supabase/server";
+import { createClient, requireApprovedUser } from "@/lib/supabase/server";
 
 type ProfilePageProps = {
   searchParams: Promise<{
@@ -45,6 +47,19 @@ function StatCard({
   );
 }
 
+async function getWorkspaceSetupWarning(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("user_status")
+    .select("id")
+    .eq("user_id", userId)
+    .limit(1);
+
+  return isMissingAgentWorkspaceSchemaError(error) ? agentWorkspaceMigrationMessage : null;
+}
+
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   if (!hasSupabaseEnv()) {
     return <SetupNotice />;
@@ -53,7 +68,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const params = await searchParams;
   const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireApprovedUser();
-  const workspace = await getAgentWorkspaceData(supabase, user, profile);
+  const [workspace, setupWarning] = await Promise.all([
+    getAgentWorkspaceData(supabase, user, profile),
+    getWorkspaceSetupWarning(supabase, user.id),
+  ]);
   const statusLabels = getAvailabilityStatusLabels(locale);
   const returnTo = `/profile${params.section ? `?section=${params.section}` : ""}`;
   const displayName = workspace.profile.full_name || user.email || "PRONA X";
@@ -128,7 +146,18 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
         {params.message ? (
           <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
-            {params.message}
+            {isMissingAgentWorkspaceSchemaError({ message: params.message })
+              ? agentWorkspaceMigrationMessage
+              : params.message}
+          </div>
+        ) : null}
+
+        {setupWarning ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+            <strong className="font-semibold">
+              {locale === "sq" ? "Nevojitet konfigurim Supabase:" : "Supabase setup needed:"}
+            </strong>{" "}
+            {setupWarning}
           </div>
         ) : null}
 

@@ -23,6 +23,8 @@ export const notificationTypes = [
 ] as const;
 
 export const calendarViewPreferences = ["day", "week", "month", "agenda"] as const;
+export const agentWorkspaceMigrationMessage =
+  "Profile workspace database setup is pending. Run supabase/migrations/0009_agent_workspace.sql in Supabase SQL Editor, then refresh the page.";
 
 export type AvailabilityStatus = (typeof availabilityStatuses)[number];
 export type NotificationType = (typeof notificationTypes)[number];
@@ -133,6 +135,40 @@ export type AgentWorkspaceData = {
   status: UserStatus;
   todayAgenda: TodayAgendaItem[];
 };
+
+export function isMissingAgentWorkspaceSchemaError(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const message =
+    "message" in error && typeof error.message === "string" ? error.message : "";
+  const details =
+    "details" in error && typeof error.details === "string" ? error.details : "";
+  const code = "code" in error && typeof error.code === "string" ? error.code : "";
+  const text = `${message} ${details}`.toLowerCase();
+
+  return (
+    code === "PGRST204" ||
+    code === "PGRST205" ||
+    (text.includes("schema cache") &&
+      (text.includes("user_status") ||
+        text.includes("user_preferences") ||
+        text.includes("notifications") ||
+        text.includes("activity_logs") ||
+        text.includes("agent_metrics") ||
+        text.includes("avatar_url") ||
+        text.includes("agency_name")))
+  );
+}
+
+export function getAgentWorkspaceErrorMessage(error: unknown) {
+  if (isMissingAgentWorkspaceSchemaError(error)) {
+    return agentWorkspaceMigrationMessage;
+  }
+
+  return error instanceof Error ? error.message : "Profile workspace action failed.";
+}
 
 export const availabilityStatusLabels: Record<AvailabilityStatus, string> = {
   available: "Available",

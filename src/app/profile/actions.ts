@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import {
+  getAgentWorkspaceErrorMessage,
   profileUpdateSchema,
   userPreferenceUpdateSchema,
   userStatusUpdateSchema,
@@ -21,7 +22,7 @@ function getActionErrorMessage(error: unknown) {
     return error.issues[0]?.message || "Check the fields and try again.";
   }
 
-  return error instanceof Error ? error.message : "Profile action failed.";
+  return getAgentWorkspaceErrorMessage(error);
 }
 
 async function logActivity(
@@ -63,7 +64,7 @@ export async function updateAvailabilityStatusAction(formData: FormData) {
   );
 
   if (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(error.message)}`);
+    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
   }
 
   await supabase.from("activity_logs").insert({
@@ -105,7 +106,7 @@ export async function updateUserPreferencesAction(formData: FormData) {
   );
 
   if (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(error.message)}`);
+    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
   }
 
   await supabase.from("activity_logs").insert({
@@ -149,7 +150,7 @@ export async function updateProfileDetailsAction(formData: FormData) {
     .eq("id", user.id);
 
   if (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(error.message)}`);
+    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
   }
 
   await logActivity(user.id, "updated_profile_details", "profile");
@@ -173,7 +174,7 @@ export async function markNotificationReadAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(error.message)}`);
+    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
   }
 
   revalidatePath("/profile");
@@ -191,7 +192,7 @@ export async function markAllNotificationsReadAction(formData: FormData) {
     .is("read_at", null);
 
   if (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(error.message)}`);
+    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
   }
 
   revalidatePath("/profile");

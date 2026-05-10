@@ -68,6 +68,16 @@ It creates:
 8. Confirm logout signs the user out.
 9. Test the profile panel on mobile viewport.
 
+## Troubleshooting
+
+If `/profile` shows a message like `Could not find the table 'public.user_status' in the schema cache`, the code has deployed before the profile workspace migration was applied. Run:
+
+```text
+supabase/migrations/0009_agent_workspace.sql
+```
+
+Then refresh the app after Supabase finishes updating the schema cache.
+
 ## Future Improvements
 
 - AI daily assistant
