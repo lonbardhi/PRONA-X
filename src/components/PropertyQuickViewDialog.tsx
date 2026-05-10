@@ -94,9 +94,9 @@ function DetailMetric({
 }) {
   return (
     <div className="min-w-0 rounded-lg bg-slate-50 p-3">
-      <p className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
-        <Icon className="h-3.5 w-3.5" />
-        {label}
+      <p className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-400">
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="min-w-0 break-words">{label}</span>
       </p>
       <p className="mt-1 break-words text-sm font-semibold text-slate-950">{value}</p>
     </div>
@@ -199,24 +199,24 @@ export function PropertyQuickViewDialog({
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/55 px-2 py-3 backdrop-blur-sm sm:px-6 sm:py-4"
+      className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden bg-slate-950/55 px-2 py-3 backdrop-blur-sm sm:px-6 sm:py-4"
       onClick={onClose}
       role="dialog"
     >
       <div
-        className="mx-auto grid min-h-full max-w-[1180px] items-start sm:items-center"
+        className="mx-auto grid min-h-full w-full max-w-[1180px] min-w-0 items-start sm:items-center"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="overflow-hidden rounded-xl bg-white shadow-2xl">
+        <div className="min-w-0 overflow-hidden rounded-xl bg-white shadow-2xl">
           <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-3 py-4 sm:gap-4 sm:px-5">
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {location}
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <span className="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span className="min-w-0 break-words">{location}</span>
                 </span>
                 <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusTone(property.status)}`}
+                  className={`max-w-full rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusTone(property.status)}`}
                 >
                   {formatStatusLabel(property.status, locale)}
                 </span>
@@ -238,7 +238,7 @@ export function PropertyQuickViewDialog({
             </button>
           </div>
 
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
+          <div className="grid min-w-0 gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
             <div className="min-w-0 border-b border-slate-200 lg:border-b-0">
               {cover ? (
                 <button
@@ -262,7 +262,7 @@ export function PropertyQuickViewDialog({
                     zoom
                   />
                   <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
-                    Click to inspect media
+                    {locale === "sq" ? "Hap median" : "Click to inspect media"}
                   </span>
                 </button>
               ) : (
@@ -278,9 +278,9 @@ export function PropertyQuickViewDialog({
                 </div>
               )}
 
-              <div className="grid gap-4 p-3 sm:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
+              <div className="grid min-w-0 gap-4 overflow-x-hidden p-3 sm:p-5">
+                <div className="grid min-w-0 gap-3 min-[430px]:flex min-[430px]:flex-wrap min-[430px]:items-center min-[430px]:justify-between">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
                       {developmentLand
                         ? locale === "sq"
@@ -290,13 +290,13 @@ export function PropertyQuickViewDialog({
                           ? "Çmimi i kërkuar"
                           : "Asking price"}
                     </p>
-                    <p className="mt-1 text-2xl font-semibold text-slate-950 sm:text-3xl">
+                    <p className="mt-1 max-w-full break-words text-2xl font-semibold leading-tight text-slate-950 sm:text-3xl">
                       {developmentLand
                         ? formatDevelopmentAgreement(property, locale)
                         : formatEuro(property.price_eur || 0, locale)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <FavoritePropertyButton
                       propertyId={property.id}
                       title={property.title}
@@ -315,10 +315,10 @@ export function PropertyQuickViewDialog({
                 </div>
 
                 {developmentLand ? (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 max-[360px]:grid-cols-1">
+                  <div className="grid min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:grid-cols-4">
                     <DetailMetric
                       icon={Landmark}
-                      label="Plot"
+                      label={locale === "sq" ? "Trualli" : "Plot"}
                       value={
                         property.plot_size_m2 != null
                           ? `${property.plot_size_m2} m2`
@@ -327,7 +327,7 @@ export function PropertyQuickViewDialog({
                     />
                     <DetailMetric
                       icon={Percent}
-                      label="Owner %"
+                      label={locale === "sq" ? "Pronari %" : "Owner %"}
                       value={
                         property.landowner_requested_percentage != null
                           ? `${property.landowner_requested_percentage}%`
@@ -336,7 +336,7 @@ export function PropertyQuickViewDialog({
                     />
                     <DetailMetric
                       icon={Ruler}
-                      label="Buildable"
+                      label={locale === "sq" ? "Ndërtueshme" : "Buildable"}
                       value={
                         property.estimated_gross_buildable_area_m2 != null
                           ? `${property.estimated_gross_buildable_area_m2} m2`
@@ -345,12 +345,12 @@ export function PropertyQuickViewDialog({
                     />
                     <DetailMetric
                       icon={Calendar}
-                      label="Max floors"
+                      label={locale === "sq" ? "Kate maks." : "Max floors"}
                       value={property.max_floors ?? "-"}
                     />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 max-[360px]:grid-cols-1">
+                  <div className="grid min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:grid-cols-4">
                     <DetailMetric
                       icon={BedDouble}
                       label={locale === "sq" ? "Dhoma" : "Beds"}
@@ -382,7 +382,9 @@ export function PropertyQuickViewDialog({
                       <h3 className="text-sm font-semibold text-slate-950">
                         {locale === "sq" ? "Media shtesë" : "More media"}
                       </h3>
-                      <p className="text-xs text-slate-400">Scroll to inspect all</p>
+                      <p className="text-xs text-slate-400">
+                        {locale === "sq" ? "Rrëshqit për t'i parë" : "Scroll to inspect all"}
+                      </p>
                     </div>
                     <div className="relative">
                       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white to-transparent" />
