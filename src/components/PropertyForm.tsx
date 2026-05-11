@@ -133,6 +133,14 @@ export function PropertyForm({
 
   return (
     <form action={action} className="grid gap-5">
+      {!developmentLand ? (
+        <input
+          name="visibility"
+          type="hidden"
+          value={property?.visibility || "internal_only"}
+        />
+      ) : null}
+
       <Section
         description={
           developmentLand
