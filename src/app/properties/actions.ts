@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 import {
   calculateGrossBuildableArea,
@@ -20,11 +21,62 @@ import {
 } from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "property-media";
+const GENERIC_PROPERTY_ERROR =
+  "Prona nuk u krijua. Kontrollo fushat dhe provo perseri.";
 
 async function requireUser() {
   const { supabase, user } = await requireOperatorUser();
 
   return { supabase, user };
+}
+
+function getActionErrorMessage(error: unknown) {
+  if (error instanceof z.ZodError) {
+    return getValidationMessage(error.issues[0]?.message);
+  }
+
+  if (error instanceof Error) {
+    return getDatabaseMessage(error.message);
+  }
+
+  return GENERIC_PROPERTY_ERROR;
+}
+
+function getDatabaseMessage(message: string) {
+  if (message.includes("visibility") && message.includes("not-null")) {
+    return "Dukshmeria e prones mungonte. Formulari tani e vendos automatikisht si te brendshme.";
+  }
+
+  if (message.toLowerCase().includes("row-level security")) {
+    return "Nuk ke leje per kete veprim. Kontakto administratorin nese duhet akses shtese.";
+  }
+
+  if (message.toLowerCase().includes("duplicate")) {
+    return "Ky regjistrim duket se ekziston tashme. Kontrollo listen dhe provo perseri.";
+  }
+
+  return message || GENERIC_PROPERTY_ERROR;
+}
+
+function getValidationMessage(message?: string) {
+  const validationMessages: Record<string, string> = {
+    "City is required": "Shkruaj qytetin e prones.",
+    "Landowner requested percentage is required":
+      "Shkruaj perqindjen e kerkuar nga pronari.",
+    "Minimum acceptable percentage cannot be higher than requested percentage":
+      "Perqindja minimale nuk mund te jete me e larte se kerkesa e pronarit.",
+    "Plot size is required for Development Land":
+      "Shkruaj siperfaqen e parceles per Token e Zhvillimit.",
+    "Price is required for standard sale properties":
+      "Shkruaj cmimin per pronat standarde te shitjes.",
+    "Title is required": "Shkruaj titullin e prones.",
+  };
+
+  return message ? validationMessages[message] || message : GENERIC_PROPERTY_ERROR;
+}
+
+function getSalesMessagePath(message: string) {
+  return `/sales?message=${encodeURIComponent(message)}`;
 }
 
 function getPropertyPayload(formData: FormData, userId: string) {
@@ -179,29 +231,55 @@ async function uploadPropertyMedia(
 
 export async function createPropertyAction(formData: FormData) {
   const { supabase, user } = await requireUser();
-  const payload = getPropertyPayload(formData, user.id);
+
+  let payload: ReturnType<typeof getPropertyPayload>;
+  try {
+    payload = getPropertyPayload(formData, user.id);
+  } catch (error) {
+    redirect(getSalesMessagePath(getActionErrorMessage(error)));
+  }
+
   const files = getMediaFiles(formData);
   const mediaValidationError = validatePropertyMediaFiles(files);
 
   if (mediaValidationError) {
-    redirect(`/sales?message=${encodeURIComponent(mediaValidationError)}`);
+    redirect(getSalesMessagePath(mediaValidationError));
   }
 
-  const { data: property, error } = await supabase
-    .from("properties")
-    .insert(payload)
-    .select("id, title")
-    .single();
+  let insertResult: {
+    data: { id: string; title: string } | null;
+    error: { message: string } | null;
+  };
+
+  try {
+    const result = await supabase
+      .from("properties")
+      .insert(payload)
+      .select("id, title")
+      .single();
+
+    insertResult = {
+      data: result.data as { id: string; title: string } | null,
+      error: result.error,
+    };
+  } catch (error) {
+    redirect(getSalesMessagePath(getActionErrorMessage(error)));
+  }
+
+  const { data: property, error } = insertResult;
 
   if (error) {
-    redirect(`/sales?message=${encodeURIComponent(error.message)}`);
+    redirect(getSalesMessagePath(getActionErrorMessage(error)));
+  }
+
+  if (!property) {
+    redirect(getSalesMessagePath(GENERIC_PROPERTY_ERROR));
   }
 
   try {
     await uploadPropertyMedia(supabase, property.id, property.title, files);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Media upload failed";
-    redirect(`/sales?message=${encodeURIComponent(message)}`);
+    redirect(getSalesMessagePath(getActionErrorMessage(error)));
   }
 
   revalidatePath("/properties");
@@ -211,7 +289,16 @@ export async function createPropertyAction(formData: FormData) {
 
 export async function updatePropertyAction(propertyId: string, formData: FormData) {
   const { supabase, user } = await requireUser();
-  const payload = getPropertyPayload(formData, user.id);
+
+  let payload: ReturnType<typeof getPropertyPayload>;
+  try {
+    payload = getPropertyPayload(formData, user.id);
+  } catch (error) {
+    redirect(
+      `/properties/${propertyId}/edit?message=${encodeURIComponent(getActionErrorMessage(error))}`,
+    );
+  }
+
   const { created_by, assigned_agent_id, ...updatePayload } = payload;
   void created_by;
   void assigned_agent_id;
