@@ -38,7 +38,7 @@ import {
   isDevelopmentLand,
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
-import { defaultLocale, type Locale } from "@/lib/i18n";
+import { appTimeZone, defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyQuickViewDialogProps = {
   canManage?: boolean;
@@ -107,6 +107,7 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
+    timeZone: appTimeZone,
     year: "numeric",
   }).format(new Date(value));
 }

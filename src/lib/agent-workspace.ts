@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
+import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
 import type { AppRole } from "@/lib/supabase/server";
 
 export const availabilityStatuses = [
@@ -327,6 +327,7 @@ export function formatWorkspaceDateTime(
   return new Intl.DateTimeFormat(getIntlLocale(locale), {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: appTimeZone,
   }).format(new Date(value));
 }
 
@@ -334,6 +335,7 @@ export function formatWorkspaceTime(value: string, locale: Locale = defaultLocal
   return new Intl.DateTimeFormat(getIntlLocale(locale), {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: appTimeZone,
   }).format(new Date(value));
 }
 

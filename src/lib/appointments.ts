@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
+import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
 
 export const appointmentTypes = [
   "viewing",
@@ -160,6 +160,7 @@ export function formatAppointmentDateTime(
   return new Intl.DateTimeFormat(getIntlLocale(locale), {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: appTimeZone,
   }).format(new Date(value));
 }
 
@@ -171,6 +172,7 @@ export function formatAppointmentTimeRange(
   const formatter = new Intl.DateTimeFormat(getIntlLocale(locale), {
     hour: "numeric",
     minute: "2-digit",
+    timeZone: appTimeZone,
   });
 
   return `${formatter.format(new Date(startsAt))} - ${formatter.format(new Date(endsAt))}`;

@@ -1,6 +1,7 @@
 export const LOCALE_COOKIE = "prona_locale";
 export const locales = ["sq", "en"] as const;
 export const defaultLocale = "sq";
+export const appTimeZone = "Europe/Tirane";
 
 export type Locale = (typeof locales)[number];
 

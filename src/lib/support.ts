@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { getIntlLocale, type Locale } from "@/lib/i18n";
+import { appTimeZone, getIntlLocale, type Locale } from "@/lib/i18n";
 
 export const supportTicketCategories = [
   "technical_issue",
@@ -309,6 +309,7 @@ export function formatSupportDate(value: string, locale: Locale = "en") {
     hour: "2-digit",
     minute: "2-digit",
     month: "short",
+    timeZone: appTimeZone,
     year: "numeric",
   }).format(new Date(value));
 }

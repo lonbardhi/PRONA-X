@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
+import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
 
 export const conversationTypes = [
   "direct",
@@ -333,6 +333,7 @@ export function formatMessagingDateTime(
     hour: "2-digit",
     minute: "2-digit",
     month: "short",
+    timeZone: appTimeZone,
   }).format(new Date(value));
 }
 
