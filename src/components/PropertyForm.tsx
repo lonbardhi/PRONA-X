@@ -135,6 +135,7 @@ export function PropertyForm({
     <form
       action={action}
       className="grid gap-5"
+      encType={typeof action === "string" ? "multipart/form-data" : undefined}
       method={typeof action === "string" ? "post" : undefined}
     >
       {!developmentLand ? (
