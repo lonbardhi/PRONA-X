@@ -229,21 +229,21 @@ async function uploadPropertyMedia(
   }
 }
 
-export async function createPropertyAction(formData: FormData) {
+export async function createPropertyFromFormData(formData: FormData) {
   const { supabase, user } = await requireUser();
 
   let payload: ReturnType<typeof getPropertyPayload>;
   try {
     payload = getPropertyPayload(formData, user.id);
   } catch (error) {
-    redirect(getSalesMessagePath(getActionErrorMessage(error)));
+    return getSalesMessagePath(getActionErrorMessage(error));
   }
 
   const files = getMediaFiles(formData);
   const mediaValidationError = validatePropertyMediaFiles(files);
 
   if (mediaValidationError) {
-    redirect(getSalesMessagePath(mediaValidationError));
+    return getSalesMessagePath(mediaValidationError);
   }
 
   let insertResult: {
@@ -263,28 +263,34 @@ export async function createPropertyAction(formData: FormData) {
       error: result.error,
     };
   } catch (error) {
-    redirect(getSalesMessagePath(getActionErrorMessage(error)));
+    return getSalesMessagePath(getActionErrorMessage(error));
   }
 
   const { data: property, error } = insertResult;
 
   if (error) {
-    redirect(getSalesMessagePath(getActionErrorMessage(error)));
+    return getSalesMessagePath(getActionErrorMessage(error));
   }
 
   if (!property) {
-    redirect(getSalesMessagePath(GENERIC_PROPERTY_ERROR));
+    return getSalesMessagePath(GENERIC_PROPERTY_ERROR);
   }
 
   try {
     await uploadPropertyMedia(supabase, property.id, property.title, files);
   } catch (error) {
-    redirect(getSalesMessagePath(getActionErrorMessage(error)));
+    return getSalesMessagePath(getActionErrorMessage(error));
   }
 
   revalidatePath("/properties");
   revalidatePath("/sales");
-  redirect("/sales");
+  return "/sales";
+}
+
+export async function createPropertyAction(formData: FormData) {
+  const redirectPath = await createPropertyFromFormData(formData);
+
+  redirect(redirectPath);
 }
 
 export async function updatePropertyAction(propertyId: string, formData: FormData) {

@@ -16,7 +16,7 @@ import { propertyMediaAccept, propertyMediaHelpText } from "@/lib/property-media
 import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyFormProps = {
-  action: (formData: FormData) => void | Promise<void>;
+  action: string | ((formData: FormData) => void | Promise<void>);
   locale?: Locale;
   property?: PropertyRecord;
   submitLabel: string;
@@ -132,7 +132,11 @@ export function PropertyForm({
   }
 
   return (
-    <form action={action} className="grid gap-5">
+    <form
+      action={action}
+      className="grid gap-5"
+      method={typeof action === "string" ? "post" : undefined}
+    >
       {!developmentLand ? (
         <input
           name="visibility"

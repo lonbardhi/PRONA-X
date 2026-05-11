@@ -10,7 +10,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-import { createPropertyAction } from "@/app/properties/actions";
 import { AppointmentAgenda } from "@/components/AppointmentAgenda";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PropertyIntakePanel } from "@/components/PropertyIntakePanel";
@@ -456,7 +455,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
         {canManage ? (
           <PropertyIntakePanel defaultOpen={Boolean(params.message)} locale={locale}>
             <PropertyForm
-              action={createPropertyAction}
+              action="/properties/create"
               locale={locale}
               submitLabel={locale === "sq" ? "Krijo pronën" : "Create property"}
             />
