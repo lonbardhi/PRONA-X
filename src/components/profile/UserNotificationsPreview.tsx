@@ -74,7 +74,17 @@ export function UserNotificationsPreview({
                     {typeLabels[notification.type]}
                   </p>
                   <h4 className="mt-1 line-clamp-1 text-sm font-semibold text-slate-950">
-                    {notification.title}
+                    {notification.conversation_id ? (
+                      <Link
+                        className="hover:text-emerald-700"
+                        href={`/messages?conversation=${notification.conversation_id}`}
+                        prefetch={false}
+                      >
+                        {notification.title}
+                      </Link>
+                    ) : (
+                      notification.title
+                    )}
                   </h4>
                   <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-600">
                     {notification.message}

@@ -70,6 +70,7 @@ type TranslationKey =
   | "nav.calendar"
   | "nav.dashboard"
   | "nav.land"
+  | "nav.messages"
   | "nav.rentals"
   | "nav.sales"
   | "nav.sellerLeads"
@@ -237,6 +238,7 @@ const messages: Record<Locale, LocaleMessages> = {
     "nav.calendar": "Kalendari",
     "nav.dashboard": "Paneli",
     "nav.land": "Tokë",
+    "nav.messages": "Mesazhe",
     "nav.rentals": "Qira",
     "nav.sales": "Shitje",
     "nav.sellerLeads": "Leads Shitësish",
@@ -407,6 +409,7 @@ const messages: Record<Locale, LocaleMessages> = {
     "nav.calendar": "Calendar",
     "nav.dashboard": "Dashboard",
     "nav.land": "Land",
+    "nav.messages": "Messages",
     "nav.rentals": "Rentals",
     "nav.sales": "Sales",
     "nav.sellerLeads": "Seller Leads",

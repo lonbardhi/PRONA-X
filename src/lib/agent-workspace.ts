@@ -20,6 +20,13 @@ export const notificationTypes = [
   "follow_up_reminder",
   "contract_reminder",
   "system_alert",
+  "message",
+  "mention",
+  "property_message",
+  "lead_message",
+  "meeting_message",
+  "deal_room_message",
+  "task_created_from_message",
 ] as const;
 
 export const calendarViewPreferences = ["day", "week", "month", "agenda"] as const;
@@ -63,9 +70,11 @@ export type UserPreference = {
 };
 
 export type UserNotification = {
+  conversation_id?: string | null;
   created_at: string;
   id: string;
   message: string;
+  message_id?: string | null;
   read_at: string | null;
   related_entity_id: string | null;
   related_entity_type: string | null;
@@ -192,20 +201,34 @@ const availabilityStatusLabelsSq: Record<AvailabilityStatus, string> = {
 
 export const notificationTypeLabels: Record<NotificationType, string> = {
   contract_reminder: "Contract reminder",
+  deal_room_message: "Deal room message",
   follow_up_reminder: "Follow-up reminder",
+  lead_message: "Lead message",
+  mention: "Mention",
+  message: "Message",
   meeting_reminder: "Meeting reminder",
+  meeting_message: "Meeting message",
   new_assigned_lead: "New assigned lead",
+  property_message: "Property message",
   property_update: "Property update",
   system_alert: "System alert",
+  task_created_from_message: "Task from message",
 };
 
 const notificationTypeLabelsSq: Record<NotificationType, string> = {
   contract_reminder: "Kujtese kontrate",
+  deal_room_message: "Mesazh deal room",
   follow_up_reminder: "Kujtese ndjekjeje",
+  lead_message: "Mesazh lead",
+  mention: "Permendje",
+  message: "Mesazh",
   meeting_reminder: "Kujtese takimi",
+  meeting_message: "Mesazh takimi",
   new_assigned_lead: "Lead i ri i caktuar",
+  property_message: "Mesazh prone",
   property_update: "Perditesim prone",
   system_alert: "Njoftim sistemi",
+  task_created_from_message: "Detyre nga mesazhi",
 };
 
 export const calendarViewLabels: Record<CalendarViewPreference, string> = {

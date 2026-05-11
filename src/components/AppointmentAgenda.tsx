@@ -6,11 +6,13 @@ import {
   Clock3,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   UserRound,
 } from "lucide-react";
 
 import { updateAppointmentStatusAction } from "@/app/appointments/actions";
+import { createEntityConversationAction } from "@/app/messages/actions";
 import {
   appointmentStatuses,
   formatAppointmentDateTime,
@@ -78,6 +80,34 @@ function AppointmentStatusSelect({
   );
 }
 
+function MeetingDiscussionButton({
+  appointment,
+  compact = false,
+  locale,
+}: {
+  appointment: AppointmentRecord;
+  compact?: boolean;
+  locale: Locale;
+}) {
+  return (
+    <form action={createEntityConversationAction} className="shrink-0">
+      <input name="conversation_type" type="hidden" value="meeting_thread" />
+      <input name="entity_id" type="hidden" value={appointment.id} />
+      <input name="entity_type" type="hidden" value="meeting" />
+      <input name="return_to" type="hidden" value="/messages" />
+      <input name="title" type="hidden" value={appointment.title} />
+      <button
+        className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 ${
+          compact ? "h-8 px-2 text-xs" : "h-10 px-3 text-sm"
+        }`}
+      >
+        <MessageCircle className="h-3.5 w-3.5" />
+        {locale === "sq" ? "Diskuto" : "Discuss"}
+      </button>
+    </form>
+  );
+}
+
 export function AppointmentAgenda({
   appointments,
   density = "comfortable",
@@ -131,12 +161,15 @@ export function AppointmentAgenda({
                   {typeLabels[appointment.appointment_type]}
                 </span>
               </span>
-              <AppointmentStatusSelect
-                appointment={appointment}
-                compact
-                locale={locale}
-                returnTo={returnTo}
-              />
+              <div className="flex shrink-0 items-center gap-1.5">
+                <MeetingDiscussionButton appointment={appointment} compact locale={locale} />
+                <AppointmentStatusSelect
+                  appointment={appointment}
+                  compact
+                  locale={locale}
+                  returnTo={returnTo}
+                />
+              </div>
             </div>
 
             <h3 className="mt-3 line-clamp-2 break-words text-sm font-semibold leading-snug text-slate-950">
@@ -219,6 +252,7 @@ export function AppointmentAgenda({
               locale={locale}
               returnTo={returnTo}
             />
+            <MeetingDiscussionButton appointment={appointment} locale={locale} />
           </div>
 
           <div className="mt-4 grid gap-2 text-sm text-slate-600">

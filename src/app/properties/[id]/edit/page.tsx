@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { updatePropertyAction } from "@/app/properties/actions";
 import { DashboardShell } from "@/components/DashboardShell";
+import { EntityDiscussionPanel } from "@/components/messaging/EntityDiscussionPanel";
 import { PropertyForm } from "@/components/PropertyForm";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
@@ -49,7 +50,7 @@ export default async function EditPropertyPage({
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
-      <section className="mx-auto max-w-4xl px-3 py-5 sm:px-6 sm:py-8">
+      <section className="mx-auto grid max-w-5xl gap-5 px-3 py-5 sm:px-6 sm:py-8">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
             {locale === "sq" ? "Ndrysho listimin" : "Edit listing"}
@@ -78,6 +79,15 @@ export default async function EditPropertyPage({
             />
           </div>
         </div>
+
+        <EntityDiscussionPanel
+          conversationType="property_thread"
+          entityId={typedProperty.id}
+          entityTitle={typedProperty.title}
+          entityType="property"
+          locale={locale}
+          returnTo={`/properties/${typedProperty.id}/edit`}
+        />
       </section>
     </DashboardShell>
   );

@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ListChecks,
   LogOut,
+  MessageSquareText,
   Settings,
   ShieldCheck,
   User,
@@ -128,6 +129,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
   ];
   const operatorLinks = [
     { href: "/appointments", icon: CalendarDays, label: locale === "sq" ? "Takimet e mia" : "My Meetings" },
+    { href: "/messages", icon: MessageSquareText, label: locale === "sq" ? "Mesazhet" : "Messages" },
     { href: "/seller-leads", icon: BriefcaseBusiness, label: locale === "sq" ? "Lead-et e mia" : "My Leads" },
     { href: "/sales", icon: BriefcaseBusiness, label: locale === "sq" ? "Pronat e mia" : "My Properties" },
     { href: "/profile?section=tasks", icon: ListChecks, label: locale === "sq" ? "Detyrat e mia" : "My Tasks" },
@@ -141,6 +143,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
   ];
   const supportLinks = [
     { href: "/support", icon: ListChecks, label: locale === "sq" ? "Support" : "Support" },
+    { href: "/messages", icon: MessageSquareText, label: locale === "sq" ? "Mesazhet" : "Messages" },
   ];
   const links = [
     ...baseLinks,

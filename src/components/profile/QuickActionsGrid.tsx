@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, CalendarPlus, ListChecks, Plus, UserPlus } from "lucide-react";
+import { Building2, CalendarPlus, ListChecks, MessageSquareText, Plus, UserPlus } from "lucide-react";
 
 import type { Locale } from "@/lib/i18n";
 
@@ -17,6 +17,11 @@ export function QuickActionsGrid({ locale, role }: QuickActionsGridProps) {
           href: "/support",
           icon: ListChecks,
           label: locale === "sq" ? "Biletat support" : "Support tickets",
+        },
+        {
+          href: "/messages",
+          icon: MessageSquareText,
+          label: locale === "sq" ? "Mesazhe" : "Messages",
         },
         {
           href: "/profile?section=notifications",
@@ -40,6 +45,11 @@ export function QuickActionsGrid({ locale, role }: QuickActionsGridProps) {
           href: "/sales#add-property",
           icon: Plus,
           label: locale === "sq" ? "Prone e re" : "Add property",
+        },
+        {
+          href: "/messages",
+          icon: MessageSquareText,
+          label: locale === "sq" ? "Mesazhe" : "Messages",
         },
         {
           href: "/profile?section=tasks",

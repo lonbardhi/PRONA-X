@@ -15,11 +15,13 @@ import {
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { MessagesNavItem } from "@/components/messaging/MessagesNavItem";
 import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePanel";
 import { SessionTimeout } from "@/components/SessionTimeout";
 import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
 import { t } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
+import { getUnreadMessagingCount } from "@/lib/messaging-data";
 import { getCurrentUserWithProfile } from "@/lib/supabase/server";
 
 type DashboardShellProps = {
@@ -43,6 +45,9 @@ export async function DashboardShell({
           workspaceContext.profile,
         )
       : null;
+  const messagingUnreadCount = workspaceContext.user
+    ? await getUnreadMessagingCount(workspaceContext.supabase, workspaceContext.user.id)
+    : 0;
   const isViewer = userRole === "viewer";
   const isSupportOnly = userRole === "support";
   const navItems = isSupportOnly
@@ -59,6 +64,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.sales"), href: "/sales", icon: Building2 },
         { label: t(locale, "nav.rentals"), href: "/rentals", icon: Building2 },
         { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarDays },
+        { label: t(locale, "nav.messages"), href: "/messages", icon: null },
         { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: UserPlus },
         { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: Plus },
         { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
@@ -75,6 +81,16 @@ export async function DashboardShell({
 
           <nav className="order-3 flex w-full gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:order-none lg:w-auto [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
+              if (item.href === "/messages") {
+                return (
+                  <MessagesNavItem
+                    key={item.href}
+                    locale={locale}
+                    unreadCount={messagingUnreadCount}
+                  />
+                );
+              }
+
               const Icon = item.icon;
 
               return (
@@ -84,11 +100,14 @@ export async function DashboardShell({
                   key={item.label}
                   prefetch={false}
                 >
-                  <Icon className="h-4 w-4" />
+                  {Icon ? <Icon className="h-4 w-4" /> : null}
                   {item.label}
                 </Link>
               );
             })}
+            {isSupportOnly ? (
+              <MessagesNavItem locale={locale} unreadCount={messagingUnreadCount} />
+            ) : null}
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">

@@ -170,7 +170,7 @@ async function getNotifications(
   const { data, error } = await supabase
     .from("notifications")
     .select(
-      "id,user_id,title,message,type,related_entity_type,related_entity_id,read_at,created_at",
+      "id,user_id,title,message,type,related_entity_type,related_entity_id,conversation_id,message_id,read_at,created_at",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
