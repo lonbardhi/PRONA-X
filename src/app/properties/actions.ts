@@ -293,16 +293,21 @@ export async function createPropertyAction(formData: FormData) {
   redirect(redirectPath);
 }
 
-export async function updatePropertyAction(propertyId: string, formData: FormData) {
+function getEditMessagePath(propertyId: string, message: string) {
+  return `/properties/${propertyId}/edit?message=${encodeURIComponent(message)}`;
+}
+
+export async function updatePropertyFromFormData(
+  propertyId: string,
+  formData: FormData,
+) {
   const { supabase, user } = await requireUser();
 
   let payload: ReturnType<typeof getPropertyPayload>;
   try {
     payload = getPropertyPayload(formData, user.id);
   } catch (error) {
-    redirect(
-      `/properties/${propertyId}/edit?message=${encodeURIComponent(getActionErrorMessage(error))}`,
-    );
+    return getEditMessagePath(propertyId, getActionErrorMessage(error));
   }
 
   const { created_by, assigned_agent_id, ...updatePayload } = payload;
@@ -312,19 +317,13 @@ export async function updatePropertyAction(propertyId: string, formData: FormDat
   const mediaValidationError = validatePropertyMediaFiles(files);
 
   if (mediaValidationError) {
-    redirect(`/properties/${propertyId}/edit?message=${encodeURIComponent(mediaValidationError)}`);
+    return getEditMessagePath(propertyId, mediaValidationError);
   }
 
-  const { error } = await supabase
-    .from("properties")
-    .update({
-      ...updatePayload,
-      slug: createSlug(payload.title),
-    })
-    .eq("id", propertyId);
+  const { error } = await supabase.from("properties").update(updatePayload).eq("id", propertyId);
 
   if (error) {
-    redirect(`/properties/${propertyId}/edit?message=${encodeURIComponent(error.message)}`);
+    return getEditMessagePath(propertyId, getActionErrorMessage(error));
   }
 
   const { count: mediaCount } = await supabase
@@ -335,14 +334,20 @@ export async function updatePropertyAction(propertyId: string, formData: FormDat
   try {
     await uploadPropertyMedia(supabase, propertyId, payload.title, files, mediaCount || 0);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Media upload failed";
-    redirect(`/properties/${propertyId}/edit?message=${encodeURIComponent(message)}`);
+    return getEditMessagePath(propertyId, getActionErrorMessage(error));
   }
 
   revalidatePath("/properties");
   revalidatePath("/sales");
   revalidatePath(`/properties/${propertyId}/edit`);
-  redirect("/sales");
+  revalidatePath(`/properties/${propertyId}`);
+  return "/sales";
+}
+
+export async function updatePropertyAction(propertyId: string, formData: FormData) {
+  const redirectPath = await updatePropertyFromFormData(propertyId, formData);
+
+  redirect(redirectPath);
 }
 
 export async function deletePropertyAction(formData: FormData) {

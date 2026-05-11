@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 
-import { updatePropertyAction } from "@/app/properties/actions";
 import { DashboardShell } from "@/components/DashboardShell";
 import { EntityDiscussionPanel } from "@/components/messaging/EntityDiscussionPanel";
 import { PropertyForm } from "@/components/PropertyForm";
@@ -45,7 +44,6 @@ export default async function EditPropertyPage({
   }
 
   const typedProperty = property as PropertyRecord;
-  const updateAction = updatePropertyAction.bind(null, id);
   const query = await searchParams;
 
   return (
@@ -72,7 +70,7 @@ export default async function EditPropertyPage({
 
           <div className="mt-6">
             <PropertyForm
-              action={updateAction}
+              action={`/properties/${id}/update`}
               locale={locale}
               property={typedProperty}
               submitLabel={locale === "sq" ? "Ruaj ndryshimet" : "Save changes"}
