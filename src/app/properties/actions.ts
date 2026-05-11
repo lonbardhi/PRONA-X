@@ -99,7 +99,7 @@ function getPropertyPayload(formData: FormData, userId: string) {
       input.developer_proposed_unit_allocation || null,
     developer_conditions: input.developer_conditions || null,
     developer_offer_status: input.developer_offer_status || null,
-    visibility: input.visibility || (developmentLand ? "internal_only" : null),
+    visibility: input.visibility || "internal_only",
     created_by: userId,
     assigned_agent_id: userId,
   };
