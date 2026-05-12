@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState } from "react";
 import {
   Apple,
-  Building2,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -13,7 +12,6 @@ import {
   LogIn,
   Mail,
   UserPlus,
-  WalletCards,
 } from "lucide-react";
 
 import { LogoMark } from "@/components/BrandLogo";
@@ -277,25 +275,6 @@ export function AuthEntry({
                   </button>
                 </form>
 
-                <button
-                  className="inline-flex h-11 items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-400"
-                  disabled
-                  title="Binance OAuth is not a Supabase provider in this workspace."
-                  type="button"
-                >
-                  <Building2 className="h-4 w-4" />
-                  {t(locale, "auth.binance")}
-                </button>
-
-                <button
-                  className="inline-flex h-11 items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-400"
-                  disabled
-                  title="Wallet sign-in needs a dedicated wallet authentication flow."
-                  type="button"
-                >
-                  <WalletCards className="h-4 w-4" />
-                  {t(locale, "auth.wallet")}
-                </button>
               </div>
             ) : null}
 

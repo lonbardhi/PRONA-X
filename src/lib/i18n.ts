@@ -25,7 +25,6 @@ type TranslationKey =
   | "admin.usersIntro"
   | "auth.alreadyAccount"
   | "auth.apple"
-  | "auth.binance"
   | "auth.createAccount"
   | "auth.createHeading"
   | "auth.createIntro"
@@ -52,7 +51,6 @@ type TranslationKey =
   | "auth.signIn"
   | "auth.signUp"
   | "auth.updates"
-  | "auth.wallet"
   | "brand.subtitle"
   | "brand.tagline"
   | "common.cancel"
@@ -189,7 +187,6 @@ const messages: Record<Locale, LocaleMessages> = {
       "Promovo vetëm personat që duhet të kenë akses në të dhënat e brendshme të PRONA X.",
     "auth.alreadyAccount": "Ke tashmë llogari?",
     "auth.apple": "Vazhdo me Apple",
-    "auth.binance": "Vazhdo me Binance",
     "auth.createAccount": "Krijo llogari",
     "auth.createHeading": "Krijo llogarinë PRONA X",
     "auth.createIntro":
@@ -220,7 +217,6 @@ const messages: Record<Locale, LocaleMessages> = {
     "auth.signUp": "Regjistrohu",
     "auth.updates":
       "Më njofto për lajme platforme, përditësime të proceseve të pronave dhe publikime të PRONA X.",
-    "auth.wallet": "Vazhdo me Wallet",
     "brand.subtitle": "CRM për prona në Shqipëri",
     "brand.tagline": "Operacionet e pronave shqiptare, të markuara nga fillimi në fund.",
     "common.cancel": "Anulo",
@@ -360,7 +356,6 @@ const messages: Record<Locale, LocaleMessages> = {
       "Promote only people who should access PRONA X internal CRM data.",
     "auth.alreadyAccount": "Already have an account?",
     "auth.apple": "Continue with Apple",
-    "auth.binance": "Continue with Binance",
     "auth.createAccount": "Create account",
     "auth.createHeading": "Create your PRONA X account",
     "auth.createIntro":
@@ -391,7 +386,6 @@ const messages: Record<Locale, LocaleMessages> = {
     "auth.signUp": "Sign Up",
     "auth.updates":
       "Keep me updated with platform news, property workflow updates, and PRONA X release notes.",
-    "auth.wallet": "Continue with Wallet",
     "brand.subtitle": "Albanian Property CRM",
     "brand.tagline": "Albanian property operations, branded end to end.",
     "common.cancel": "Cancel",
