@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { Clock3, LogOut, ShieldCheck } from "lucide-react";
+import { Clock3, ShieldCheck } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { LogoutIcon } from "@/components/LogoutIcon";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getRoleLabel, t } from "@/lib/i18n";
@@ -54,7 +55,7 @@ export default async function PendingApprovalPage() {
               <LanguageToggle locale={locale} returnTo="/pending-approval" />
               <form action={signOutAction}>
                 <button className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                  <LogOut className="h-4 w-4" />
+                  <LogoutIcon className="h-6 w-6 object-contain" />
                   {t(locale, "pending.signOut")}
                 </button>
               </form>

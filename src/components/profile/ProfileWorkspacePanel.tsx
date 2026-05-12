@@ -8,7 +8,6 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   ListChecks,
-  LogOut,
   MessageSquareText,
   Settings,
   ShieldCheck,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
+import { LogoutIcon } from "@/components/LogoutIcon";
 import {
   formatWorkspaceDateTime,
   getAvailabilityStatusLabels,
@@ -308,7 +308,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
             <div className="border-t border-slate-200 bg-white p-4">
               <form action={signOutAction}>
                 <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
-                  <LogOut className="h-4 w-4" />
+                  <LogoutIcon className="h-6 w-6 object-contain" />
                   {locale === "sq" ? "Dil nga llogaria" : "Logout"}
                 </button>
               </form>

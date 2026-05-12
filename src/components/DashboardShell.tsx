@@ -6,7 +6,6 @@ import {
   Home,
   Landmark,
   LifeBuoy,
-  LogOut,
   Plus,
   ShieldCheck,
   UserPlus,
@@ -15,6 +14,7 @@ import {
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { LogoutIcon } from "@/components/LogoutIcon";
 import { MessagesNavItem } from "@/components/messaging/MessagesNavItem";
 import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePanel";
 import { SessionTimeout } from "@/components/SessionTimeout";
@@ -132,9 +132,9 @@ export async function DashboardShell({
             <form action={signOutAction}>
               <button
                 aria-label={t(locale, "pending.signOut")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:bg-slate-100"
               >
-                <LogOut className="h-4 w-4" />
+                <LogoutIcon className="h-6 w-6 object-contain" />
               </button>
             </form>
           </div>
