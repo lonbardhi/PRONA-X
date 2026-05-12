@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { MessageSquareText } from "lucide-react";
 
+import { MessageIcon } from "@/components/MessageIcon";
 import type { Locale } from "@/lib/i18n";
 import { UnreadBadge } from "@/components/messaging/UnreadBadge";
 
@@ -16,7 +16,7 @@ export function MessagesNavItem({ locale, unreadCount }: MessagesNavItemProps) {
       href="/messages"
       prefetch={false}
     >
-      <MessageSquareText className="h-4 w-4" />
+      <MessageIcon className="h-5 w-5 object-contain" />
       {locale === "sq" ? "Mesazhe" : "Messages"}
       <UnreadBadge count={unreadCount} subtle />
     </Link>
