@@ -62,6 +62,7 @@ export default async function MessagesPage({ searchParams }: MessagesPageProps) 
         initialMessages={data.messages}
         locale={locale}
         message={params.message}
+        openConversationOnMobile={Boolean(params.conversation)}
         profiles={data.profiles}
       />
     </DashboardShell>

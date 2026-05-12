@@ -129,7 +129,7 @@ export function ConversationView({
 
   if (!conversation) {
     return (
-      <section className="grid min-h-[520px] place-items-center rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center">
+      <section className="grid min-h-[420px] place-items-center rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center sm:min-h-[520px]">
         <div>
           <MessageSquareText className="mx-auto h-10 w-10 text-slate-300" />
           <h2 className="mt-3 text-lg font-semibold text-slate-950">
@@ -156,11 +156,13 @@ export function ConversationView({
   return (
     <section
       className={`grid min-h-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${
-        compact ? "h-[640px]" : "h-[calc(100dvh-10rem)] min-h-[620px]"
+        compact
+          ? "h-[640px]"
+          : "h-[calc(100dvh-13rem)] min-h-[520px] sm:h-[calc(100dvh-10rem)] sm:min-h-[620px]"
       }`}
     >
       <div className="border-b border-slate-200 p-3 sm:p-4">
-        <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <HeaderIcon conversation={conversation} />
             <div className="min-w-0">
@@ -189,10 +191,10 @@ export function ConversationView({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap">
             {relatedHref ? (
               <Link
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
                 href={relatedHref}
                 prefetch={false}
               >
@@ -206,7 +208,7 @@ export function ConversationView({
                 <input name="return_to" type="hidden" value={returnTo} />
                 <button
                   aria-label={locale === "sq" ? "Arkivo biseden" : "Archive conversation"}
-                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                  className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
                 >
                   <Archive className="h-3.5 w-3.5" />
                   {locale === "sq" ? "Arkivo" : "Archive"}

@@ -82,9 +82,17 @@ export function MessageBubble({
           {senderName.slice(0, 2).toUpperCase()}
         </span>
       ) : null}
-      <div className={`min-w-0 max-w-[min(680px,88%)] ${ownMessage ? "items-end" : ""}`}>
-        <div className={`flex items-center gap-2 ${ownMessage ? "justify-end" : ""}`}>
-          <p className="truncate text-xs font-semibold text-slate-600">{senderName}</p>
+      <div
+        className={`min-w-0 max-w-[min(680px,calc(100%-2.5rem))] ${
+          ownMessage ? "items-end" : ""
+        }`}
+      >
+        <div
+          className={`flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 ${
+            ownMessage ? "justify-end" : ""
+          }`}
+        >
+          <p className="min-w-0 truncate text-xs font-semibold text-slate-600">{senderName}</p>
           <p className="shrink-0 text-[11px] text-slate-400">
             {formatMessagingDateTime(message.created_at, locale)}
           </p>

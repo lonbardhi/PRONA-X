@@ -88,7 +88,7 @@ export function ConversationList({
   const filters = getFilters(locale);
 
   return (
-    <aside className="min-h-0 rounded-xl border border-slate-200 bg-white shadow-sm">
+    <aside className="min-h-0 min-w-0 rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 p-3 sm:p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -139,7 +139,7 @@ export function ConversationList({
         </div>
       </div>
 
-      <div className="grid max-h-[72dvh] min-h-[360px] content-start gap-1 overflow-y-auto p-2">
+      <div className="grid max-h-[min(70dvh,620px)] min-h-[360px] content-start gap-1 overflow-y-auto p-2 xl:max-h-[72dvh]">
         {conversations.length === 0 ? (
           <div className="m-2 rounded-xl border border-dashed border-slate-300 p-4 text-sm leading-6 text-slate-500">
             {filter === "unread"
@@ -184,7 +184,7 @@ export function ConversationList({
                         <Archive className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                       ) : null}
                     </div>
-                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                    <p className="mt-0.5 truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                       {getConversationTypeLabel(conversation.type, locale)}
                     </p>
                   </div>

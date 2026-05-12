@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Inbox } from "lucide-react";
+import { ArrowLeft, Inbox } from "lucide-react";
 
 import { ConversationList } from "@/components/messaging/ConversationList";
 import { ConversationView } from "@/components/messaging/ConversationView";
@@ -26,6 +26,7 @@ type MessagesWorkspaceProps = {
   initialMessages: MessageRecord[];
   locale: Locale;
   message?: string;
+  openConversationOnMobile?: boolean;
   profiles: MessagingProfile[];
 };
 
@@ -37,6 +38,7 @@ export function MessagesWorkspace({
   initialMessages,
   locale,
   message,
+  openConversationOnMobile = false,
   profiles,
 }: MessagesWorkspaceProps) {
   const router = useRouter();
@@ -44,6 +46,9 @@ export function MessagesWorkspace({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
+  const [mobilePane, setMobilePane] = useState<"list" | "conversation">(
+    openConversationOnMobile && initialConversationId ? "conversation" : "list",
+  );
   const { conversations, upsertLastMessage } = useConversations(initialConversations);
   const filteredConversations = useConversationSearch({
     conversations,
@@ -61,6 +66,7 @@ export function MessagesWorkspace({
 
   function selectConversation(conversationId: string) {
     setActiveConversationId(conversationId);
+    setMobilePane("conversation");
     router.replace(`/messages?conversation=${conversationId}`, { scroll: false });
   }
 
@@ -70,7 +76,7 @@ export function MessagesWorkspace({
 
   return (
     <>
-      <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
+      <section className="mx-auto grid max-w-[1500px] gap-4 overflow-x-hidden px-3 py-4 sm:gap-5 sm:px-6 sm:py-6">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
@@ -88,17 +94,17 @@ export function MessagesWorkspace({
               </p>
             </div>
 
-            <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[420px]">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 sm:tracking-[0.12em]">
+            <div className="grid w-full grid-cols-1 gap-2 min-[420px]:grid-cols-3 lg:w-auto lg:min-w-[420px]">
+              <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
+                <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:text-xs sm:tracking-[0.12em]">
                   {locale === "sq" ? "Biseda" : "Threads"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {conversations.length}
                 </p>
               </div>
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-2.5 sm:p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-rose-700 sm:tracking-[0.12em]">
+              <div className="min-w-0 rounded-xl border border-rose-200 bg-rose-50 p-2.5 sm:p-3">
+                <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-700 sm:text-xs sm:tracking-[0.12em]">
                   {locale === "sq" ? "Pa lexuar" : "Unread"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
@@ -108,8 +114,8 @@ export function MessagesWorkspace({
                   )}
                 </p>
               </div>
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:tracking-[0.12em]">
+              <div className="min-w-0 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
+                <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:text-xs sm:tracking-[0.12em]">
                   {locale === "sq" ? "Prona" : "Properties"}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
@@ -130,38 +136,86 @@ export function MessagesWorkspace({
           </div>
         ) : null}
 
-        <div className="grid min-h-0 gap-5 xl:grid-cols-[380px_minmax(0,1fr)]">
-          <ConversationList
-            activeConversationId={activeConversationId}
-            conversations={filteredConversations}
-            currentUserId={currentUserId}
-            filter={filter}
-            locale={locale}
-            onCreateClick={() => setCreateOpen(true)}
-            onFilterChange={setFilter}
-            onQueryChange={setQuery}
-            onSelectConversation={selectConversation}
-            query={query}
-          />
+        <div className="xl:hidden">
+          <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+            <button
+              className={`h-10 rounded-lg text-sm font-semibold transition ${
+                mobilePane === "list"
+                  ? "bg-slate-950 text-white"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+              onClick={() => setMobilePane("list")}
+              type="button"
+            >
+              {locale === "sq" ? "Bisedat" : "Threads"}
+            </button>
+            <button
+              className={`h-10 rounded-lg text-sm font-semibold transition ${
+                mobilePane === "conversation"
+                  ? "bg-slate-950 text-white"
+                  : "text-slate-600 hover:bg-slate-50"
+              } disabled:cursor-not-allowed disabled:opacity-45`}
+              disabled={!activeConversationId}
+              onClick={() => setMobilePane("conversation")}
+              type="button"
+            >
+              {locale === "sq" ? "Biseda aktive" : "Active thread"}
+            </button>
+          </div>
+        </div>
 
-          <ConversationView
-            canManageConversation={
-              canManageConversations ||
-              Boolean(activeConversation?.created_by === currentUserId)
-            }
-            conversation={activeConversation}
-            currentUserId={currentUserId}
-            initialConversationId={initialConversationId}
-            initialMessages={initialMessages}
-            locale={locale}
-            onLatestMessage={handleLatestMessage}
-            profiles={profiles}
-            returnTo={
-              activeConversationId
-                ? `/messages?conversation=${activeConversationId}`
-                : "/messages"
-            }
-          />
+        <div className="grid min-h-0 gap-4 xl:grid-cols-[380px_minmax(0,1fr)] xl:gap-5">
+          <div className={`${mobilePane === "list" ? "block" : "hidden"} min-w-0 xl:block`}>
+            <ConversationList
+              activeConversationId={activeConversationId}
+              conversations={filteredConversations}
+              currentUserId={currentUserId}
+              filter={filter}
+              locale={locale}
+              onCreateClick={() => setCreateOpen(true)}
+              onFilterChange={setFilter}
+              onQueryChange={setQuery}
+              onSelectConversation={selectConversation}
+              query={query}
+            />
+          </div>
+
+          <div className={`${mobilePane === "conversation" ? "block" : "hidden"} min-w-0 xl:block`}>
+            {activeConversation ? (
+              <div className="mb-2 flex items-center justify-between gap-2 xl:hidden">
+                <button
+                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm"
+                  onClick={() => setMobilePane("list")}
+                  type="button"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  {locale === "sq" ? "Bisedat" : "Threads"}
+                </button>
+                <span className="truncate text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+                  {locale === "sq" ? "Biseda aktive" : "Active thread"}
+                </span>
+              </div>
+            ) : null}
+
+            <ConversationView
+              canManageConversation={
+                canManageConversations ||
+                Boolean(activeConversation?.created_by === currentUserId)
+              }
+              conversation={activeConversation}
+              currentUserId={currentUserId}
+              initialConversationId={initialConversationId}
+              initialMessages={initialMessages}
+              locale={locale}
+              onLatestMessage={handleLatestMessage}
+              profiles={profiles}
+              returnTo={
+                activeConversationId
+                  ? `/messages?conversation=${activeConversationId}`
+                  : "/messages"
+              }
+            />
+          </div>
         </div>
       </section>
 

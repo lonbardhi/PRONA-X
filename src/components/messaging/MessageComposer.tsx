@@ -68,7 +68,7 @@ export function MessageComposer({
   return (
     <form
       action={sendMessageAction}
-      className="relative border-t border-slate-200 bg-white p-3"
+      className="relative min-w-0 border-t border-slate-200 bg-white p-3"
       ref={formRef}
     >
       <input name="conversation_id" type="hidden" value={conversationId} />
@@ -119,8 +119,8 @@ export function MessageComposer({
           value={content}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className="flex flex-col gap-2 border-t border-slate-200 pt-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">
               <Paperclip className="h-4 w-4" />
               {locale === "sq" ? "Skedare" : "Files"}
@@ -139,7 +139,7 @@ export function MessageComposer({
           </div>
 
           <button
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-auto"
             disabled={disabled}
           >
             <SendHorizontal className="h-4 w-4" />
