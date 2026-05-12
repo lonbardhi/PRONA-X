@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   Bell,
-  CalendarDays,
   Landmark,
   LifeBuoy,
   Plus,
@@ -11,6 +10,7 @@ import {
 
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
+import { CalendarIcon } from "@/components/CalendarIcon";
 import { DashboardIcon } from "@/components/DashboardIcon";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { LogoutIcon } from "@/components/LogoutIcon";
@@ -64,7 +64,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.dashboard"), href: "/dashboard", icon: DashboardIcon },
         { label: t(locale, "nav.sales"), href: "/sales", icon: SalesIcon },
         { label: t(locale, "nav.rentals"), href: "/rentals", icon: RentalsIcon },
-        { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarDays },
+        { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarIcon },
         { label: t(locale, "nav.messages"), href: "/messages", icon: null },
         { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: UserPlus },
         { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: Plus },
