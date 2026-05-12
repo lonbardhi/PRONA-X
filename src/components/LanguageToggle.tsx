@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { setLocaleAction } from "@/app/language/actions";
 import { type Locale, t } from "@/lib/i18n";
 
@@ -8,32 +10,56 @@ type LanguageToggleProps = {
   returnTo?: string;
 };
 
+const languageOptions = [
+  {
+    locale: "sq",
+    src: "/brand/flag-albania.png",
+    labelKey: "language.albanian",
+  },
+  {
+    locale: "en",
+    src: "/brand/flag-united-kingdom.png",
+    labelKey: "language.english",
+  },
+] as const;
+
 export function LanguageToggle({ locale, returnTo }: LanguageToggleProps) {
   return (
     <form
       action={setLocaleAction}
       aria-label={t(locale, "language.label")}
-      className="inline-flex h-9 shrink-0 items-center overflow-hidden rounded-full border border-slate-200 bg-white p-1 shadow-sm"
+      className="inline-flex h-10 shrink-0 items-center gap-1 overflow-hidden rounded-full border border-slate-200 bg-white p-1 shadow-sm"
     >
       {returnTo ? <input name="return_to" type="hidden" value={returnTo} /> : null}
-      {(["sq", "en"] as const).map((item) => {
-        const active = item === locale;
+      {languageOptions.map((item) => {
+        const active = item.locale === locale;
+        const label = t(locale, item.labelKey);
 
         return (
           <button
             aria-pressed={active}
-            className={`h-7 rounded-full px-2.5 text-xs font-bold uppercase tracking-[0.08em] transition ${
+            aria-label={label}
+            className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 ${
               active
-                ? "bg-slate-950 text-white"
-                : "text-slate-500 hover:bg-slate-50 hover:text-slate-950"
+                ? "bg-slate-950 shadow-sm ring-2 ring-slate-950 ring-offset-1"
+                : "hover:bg-slate-50"
             }`}
-            key={item}
+            key={item.locale}
             name="locale"
-            title={t(locale, item === "sq" ? "language.albanian" : "language.english")}
+            title={label}
             type="submit"
-            value={item}
+            value={item.locale}
           >
-            {item === "sq" ? "SQ" : "EN"}
+            <Image
+              alt=""
+              aria-hidden="true"
+              className="h-6 w-6 rounded-full object-cover"
+              height={24}
+              priority={false}
+              src={item.src}
+              width={24}
+            />
+            <span className="sr-only">{label}</span>
           </button>
         );
       })}
