@@ -3,11 +3,11 @@ import {
   Bell,
   Landmark,
   LifeBuoy,
-  Plus,
   ShieldCheck,
 } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
+import { AddPropertyIcon } from "@/components/AddPropertyIcon";
 import { BrandLockup } from "@/components/BrandLogo";
 import { CalendarIcon } from "@/components/CalendarIcon";
 import { DashboardIcon } from "@/components/DashboardIcon";
@@ -67,7 +67,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarIcon },
         { label: t(locale, "nav.messages"), href: "/messages", icon: null },
         { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: LeadsIcon },
-        { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: Plus },
+        { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: AddPropertyIcon },
         { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
         ...(userRole === "admin"
           ? [{ label: t(locale, "nav.adminUsers"), href: "/admin/users", icon: ShieldCheck }]
