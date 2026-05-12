@@ -3,7 +3,6 @@ import {
   Bell,
   Building2,
   CalendarDays,
-  Home,
   Landmark,
   LifeBuoy,
   Plus,
@@ -13,6 +12,7 @@ import {
 
 import { signOutAction } from "@/app/login/actions";
 import { BrandLockup } from "@/components/BrandLogo";
+import { DashboardIcon } from "@/components/DashboardIcon";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { LogoutIcon } from "@/components/LogoutIcon";
 import { MessagesNavItem } from "@/components/messaging/MessagesNavItem";
@@ -60,7 +60,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
       ]
     : [
-        { label: t(locale, "nav.dashboard"), href: "/dashboard", icon: Home },
+        { label: t(locale, "nav.dashboard"), href: "/dashboard", icon: DashboardIcon },
         { label: t(locale, "nav.sales"), href: "/sales", icon: Building2 },
         { label: t(locale, "nav.rentals"), href: "/rentals", icon: Building2 },
         { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarDays },
