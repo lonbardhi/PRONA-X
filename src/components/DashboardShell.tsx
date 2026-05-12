@@ -5,7 +5,6 @@ import {
   LifeBuoy,
   Plus,
   ShieldCheck,
-  UserPlus,
 } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
@@ -13,6 +12,7 @@ import { BrandLockup } from "@/components/BrandLogo";
 import { CalendarIcon } from "@/components/CalendarIcon";
 import { DashboardIcon } from "@/components/DashboardIcon";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { LeadsIcon } from "@/components/LeadsIcon";
 import { LogoutIcon } from "@/components/LogoutIcon";
 import { MessagesNavItem } from "@/components/messaging/MessagesNavItem";
 import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePanel";
@@ -66,7 +66,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.rentals"), href: "/rentals", icon: RentalsIcon },
         { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarIcon },
         { label: t(locale, "nav.messages"), href: "/messages", icon: null },
-        { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: UserPlus },
+        { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: LeadsIcon },
         { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: Plus },
         { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
         ...(userRole === "admin"
