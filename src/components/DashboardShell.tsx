@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   Bell,
-  Building2,
   CalendarDays,
   Landmark,
   LifeBuoy,
@@ -17,6 +16,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { LogoutIcon } from "@/components/LogoutIcon";
 import { MessagesNavItem } from "@/components/messaging/MessagesNavItem";
 import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePanel";
+import { RentalsIcon } from "@/components/RentalsIcon";
 import { SalesIcon } from "@/components/SalesIcon";
 import { SessionTimeout } from "@/components/SessionTimeout";
 import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
@@ -56,14 +56,14 @@ export async function DashboardShell({
     : isViewer
     ? [
         { label: t(locale, "nav.sales"), href: "/sales", icon: SalesIcon },
-        { label: t(locale, "nav.rentals"), href: "/sales?status=rented", icon: Building2 },
+        { label: t(locale, "nav.rentals"), href: "/sales?status=rented", icon: RentalsIcon },
         { label: t(locale, "nav.land"), href: "/sales?type=development_land", icon: Landmark },
         { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
       ]
     : [
         { label: t(locale, "nav.dashboard"), href: "/dashboard", icon: DashboardIcon },
         { label: t(locale, "nav.sales"), href: "/sales", icon: SalesIcon },
-        { label: t(locale, "nav.rentals"), href: "/rentals", icon: Building2 },
+        { label: t(locale, "nav.rentals"), href: "/rentals", icon: RentalsIcon },
         { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarDays },
         { label: t(locale, "nav.messages"), href: "/messages", icon: null },
         { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: UserPlus },
