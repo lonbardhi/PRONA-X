@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   Bell,
   Landmark,
-  LifeBuoy,
   ShieldCheck,
 } from "lucide-react";
 
@@ -19,6 +18,7 @@ import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePane
 import { RentalsIcon } from "@/components/RentalsIcon";
 import { SalesIcon } from "@/components/SalesIcon";
 import { SessionTimeout } from "@/components/SessionTimeout";
+import { SupportIcon } from "@/components/SupportIcon";
 import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
 import { t } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
@@ -52,13 +52,13 @@ export async function DashboardShell({
   const isViewer = userRole === "viewer";
   const isSupportOnly = userRole === "support";
   const navItems = isSupportOnly
-    ? [{ label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy }]
+    ? [{ label: t(locale, "nav.support"), href: "/support", icon: SupportIcon }]
     : isViewer
     ? [
         { label: t(locale, "nav.sales"), href: "/sales", icon: SalesIcon },
         { label: t(locale, "nav.rentals"), href: "/sales?status=rented", icon: RentalsIcon },
         { label: t(locale, "nav.land"), href: "/sales?type=development_land", icon: Landmark },
-        { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
+        { label: t(locale, "nav.support"), href: "/support", icon: SupportIcon },
       ]
     : [
         { label: t(locale, "nav.dashboard"), href: "/dashboard", icon: DashboardIcon },
@@ -68,7 +68,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.messages"), href: "/messages", icon: null },
         { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: LeadsIcon },
         { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: AddPropertyIcon },
-        { label: t(locale, "nav.support"), href: "/support", icon: LifeBuoy },
+        { label: t(locale, "nav.support"), href: "/support", icon: SupportIcon },
         ...(userRole === "admin"
           ? [{ label: t(locale, "nav.adminUsers"), href: "/admin/users", icon: ShieldCheck }]
           : []),
