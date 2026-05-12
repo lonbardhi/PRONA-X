@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import {
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 import type { PropertyRecord, PropertyStatus, PropertyType } from "@/lib/properties";
 import {
@@ -12,7 +18,20 @@ import {
   propertyTypes,
   standardPropertyStatuses,
 } from "@/lib/properties";
-import { propertyMediaAccept, propertyMediaHelpText } from "@/lib/property-media";
+import {
+  createInitialUploadQueue,
+  getMediaMutationErrorMessage,
+  type PropertyMutationResponse,
+  type PropertyUploadQueueItem,
+  uploadPropertyMediaDirect,
+  validatePropertyMediaSelection,
+} from "@/lib/property-media-client";
+import {
+  propertyMediaAccept,
+  propertyMediaHelpText,
+  propertyVideoMaxDurationSeconds,
+  propertyVideoMaxSizeMb,
+} from "@/lib/property-media";
 import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyFormProps = {
@@ -74,6 +93,30 @@ function numberValue(value: number | null | undefined) {
   return value ?? "";
 }
 
+function getQueueStatusLabel(
+  status: PropertyUploadQueueItem["status"],
+  locale: Locale,
+) {
+  const isSq = locale === "sq";
+
+  switch (status) {
+    case "validating":
+      return isSq ? "Po validohet" : "Validating";
+    case "ready":
+      return isSq ? "Gati" : "Ready";
+    case "uploading":
+      return isSq ? "Po ngarkohet" : "Uploading";
+    case "saving":
+      return isSq ? "Po lidhet me pronen" : "Saving to property";
+    case "done":
+      return isSq ? "U ruajt" : "Saved";
+    case "error":
+      return isSq ? "Deshtoi" : "Failed";
+    default:
+      return isSq ? "Ne radhe" : "Queued";
+  }
+}
+
 export function PropertyForm({
   action,
   locale = defaultLocale,
@@ -98,6 +141,10 @@ export function PropertyForm({
   const [coefficient, setCoefficient] = useState(
     String(property?.building_coefficient ?? ""),
   );
+  const [selectedMediaFiles, setSelectedMediaFiles] = useState<File[]>([]);
+  const [uploadQueue, setUploadQueue] = useState<PropertyUploadQueueItem[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const isSq = locale === "sq";
 
   const grossBuildableArea = useMemo(() => {
@@ -131,11 +178,122 @@ export function PropertyForm({
     }
   }
 
+  function updateQueueItem(
+    index: number,
+    patch: Partial<PropertyUploadQueueItem>,
+  ) {
+    setUploadQueue((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, ...patch } : item,
+      ),
+    );
+  }
+
+  function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files || []);
+    setSelectedMediaFiles(files);
+    setUploadQueue(createInitialUploadQueue(files));
+    setUploadError(null);
+  }
+
+  async function handleDirectMediaSubmit(event: FormEvent<HTMLFormElement>) {
+    if (typeof action !== "string" || selectedMediaFiles.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    setUploadError(null);
+    setUploadQueue(
+      createInitialUploadQueue(selectedMediaFiles).map((item) => ({
+        ...item,
+        status: "validating",
+      })),
+    );
+
+    const validationError = await validatePropertyMediaSelection(
+      selectedMediaFiles,
+      locale,
+      property?.property_media,
+    );
+
+    if (validationError) {
+      setUploadError(validationError);
+      setUploadQueue((current) =>
+        current.map((item) => ({ ...item, error: validationError, status: "error" })),
+      );
+      return;
+    }
+
+    setUploadQueue((current) =>
+      current.map((item) => ({ ...item, status: "ready" })),
+    );
+    setIsUploadingMedia(true);
+    let savedPropertyId = property?.id;
+
+    try {
+      const payload = new FormData(event.currentTarget);
+      payload.delete("media");
+
+      const response = await fetch(action, {
+        body: payload,
+        headers: {
+          "x-prona-response": "json",
+        },
+        method: "POST",
+      });
+
+      const result = (await response.json()) as PropertyMutationResponse;
+
+      if (
+        !response.ok ||
+        !result.success ||
+        !result.propertyId ||
+        !result.propertyTitle
+      ) {
+        setUploadError(getMediaMutationErrorMessage(locale, result));
+        setIsUploadingMedia(false);
+        return;
+      }
+
+      savedPropertyId = result.propertyId;
+
+      await uploadPropertyMediaDirect({
+        files: selectedMediaFiles,
+        locale,
+        propertyId: result.propertyId,
+        propertyTitle: result.propertyTitle,
+        startIndex: result.mediaCount || 0,
+        updateQueueItem,
+      });
+
+      window.location.assign(result.redirectPath || "/sales");
+    } catch {
+      const message = isSq
+        ? "Prona u ruajt, por ngarkimi i medias deshtoi. Do te kalosh te faqja e ndryshimit per te provuar perseri."
+        : "The property was saved, but media upload failed. You will be taken to the edit page to try again.";
+
+      setUploadError(message);
+
+      if (savedPropertyId) {
+        window.location.assign(
+          `/properties/${savedPropertyId}/edit?message=${encodeURIComponent(message)}`,
+        );
+      }
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  }
+
   return (
     <form
       action={action}
       className="grid gap-5"
       encType={typeof action === "string" ? "multipart/form-data" : undefined}
+      onSubmit={(event) => {
+        if (typeof action === "string" && selectedMediaFiles.length > 0) {
+          void handleDirectMediaSubmit(event);
+        }
+      }}
       method={typeof action === "string" ? "post" : undefined}
     >
       {!developmentLand ? (
@@ -774,15 +932,72 @@ export function PropertyForm({
           <input
             accept={propertyMediaAccept}
             className="w-full min-w-0 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-orange-700"
+            onChange={handleMediaChange}
             multiple
             name="media"
             type="file"
           />
           <span className="text-xs font-normal leading-5 text-slate-500">
             {isSq
-              ? "Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV. Dokumente: PDF."
+              ? `Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri ne ${propertyVideoMaxDurationSeconds} sekonda dhe ${propertyVideoMaxSizeMb} MB. Dokumente: PDF.`
               : propertyMediaHelpText}
           </span>
+          {uploadError ? (
+            <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-800">
+              {uploadError}
+            </div>
+          ) : null}
+          {uploadQueue.length > 0 ? (
+            <div className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-900">
+                  {isSq ? "Radha e ngarkimit" : "Upload queue"}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {isSq
+                    ? "Video: maksimumi 1 minute dhe 25 MB."
+                    : "Video: maximum 1 minute and 25 MB."}
+                </p>
+              </div>
+              <div className="grid gap-2">
+                {uploadQueue.map((item, index) => (
+                  <div
+                    key={`${item.name}-${index}`}
+                    className="rounded-lg border border-slate-200 bg-white p-3"
+                  >
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {getQueueStatusLabel(item.status, locale)}
+                        </p>
+                      </div>
+                      <p className="text-xs font-semibold text-slate-600">
+                        {item.progress}%
+                      </p>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          item.status === "error"
+                            ? "bg-rose-500"
+                            : item.status === "done"
+                              ? "bg-emerald-500"
+                              : "bg-orange-500"
+                        }`}
+                        style={{ width: `${item.progress}%` }}
+                      />
+                    </div>
+                    {item.error ? (
+                      <p className="mt-2 text-xs text-rose-600">{item.error}</p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </Field>
 
         <Field
@@ -811,8 +1026,15 @@ export function PropertyForm({
         </Field>
       </Section>
 
-      <button className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 sm:w-fit">
-        {submitLabel}
+      <button
+        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300 sm:w-fit"
+        disabled={isUploadingMedia}
+      >
+        {isUploadingMedia
+          ? isSq
+            ? "Po ruhet dhe po ngarkohet media..."
+            : "Saving and uploading media..."
+          : submitLabel}
       </button>
     </form>
   );

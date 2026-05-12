@@ -10,6 +10,9 @@ type MediaRule = {
 };
 
 const MB = 1024 * 1024;
+export const propertyVideoMaxDurationSeconds = 60;
+export const propertyVideoMaxSizeMb = 25;
+const propertyVideoMaxSizeBytes = propertyVideoMaxSizeMb * MB;
 
 export const propertyMediaRules: Record<string, MediaRule> = {
   "image/jpeg": {
@@ -46,19 +49,19 @@ export const propertyMediaRules: Record<string, MediaRule> = {
     extensions: [".mp4", ".m4v"],
     kind: "video",
     label: "MP4 video",
-    maxSize: 100 * MB,
+    maxSize: propertyVideoMaxSizeBytes,
   },
   "video/webm": {
     extensions: [".webm"],
     kind: "video",
     label: "WebM video",
-    maxSize: 100 * MB,
+    maxSize: propertyVideoMaxSizeBytes,
   },
   "video/quicktime": {
     extensions: [".mov"],
     kind: "video",
     label: "MOV video",
-    maxSize: 100 * MB,
+    maxSize: propertyVideoMaxSizeBytes,
   },
   "application/pdf": {
     extensions: [".pdf"],
@@ -84,7 +87,7 @@ export const propertyMediaAccept = Object.entries(propertyMediaRules)
   .join(",");
 
 export const propertyMediaHelpText =
-  "Photos: JPG, PNG, WebP, AVIF, GIF. Videos: MP4, WebM, MOV. Documents: PDF.";
+  "Photos: JPG, PNG, WebP, AVIF, GIF. Videos: MP4, WebM, MOV up to 60 seconds and 25 MB. Documents: PDF.";
 
 export function getPropertyMediaMimeType(file: File) {
   const explicitType = file.type.toLowerCase();

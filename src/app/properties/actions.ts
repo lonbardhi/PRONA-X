@@ -24,6 +24,15 @@ const MEDIA_BUCKET = "property-media";
 const GENERIC_PROPERTY_ERROR =
   "Prona nuk u krijua. Kontrollo fushat dhe provo perseri.";
 
+export type PropertyMutationResult = {
+  mediaCount: number;
+  message?: string;
+  propertyId?: string;
+  propertyTitle?: string;
+  redirectPath: string;
+  success: boolean;
+};
+
 async function requireUser() {
   const { supabase, user } = await requireOperatorUser();
 
@@ -236,14 +245,24 @@ export async function createPropertyFromFormData(formData: FormData) {
   try {
     payload = getPropertyPayload(formData, user.id);
   } catch (error) {
-    return getSalesMessagePath(getActionErrorMessage(error));
+    return {
+      mediaCount: 0,
+      message: getActionErrorMessage(error),
+      redirectPath: getSalesMessagePath(getActionErrorMessage(error)),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   const files = getMediaFiles(formData);
   const mediaValidationError = validatePropertyMediaFiles(files);
 
   if (mediaValidationError) {
-    return getSalesMessagePath(mediaValidationError);
+    return {
+      mediaCount: 0,
+      message: mediaValidationError,
+      redirectPath: getSalesMessagePath(mediaValidationError),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   let insertResult: {
@@ -263,34 +282,64 @@ export async function createPropertyFromFormData(formData: FormData) {
       error: result.error,
     };
   } catch (error) {
-    return getSalesMessagePath(getActionErrorMessage(error));
+    return {
+      mediaCount: 0,
+      message: getActionErrorMessage(error),
+      redirectPath: getSalesMessagePath(getActionErrorMessage(error)),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   const { data: property, error } = insertResult;
 
   if (error) {
-    return getSalesMessagePath(getActionErrorMessage(error));
+    const message = getActionErrorMessage(error);
+    return {
+      mediaCount: 0,
+      message,
+      redirectPath: getSalesMessagePath(message),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   if (!property) {
-    return getSalesMessagePath(GENERIC_PROPERTY_ERROR);
+    return {
+      mediaCount: 0,
+      message: GENERIC_PROPERTY_ERROR,
+      redirectPath: getSalesMessagePath(GENERIC_PROPERTY_ERROR),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   try {
     await uploadPropertyMedia(supabase, property.id, property.title, files);
   } catch (error) {
-    return getSalesMessagePath(getActionErrorMessage(error));
+    const message = getActionErrorMessage(error);
+    return {
+      mediaCount: 0,
+      message,
+      propertyId: property.id,
+      propertyTitle: property.title,
+      redirectPath: getEditMessagePath(property.id, message),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   revalidatePath("/properties");
   revalidatePath("/sales");
-  return "/sales";
+  return {
+    mediaCount: files.length,
+    propertyId: property.id,
+    propertyTitle: property.title,
+    redirectPath: "/sales",
+    success: true,
+  } satisfies PropertyMutationResult;
 }
 
 export async function createPropertyAction(formData: FormData) {
   const redirectPath = await createPropertyFromFormData(formData);
 
-  redirect(redirectPath);
+  redirect(redirectPath.redirectPath);
 }
 
 function getEditMessagePath(propertyId: string, message: string) {
@@ -307,7 +356,14 @@ export async function updatePropertyFromFormData(
   try {
     payload = getPropertyPayload(formData, user.id);
   } catch (error) {
-    return getEditMessagePath(propertyId, getActionErrorMessage(error));
+    const message = getActionErrorMessage(error);
+    return {
+      mediaCount: 0,
+      message,
+      propertyId,
+      redirectPath: getEditMessagePath(propertyId, message),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   const { created_by, assigned_agent_id, ...updatePayload } = payload;
@@ -317,13 +373,28 @@ export async function updatePropertyFromFormData(
   const mediaValidationError = validatePropertyMediaFiles(files);
 
   if (mediaValidationError) {
-    return getEditMessagePath(propertyId, mediaValidationError);
+    return {
+      mediaCount: 0,
+      message: mediaValidationError,
+      propertyId,
+      propertyTitle: payload.title,
+      redirectPath: getEditMessagePath(propertyId, mediaValidationError),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   const { error } = await supabase.from("properties").update(updatePayload).eq("id", propertyId);
 
   if (error) {
-    return getEditMessagePath(propertyId, getActionErrorMessage(error));
+    const message = getActionErrorMessage(error);
+    return {
+      mediaCount: 0,
+      message,
+      propertyId,
+      propertyTitle: payload.title,
+      redirectPath: getEditMessagePath(propertyId, message),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   const { count: mediaCount } = await supabase
@@ -334,20 +405,34 @@ export async function updatePropertyFromFormData(
   try {
     await uploadPropertyMedia(supabase, propertyId, payload.title, files, mediaCount || 0);
   } catch (error) {
-    return getEditMessagePath(propertyId, getActionErrorMessage(error));
+    const message = getActionErrorMessage(error);
+    return {
+      mediaCount: mediaCount || 0,
+      message,
+      propertyId,
+      propertyTitle: payload.title,
+      redirectPath: getEditMessagePath(propertyId, message),
+      success: false,
+    } satisfies PropertyMutationResult;
   }
 
   revalidatePath("/properties");
   revalidatePath("/sales");
   revalidatePath(`/properties/${propertyId}/edit`);
   revalidatePath(`/properties/${propertyId}`);
-  return "/sales";
+  return {
+    mediaCount: mediaCount || 0,
+    propertyId,
+    propertyTitle: payload.title,
+    redirectPath: "/sales",
+    success: true,
+  } satisfies PropertyMutationResult;
 }
 
 export async function updatePropertyAction(propertyId: string, formData: FormData) {
   const redirectPath = await updatePropertyFromFormData(propertyId, formData);
 
-  redirect(redirectPath);
+  redirect(redirectPath.redirectPath);
 }
 
 export async function deletePropertyAction(formData: FormData) {
