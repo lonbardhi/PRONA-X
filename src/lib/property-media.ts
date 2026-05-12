@@ -12,6 +12,7 @@ type MediaRule = {
 const MB = 1024 * 1024;
 export const propertyVideoMaxDurationSeconds = 60;
 export const propertyVideoMaxSizeMb = 25;
+export const propertyMediaMaxFiles = 10;
 const propertyVideoMaxSizeBytes = propertyVideoMaxSizeMb * MB;
 
 export const propertyMediaRules: Record<string, MediaRule> = {
@@ -87,7 +88,7 @@ export const propertyMediaAccept = Object.entries(propertyMediaRules)
   .join(",");
 
 export const propertyMediaHelpText =
-  "Photos: JPG, PNG, WebP, AVIF, GIF. Videos: MP4, WebM, MOV up to 60 seconds and 25 MB. Documents: PDF.";
+  "Upload up to 10 files at once. Photos: JPG, PNG, WebP, AVIF, GIF. Videos: MP4, WebM, MOV up to 60 seconds and 25 MB. Documents: PDF.";
 
 export function getPropertyMediaMimeType(file: File) {
   const explicitType = file.type.toLowerCase();

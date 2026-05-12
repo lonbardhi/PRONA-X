@@ -5,6 +5,7 @@ import type { PropertyMedia } from "@/lib/properties";
 import {
   getPropertyMediaMimeType,
   getPropertyMediaKindFromUrl,
+  propertyMediaMaxFiles,
   propertyMediaRules,
   propertyVideoMaxDurationSeconds,
 } from "@/lib/property-media";
@@ -105,6 +106,12 @@ export async function validatePropertyMediaSelection(
   locale: "sq" | "en",
   existingMedia: PropertyMedia[] = [],
 ) {
+  if (files.length > propertyMediaMaxFiles) {
+    return isSq(locale)
+      ? `Ngarko deri ne ${propertyMediaMaxFiles} skedare njekohesisht.`
+      : `Upload up to ${propertyMediaMaxFiles} files at once.`;
+  }
+
   const existingVideoCount = existingMedia.filter(
     (item) => getPropertyMediaKindFromUrl(item.public_url) === "video",
   ).length;

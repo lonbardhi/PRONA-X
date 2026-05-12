@@ -13,6 +13,7 @@ import {
 } from "@/lib/properties";
 import {
   getPropertyMediaMimeType,
+  propertyMediaMaxFiles,
   validatePropertyMediaFile,
 } from "@/lib/property-media";
 import {
@@ -183,6 +184,10 @@ function getMediaFiles(formData: FormData) {
 }
 
 function validatePropertyMediaFiles(files: File[]) {
+  if (files.length > propertyMediaMaxFiles) {
+    return `Upload up to ${propertyMediaMaxFiles} files at once.`;
+  }
+
   for (const file of files) {
     const error = validatePropertyMediaFile(file);
     if (error) {

@@ -30,6 +30,7 @@ import {
 import {
   propertyMediaAccept,
   propertyMediaHelpText,
+  propertyMediaMaxFiles,
   propertyVideoMaxDurationSeconds,
   propertyVideoMaxSizeMb,
 } from "@/lib/property-media";
@@ -945,7 +946,7 @@ export function PropertyForm({
           />
           <span className="text-xs font-normal leading-5 text-slate-500">
             {isSq
-              ? `Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri ne ${propertyVideoMaxDurationSeconds} sekonda dhe ${propertyVideoMaxSizeMb} MB. Dokumente: PDF.`
+              ? `Ngarko deri ne ${propertyMediaMaxFiles} skedare njekohesisht. Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri ne ${propertyVideoMaxDurationSeconds} sekonda dhe ${propertyVideoMaxSizeMb} MB. Dokumente: PDF.`
               : propertyMediaHelpText}
           </span>
           {uploadError ? (
