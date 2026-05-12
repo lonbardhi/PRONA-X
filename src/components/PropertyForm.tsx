@@ -15,6 +15,7 @@ import {
   formatPropertyType,
   formatStatusLabel,
   isDevelopmentLand,
+  isLandPropertyType,
   propertyTypes,
   standardPropertyStatuses,
 } from "@/lib/properties";
@@ -126,6 +127,7 @@ export function PropertyForm({
   const initialType = property?.type || "apartment";
   const [selectedType, setSelectedType] = useState<PropertyType>(initialType);
   const developmentLand = isDevelopmentLand(selectedType);
+  const landProperty = isLandPropertyType(selectedType);
   const statusOptions = developmentLand
     ? developmentLandStatuses
     : standardPropertyStatuses;
@@ -874,36 +876,40 @@ export function PropertyForm({
             />
           </Field>
 
-          <Field label={locale === "sq" ? "Dhoma gjumi" : "Bedrooms"}>
-            <input
-              className={inputClass}
-              defaultValue={numberValue(property?.bedrooms)}
-              min="0"
-              name="bedrooms"
-              type="number"
-            />
-          </Field>
+          {!landProperty ? (
+            <>
+              <Field label={locale === "sq" ? "Dhoma gjumi" : "Bedrooms"}>
+                <input
+                  className={inputClass}
+                  defaultValue={numberValue(property?.bedrooms)}
+                  min="0"
+                  name="bedrooms"
+                  type="number"
+                />
+              </Field>
 
-          <Field label={locale === "sq" ? "Banjo" : "Bathrooms"}>
-            <input
-              className={inputClass}
-              defaultValue={numberValue(property?.bathrooms)}
-              min="0"
-              name="bathrooms"
-              type="number"
-            />
-          </Field>
+              <Field label={locale === "sq" ? "Banjo" : "Bathrooms"}>
+                <input
+                  className={inputClass}
+                  defaultValue={numberValue(property?.bathrooms)}
+                  min="0"
+                  name="bathrooms"
+                  type="number"
+                />
+              </Field>
 
-          <Field label={locale === "sq" ? "Viti i ndërtimit" : "Year built"}>
-            <input
-              className={inputClass}
-              defaultValue={numberValue(property?.year_built)}
-              max="2100"
-              min="1800"
-              name="year_built"
-              type="number"
-            />
-          </Field>
+              <Field label={locale === "sq" ? "Viti i ndërtimit" : "Year built"}>
+                <input
+                  className={inputClass}
+                  defaultValue={numberValue(property?.year_built)}
+                  max="2100"
+                  min="1800"
+                  name="year_built"
+                  type="number"
+                />
+              </Field>
+            </>
+          ) : null}
         </Section>
       )}
 

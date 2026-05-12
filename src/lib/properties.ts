@@ -348,6 +348,12 @@ export function isDevelopmentLand(property: PropertyRecord | PropertyType) {
     : property.type === "development_land";
 }
 
+export function isLandPropertyType(property: PropertyRecord | PropertyType) {
+  return typeof property === "string"
+    ? property === "land" || property === "development_land"
+    : property.type === "land" || property.type === "development_land";
+}
+
 export function formatPropertyType(type: PropertyType, locale: Locale = defaultLocale) {
   const labels: Record<Locale, Record<PropertyType, string>> = {
     sq: {
