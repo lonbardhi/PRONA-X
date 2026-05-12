@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   Bell,
   Landmark,
-  ShieldCheck,
 } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
@@ -19,6 +18,7 @@ import { RentalsIcon } from "@/components/RentalsIcon";
 import { SalesIcon } from "@/components/SalesIcon";
 import { SessionTimeout } from "@/components/SessionTimeout";
 import { SupportIcon } from "@/components/SupportIcon";
+import { UsersIcon } from "@/components/UsersIcon";
 import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
 import { t } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
@@ -70,7 +70,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: AddPropertyIcon },
         { label: t(locale, "nav.support"), href: "/support", icon: SupportIcon },
         ...(userRole === "admin"
-          ? [{ label: t(locale, "nav.adminUsers"), href: "/admin/users", icon: ShieldCheck }]
+          ? [{ label: t(locale, "nav.adminUsers"), href: "/admin/users", icon: UsersIcon }]
           : []),
       ];
 
