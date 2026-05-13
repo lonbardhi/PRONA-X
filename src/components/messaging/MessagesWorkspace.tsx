@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Inbox } from "lucide-react";
 
+import { CommunicationChannelTabs } from "@/components/messaging/CommunicationChannelTabs";
 import { ConversationList } from "@/components/messaging/ConversationList";
 import { ConversationView } from "@/components/messaging/ConversationView";
 import { CreateConversationModal } from "@/components/messaging/CreateConversationModal";
@@ -94,37 +95,40 @@ export function MessagesWorkspace({
               </p>
             </div>
 
-            <div className="grid w-full grid-cols-1 gap-2 min-[420px]:grid-cols-3 lg:w-auto lg:min-w-[420px]">
-              <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
-                <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:text-xs sm:tracking-[0.12em]">
-                  {locale === "sq" ? "Biseda" : "Threads"}
-                </p>
-                <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
-                  {conversations.length}
-                </p>
-              </div>
-              <div className="min-w-0 rounded-xl border border-rose-200 bg-rose-50 p-2.5 sm:p-3">
-                <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-700 sm:text-xs sm:tracking-[0.12em]">
-                  {locale === "sq" ? "Pa lexuar" : "Unread"}
-                </p>
-                <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
-                  {conversations.reduce(
-                    (total, conversation) => total + conversation.unreadCount,
-                    0,
-                  )}
-                </p>
-              </div>
-              <div className="min-w-0 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
-                <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:text-xs sm:tracking-[0.12em]">
-                  {locale === "sq" ? "Prona" : "Properties"}
-                </p>
-                <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
-                  {
-                    conversations.filter(
-                      (conversation) => conversation.type === "property_thread",
-                    ).length
-                  }
-                </p>
+            <div className="grid w-full grid-cols-1 gap-3 lg:w-auto lg:min-w-[420px]">
+              <CommunicationChannelTabs active="internal" locale={locale} />
+              <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
+                <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
+                  <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:text-xs sm:tracking-[0.12em]">
+                    {locale === "sq" ? "Biseda" : "Threads"}
+                  </p>
+                  <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
+                    {conversations.length}
+                  </p>
+                </div>
+                <div className="min-w-0 rounded-xl border border-rose-200 bg-rose-50 p-2.5 sm:p-3">
+                  <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-700 sm:text-xs sm:tracking-[0.12em]">
+                    {locale === "sq" ? "Pa lexuar" : "Unread"}
+                  </p>
+                  <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
+                    {conversations.reduce(
+                      (total, conversation) => total + conversation.unreadCount,
+                      0,
+                    )}
+                  </p>
+                </div>
+                <div className="min-w-0 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
+                  <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:text-xs sm:tracking-[0.12em]">
+                    {locale === "sq" ? "Prona" : "Properties"}
+                  </p>
+                  <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
+                    {
+                      conversations.filter(
+                        (conversation) => conversation.type === "property_thread",
+                      ).length
+                    }
+                  </p>
+                </div>
               </div>
             </div>
           </div>
