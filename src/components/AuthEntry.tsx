@@ -21,6 +21,7 @@ import { getAuthHeroSlides, type Locale, t } from "@/lib/i18n";
 type AuthEntryProps = {
   locale: Locale;
   message?: string;
+  nextPath?: string;
   requestPasswordResetAction: (formData: FormData) => void | Promise<void>;
   signInAction: (formData: FormData) => void | Promise<void>;
   signInWithAppleAction: (formData: FormData) => void | Promise<void>;
@@ -33,6 +34,7 @@ type AuthMode = "login" | "signup" | "recovery";
 export function AuthEntry({
   locale,
   message,
+  nextPath = "/sales",
   requestPasswordResetAction,
   signInAction,
   signInWithAppleAction,
@@ -256,6 +258,7 @@ export function AuthEntry({
             {mode !== "recovery" ? (
               <div className="mt-6 grid gap-3">
                 <form action={signInWithGoogleAction}>
+                  <input name="next" type="hidden" value={nextPath} />
                   <button
                     className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                     type="submit"
@@ -266,6 +269,7 @@ export function AuthEntry({
                 </form>
 
                 <form action={signInWithAppleAction}>
+                  <input name="next" type="hidden" value={nextPath} />
                   <button
                     className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                     type="submit"
@@ -287,6 +291,7 @@ export function AuthEntry({
             </div>
 
             <form action={action} className="grid gap-4">
+              <input name="next" type="hidden" value={nextPath} />
               {mode === "signup" ? (
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   {t(locale, "auth.fullName")}
@@ -335,7 +340,7 @@ export function AuthEntry({
                     <input
                       className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-11 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                       id="auth-password"
-                      minLength={6}
+                      minLength={mode === "signup" ? 10 : 1}
                       name="password"
                       placeholder={t(locale, "auth.passwordPlaceholder")}
                       required
@@ -354,7 +359,29 @@ export function AuthEntry({
                       )}
                     </button>
                   </div>
+                  {mode === "signup" ? (
+                    <p className="text-xs font-medium leading-5 text-slate-500">
+                      {t(locale, "auth.passwordRequirements")}
+                    </p>
+                  ) : null}
                 </div>
+              ) : null}
+
+              {mode === "signup" ? (
+                <label className="grid gap-2 text-sm font-medium text-slate-700">
+                  {t(locale, "auth.confirmPassword")}
+                  <div className="relative">
+                    <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                      minLength={10}
+                      name="confirm_password"
+                      placeholder={t(locale, "auth.confirmPasswordPlaceholder")}
+                      required
+                      type="password"
+                    />
+                  </div>
+                </label>
               ) : null}
 
               {mode === "signup" ? (

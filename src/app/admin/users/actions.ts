@@ -20,22 +20,33 @@ export async function updateUserRoleAction(formData: FormData) {
   const role = String(formData.get("role") || "") as AppRole;
 
   if (!profileId || !roleOptions.includes(role)) {
-    redirect("/admin/users?message=Choose a valid user and role.");
+    redirect("/admin/users?message=Zgjidh nje perdorues dhe rol te vlefshem.");
   }
 
   if (profileId === user.id && role !== "admin") {
-    redirect("/admin/users?message=You cannot remove your own admin access.");
+    redirect("/admin/users?message=Nuk mund te heqesh aksesin tend admin.");
   }
 
-  const { error } = await supabase
+  const accountStatus = role === "pending" ? "pending_approval" : "active";
+  let { error } = await supabase
     .from("profiles")
-    .update({ role })
+    .update({ account_status: accountStatus, role })
     .eq("id", profileId);
 
+  if (error && error.message.includes("account_status")) {
+    const fallback = await supabase
+      .from("profiles")
+      .update({ role })
+      .eq("id", profileId);
+    error = fallback.error;
+  }
+
   if (error) {
-    redirect(`/admin/users?message=${encodeURIComponent(error.message)}`);
+    redirect(
+      `/admin/users?message=${encodeURIComponent("Roli nuk u perditesua. Provo perseri.")}`,
+    );
   }
 
   revalidatePath("/admin/users");
-  redirect("/admin/users?message=User role updated.");
+  redirect("/admin/users?message=Roli i perdoruesit u perditesua.");
 }

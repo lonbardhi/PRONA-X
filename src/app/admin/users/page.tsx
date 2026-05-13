@@ -15,6 +15,7 @@ type AdminUsersPageProps = {
 };
 
 type ProfileRow = {
+  account_status?: string | null;
   id: string;
   full_name: string | null;
   phone: string | null;
@@ -51,11 +52,13 @@ export default async function AdminUsersPage({
   const { profile, supabase, user } = await requireAdminUser();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id,full_name,phone,role,created_at")
+    .select("*")
     .order("created_at", { ascending: false });
 
   const profiles = (data || []) as ProfileRow[];
-  const pendingCount = profiles.filter((item) => item.role === "pending").length;
+  const pendingCount = profiles.filter(
+    (item) => item.role === "pending" || item.account_status === "pending_approval",
+  ).length;
   const viewerCount = profiles.filter((item) => item.role === "viewer").length;
   const approvedCount = profiles.length - pendingCount;
   const adminCount = profiles.filter((item) => item.role === "admin").length;
@@ -164,7 +167,12 @@ export default async function AdminUsersPage({
             ) : null}
 
             {profiles.map((item) => {
-              const approved = item.role !== "pending";
+              const approved =
+                item.role !== "pending" &&
+                item.account_status !== "pending_approval" &&
+                item.account_status !== "disabled" &&
+                item.account_status !== "rejected" &&
+                item.account_status !== "deleted";
 
               return (
                 <div

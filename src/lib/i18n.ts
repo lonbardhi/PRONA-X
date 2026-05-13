@@ -28,6 +28,8 @@ type TranslationKey =
   | "auth.createAccount"
   | "auth.createHeading"
   | "auth.createIntro"
+  | "auth.confirmPassword"
+  | "auth.confirmPasswordPlaceholder"
   | "auth.email"
   | "auth.emailPlaceholder"
   | "auth.emailReset"
@@ -43,6 +45,7 @@ type TranslationKey =
   | "auth.or"
   | "auth.password"
   | "auth.passwordPlaceholder"
+  | "auth.passwordRequirements"
   | "auth.recoveryHeading"
   | "auth.recoveryIntro"
   | "auth.rememberPassword"
@@ -191,6 +194,8 @@ const messages: Record<Locale, LocaleMessages> = {
     "auth.createHeading": "Krijo llogarinë PRONA X",
     "auth.createIntro":
       "Krijo llogari, pastaj një admin do të miratojë aksesin në hapësirën e punës.",
+    "auth.confirmPassword": "Konfirmo fjalëkalimin",
+    "auth.confirmPasswordPlaceholder": "Shkruaj përsëri fjalëkalimin",
     "auth.email": "Adresa email",
     "auth.emailPlaceholder": "Shkruaj adresën email",
     "auth.emailReset": "Rivendosje me email",
@@ -207,6 +212,8 @@ const messages: Record<Locale, LocaleMessages> = {
     "auth.or": "ose",
     "auth.password": "Fjalëkalimi",
     "auth.passwordPlaceholder": "Shkruaj fjalëkalimin",
+    "auth.passwordRequirements":
+      "Përdor të paktën 10 karaktere me shkronjë të madhe, shkronjë të vogël, numër dhe simbol.",
     "auth.recoveryHeading": "Rivendos fjalëkalimin",
     "auth.recoveryIntro":
       "Shkruaj emailin dhe do të dërgojmë një link të sigurt rivendosjeje.",
@@ -360,6 +367,8 @@ const messages: Record<Locale, LocaleMessages> = {
     "auth.createHeading": "Create your PRONA X account",
     "auth.createIntro":
       "Create an account, then an admin will approve workspace access.",
+    "auth.confirmPassword": "Confirm password",
+    "auth.confirmPasswordPlaceholder": "Enter the password again",
     "auth.email": "Email address",
     "auth.emailPlaceholder": "Enter your email address",
     "auth.emailReset": "Email reset",
@@ -376,6 +385,8 @@ const messages: Record<Locale, LocaleMessages> = {
     "auth.or": "or",
     "auth.password": "Password",
     "auth.passwordPlaceholder": "Enter your password",
+    "auth.passwordRequirements":
+      "Use at least 10 characters with an uppercase letter, lowercase letter, number, and symbol.",
     "auth.recoveryHeading": "Reset your password",
     "auth.recoveryIntro":
       "Enter your email and we will send a secure reset link.",

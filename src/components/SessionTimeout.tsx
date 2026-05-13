@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 const SESSION_TIMEOUT_MS = 45 * 60 * 1000;
 const TIMEOUT_PATH =
-  "/auth/clear-session?next=/login&message=Session%20timed%20out.%20Sign%20in%20again%20to%20continue.";
+  "/auth/clear-session?next=/login&message=Sesioni%20ka%20skaduar.%20Hyr%20perseri%20per%20te%20vazhduar.";
 
 export function SessionTimeout() {
   useEffect(() => {

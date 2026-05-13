@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { authMessages } from "@/lib/auth/security";
 import { getSupabaseEnv } from "@/lib/env";
 
 export type AppRole =
@@ -12,7 +13,15 @@ export type AppRole =
   | "support"
   | "pending";
 
+export type AccountStatus =
+  | "active"
+  | "deleted"
+  | "disabled"
+  | "pending_approval"
+  | "rejected";
+
 export type AuthProfile = {
+  account_status?: AccountStatus | null;
   agency_name?: string | null;
   avatar_url?: string | null;
   id: string;
@@ -32,6 +41,12 @@ export const approvedAppRoles: AppRole[] = [
 
 export const operatorAppRoles: AppRole[] = ["admin", "manager", "agent"];
 export const supportAppRoles: AppRole[] = ["admin", "support"];
+const inactiveAccountStatuses: AccountStatus[] = [
+  "deleted",
+  "disabled",
+  "pending_approval",
+  "rejected",
+];
 
 export async function createClient() {
   const { url, anonKey } = getSupabaseEnv();
@@ -103,7 +118,7 @@ export async function getCurrentUserWithProfile() {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id,full_name,phone,role,created_at")
+    .select("*")
     .eq("id", user.id)
     .single();
 
@@ -117,7 +132,18 @@ export async function getCurrentUserWithProfile() {
 }
 
 export function isApprovedProfile(profile: AuthProfile | null) {
-  return Boolean(profile && approvedAppRoles.includes(profile.role));
+  if (!profile || !approvedAppRoles.includes(profile.role)) {
+    return false;
+  }
+
+  if (
+    profile.account_status &&
+    inactiveAccountStatuses.includes(profile.account_status)
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 export function isOperatorRole(role: AppRole | null | undefined) {
@@ -143,7 +169,7 @@ export async function requireApprovedUser() {
     redirect(
       getClearSessionPath(
         "/login",
-        "Your session expired. Sign in again to continue.",
+        authMessages.sessionExpiredSq,
       ),
     );
   }
@@ -163,7 +189,9 @@ export async function requireOperatorUser() {
   const context = await requireApprovedUser();
 
   if (!isOperatorProfile(context.profile)) {
-    redirect("/sales?message=This account has read-only viewer access.");
+    redirect(
+      "/sales?message=Kjo llogari ka akses vetem per lexim.",
+    );
   }
 
   return context;
@@ -173,7 +201,7 @@ export async function requireAdminUser() {
   const context = await requireApprovedUser();
 
   if (context.profile.role !== "admin") {
-    redirect("/sales?message=Admin approval is required for that page.");
+    redirect("/sales?message=Kerkohet akses administratori per kete faqe.");
   }
 
   return context;

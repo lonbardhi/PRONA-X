@@ -7,6 +7,7 @@ import {
   signUpAction,
 } from "@/app/login/actions";
 import { AuthEntry } from "@/components/AuthEntry";
+import { authMessages, getSafeInternalRedirect } from "@/lib/auth/security";
 import { SetupNotice } from "@/components/SetupNotice";
 import { getAuthDisplayMessage } from "@/lib/auth-messages";
 import { hasSupabaseEnv } from "@/lib/env";
@@ -24,6 +25,7 @@ type LoginPageProps = {
     error_code?: string;
     error_description?: string;
     message?: string;
+    next?: string;
   }>;
 };
 
@@ -32,13 +34,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     return <SetupNotice />;
   }
 
+  const params = await searchParams;
+  const safeNext = getSafeInternalRedirect(params.next);
   const { authError, profile, user } = await getCurrentUserWithProfile();
 
   if (authError && isInvalidRefreshTokenError(authError)) {
     redirect(
       getClearSessionPath(
         "/login",
-        "Your session expired. Sign in again to continue.",
+        authMessages.sessionExpiredSq,
       ),
     );
   }
@@ -48,16 +52,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       redirect("/pending-approval");
     }
 
-    redirect("/sales");
+    redirect(safeNext);
   }
 
-  const params = await searchParams;
   const locale = await getCurrentLocale();
 
   return (
     <AuthEntry
       locale={locale}
       message={getAuthDisplayMessage(params, locale)}
+      nextPath={safeNext}
       requestPasswordResetAction={requestPasswordResetAction}
       signInAction={signInAction}
       signInWithAppleAction={signInWithOAuthAction.bind(null, "apple")}

@@ -1,12 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-function getSafeNextPath(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/login";
-  }
-
-  return value;
-}
+import { getSafeInternalRedirect } from "@/lib/auth/security";
 
 function isSupabaseAuthCookie(name: string) {
   return (
@@ -18,7 +12,7 @@ function isSupabaseAuthCookie(name: string) {
 
 export async function GET(request: NextRequest) {
   const requestUrl = request.nextUrl;
-  const next = getSafeNextPath(requestUrl.searchParams.get("next"));
+  const next = getSafeInternalRedirect(requestUrl.searchParams.get("next"), "/login");
   const message = requestUrl.searchParams.get("message");
   const redirectUrl = new URL(next, requestUrl.origin);
 

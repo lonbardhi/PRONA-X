@@ -61,7 +61,9 @@ export function getAuthDisplayMessage(
   if (knownErrorDescription) {
     return knownErrorDescription;
   } else if (errorDescription) {
-    return errorDescription;
+    return isSq(locale)
+      ? "Autentikimi nuk u krye. Provo përsëri ose kërko një link të ri."
+      : "Authentication could not be completed. Try again or request a new link.";
   }
 
   const errorCode = cleanAuthValue(params.error_code);
@@ -83,7 +85,9 @@ export function getAuthDisplayMessage(
   if (knownError) {
     return knownError;
   } else if (error) {
-    return isSq(locale) ? `Autentikimi dështoi: ${error}` : `Authentication failed: ${error}`;
+    return isSq(locale)
+      ? "Autentikimi nuk u krye. Provo përsëri."
+      : "Authentication could not be completed. Try again.";
   }
 
   return undefined;
