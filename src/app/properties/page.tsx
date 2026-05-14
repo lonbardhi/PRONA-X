@@ -363,6 +363,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                 </div>
               </div>
               <CalendarOpenButton
+                caption={locale === "sq" ? "Planifiko takime" : "Schedule appointments"}
                 label={locale === "sq" ? "Hap kalendarin" : "Open calendar"}
               />
             </div>
