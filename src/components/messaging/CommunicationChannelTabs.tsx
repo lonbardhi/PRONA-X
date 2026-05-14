@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { MessageCircle, Send } from "lucide-react";
 
 import type { Locale } from "@/lib/i18n";
@@ -32,6 +35,7 @@ export function CommunicationChannelTabs({
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = active === tab.key;
+        const isWhatsApp = tab.key === "whatsapp";
 
         return (
           <Link
@@ -44,7 +48,23 @@ export function CommunicationChannelTabs({
             key={tab.key}
             prefetch={false}
           >
-            <Icon className="h-4 w-4" />
+            {isWhatsApp ? (
+              <span
+                aria-hidden="true"
+                className={`grid h-6 w-6 place-items-center overflow-hidden rounded-full ${
+                  isActive ? "bg-white/10" : "bg-emerald-50"
+                }`}
+              >
+                <DotLottieReact
+                  autoplay
+                  className="h-7 w-7"
+                  loop
+                  src="https://lottie.host/513b7d28-df69-4731-a4d6-cc0eb4a0a123/LwKxTZgUug.lottie"
+                />
+              </span>
+            ) : (
+              <Icon className="h-4 w-4" />
+            )}
             {tab.label}
           </Link>
         );
@@ -52,4 +72,3 @@ export function CommunicationChannelTabs({
     </div>
   );
 }
-
