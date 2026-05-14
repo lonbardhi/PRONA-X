@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { AppointmentAgenda } from "@/components/AppointmentAgenda";
+import { CalendarOpenButton } from "@/components/CalendarOpenButton";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PropertyIntakePanel } from "@/components/PropertyIntakePanel";
 import { PropertyFilters } from "@/components/PropertyFilters";
@@ -361,12 +362,9 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   </p>
                 </div>
               </div>
-              <a
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 sm:w-auto"
-                href="/appointments"
-              >
-                {locale === "sq" ? "Hap kalendarin" : "Open calendar"}
-              </a>
+              <CalendarOpenButton
+                label={locale === "sq" ? "Hap kalendarin" : "Open calendar"}
+              />
             </div>
             <AppointmentAgenda
               appointments={upcomingAppointments}
