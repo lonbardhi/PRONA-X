@@ -345,7 +345,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
         ) : null}
 
         {canManage && !appointmentResult.error ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <section className="relative rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:min-h-[250px] xl:pr-[360px]">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
