@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   Bell,
-  FileText,
   Landmark,
 } from "lucide-react";
 
@@ -10,6 +9,7 @@ import { AddPropertyIcon } from "@/components/AddPropertyIcon";
 import { BrandLockup } from "@/components/BrandLogo";
 import { CalendarIcon } from "@/components/CalendarIcon";
 import { DashboardIcon } from "@/components/DashboardIcon";
+import { DocumentIcon } from "@/components/DocumentIcon";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { LeadsIcon } from "@/components/LeadsIcon";
 import { LogoutIcon } from "@/components/LogoutIcon";
@@ -66,7 +66,7 @@ export async function DashboardShell({
         { label: t(locale, "nav.sales"), href: "/sales", icon: SalesIcon },
         { label: t(locale, "nav.rentals"), href: "/rentals", icon: RentalsIcon },
         { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarIcon },
-        { label: t(locale, "nav.documents"), href: "/documents", icon: FileText },
+        { label: t(locale, "nav.documents"), href: "/documents", icon: DocumentIcon },
         { label: t(locale, "nav.messages"), href: "/messages", icon: null },
         { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: LeadsIcon },
         { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: AddPropertyIcon },
