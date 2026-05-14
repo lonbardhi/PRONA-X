@@ -34,14 +34,22 @@ import {
   documentStorageBucket,
   documentTypeOptions,
   entityTypes,
+  formatConfidentialityLevel,
   formatBytes,
   formatContractType,
+  formatContractStatus,
   formatDate,
+  formatDocumentCategory,
+  formatDocumentStatus,
+  formatDocumentType,
+  formatEntityType,
+  formatOfferStatus,
   getContractStatusTone,
   getDocumentStatusTone,
   getOfferStatusTone,
 } from "@/lib/documents-contracts";
 import { hasSupabaseEnv } from "@/lib/env";
+import type { Locale } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
 import { requireApprovedUser } from "@/lib/supabase/server";
 
@@ -160,16 +168,221 @@ type ChecklistItemRow = {
   status: string;
 };
 
-const tabs = [
-  { value: "all", label: "Të gjitha dokumentet" },
-  { value: "property-docs", label: "Dokumente prone" },
-  { value: "owner-docs", label: "Dokumente pronari" },
-  { value: "offers", label: "Oferta për pronarë" },
-  { value: "contracts", label: "Kontrata" },
-  { value: "approvals", label: "Në pritje për aprovim" },
-  { value: "signatures", label: "Në pritje për nënshkrim" },
-  { value: "archive", label: "Arkiva" },
-];
+const documentsCopy = {
+  sq: {
+    accepted: "Pranuar",
+    allCategories: "Të gjitha kategoritë",
+    allStatuses: "Të gjitha statuset",
+    approve: "Aprovo",
+    auditBody: "Ngarkimet, versionet, aprovimet dhe nënshkrimet regjistrohen si aktivitet.",
+    auditTitle: "Audit",
+    contractCreateDescription: "Projekt-kontratë, palë dhe rishikim ligjor.",
+    contractCreateTitle: "Krijo kontratë",
+    contractEmpty:
+      "Nuk ka kontrata në këtë pamje. Krijo projekt-kontratë, shto palët dhe dërgoje për rishikim ligjor.",
+    contractLifecycleDescription:
+      "Cikli i kontratës, palët, rishikimi ligjor/menaxherial dhe nënshkrimi manual.",
+    contractsTitle: "Kontrata",
+    documentCenterDescription:
+      "Versionim, shikim, shkarkim, aprovim dhe lidhje me rekordet CRM.",
+    documentCenterTitle: "Qendra e dokumenteve",
+    documentEmpty:
+      "Ngarko dokumente, lidhi me prona/oferta/kontrata dhe dërgoji për rishikim kur janë gati.",
+    documentEmptyTitle: "Nuk ka dokumente për këtë pamje",
+    filter: "Filtro",
+    file: "Skedar",
+    files: "Skedarët",
+    fileHint: "Maksimumi 50 MB për skedar. Skedarët ruhen privatisht.",
+    headerBadge: "PRONA X Dokumente",
+    headerSubtitle:
+      "Menaxho dokumente private, oferta Excel për pronarë, aprovime dhe ciklin e kontratave pa i trajtuar si skedarë të izoluar.",
+    headerTitle: "Dokumente, Oferta & Kontrata",
+    linkWith: "Lidhe me",
+    amount: "Shuma",
+    chooseProperty: "Zgjidh pronën",
+    contractNotesPlaceholder: "Terma, kushte, noteri, pagesa...",
+    contractTitlePlaceholder: "Titulli i kontratës",
+    contractType: "Lloji i kontratës",
+    currency: "Valuta",
+    endDate: "Data e mbarimit",
+    estimatedValuePlaceholder: "Vlerë e pritshme",
+    excelFile: "Excel i ofertës",
+    investorPercentagePlaceholder: "Investitor %",
+    landAreaPlaceholder: "Sipërfaqe toke",
+    missingBody: (count: number) => `${count} elemente të listës së kontrollit nuk janë të aprovuara.`,
+    missingTitle: "Dokumente që mungojnë",
+    noLink: "Pa lidhje",
+    noParties: "Palët nuk janë vendosur",
+    noProperty: "Pa pronë",
+    notes: "Shënime",
+    notesPlaceholder: "Kontekst, burim, arsye rishikimi...",
+    number: "Numri",
+    offerCreateDescription: "Përqindje pronari/investitori + Excel.",
+    offerCreateTitle: "Krijo ofertë",
+    offerTitlePlaceholder: "Titulli i ofertës",
+    offerEmpty:
+      "Nuk ka oferta në këtë pamje. Krijo një ofertë me përqindje dhe Excel kur prona e pronarit është gati për negocim.",
+    offerSectionDescription: "Ofertat janë rekorde komerciale me Excel, versionim dhe aprovim.",
+    offersTitle: "Oferta për pronarë",
+    operationalControl: "Kontroll operativ",
+    owner: "Pronar",
+    ownerPercentagePlaceholder: "Pronar %",
+    ownerRepresentativePlaceholder: "Pronari / përfaqësuesi",
+    partyA: "Pala A",
+    partyB: "Pala B",
+    preview: "Shiko",
+    property: "Prona",
+    record: "Rekordi",
+    reject: "Refuzo",
+    saveRuleBody: "Skedarët ruhen në hapësirë private dhe hapen me lidhje të përkohshme.",
+    saveRuleTitle: "Rregulli i ruajtjes",
+    searchPlaceholder: "Kërko titull, numër dokumenti, pronë...",
+    sent: "Dërguar",
+    sendForApproval: "Dërgo për aprovim",
+    sendForLegal: "Dërgo për rishikim ligjor",
+    setupBody:
+      "Hap Supabase SQL Editor, ekzekuto supabase/migrations/0017_documents_offers_contracts.sql dhe rifresko këtë faqe.",
+    setupTitle: "Nevojitet konfigurim Supabase.",
+    signedPdf: "Ngarko PDF të firmosur",
+    size: "Madhësia",
+    startDate: "Data e fillimit",
+    statDocuments: "Për rishikim",
+    statLegal: "Ligjore",
+    statOffers: "Oferta",
+    statSignatures: "Nënshkrime",
+    storageFormats: "PDF, Excel, Word, imazhe, video ose ZIP.",
+    tabAll: "Të gjitha dokumentet",
+    tabApprovals: "Në pritje për aprovim",
+    tabArchive: "Arkiva",
+    tabContracts: "Kontrata",
+    tabOffers: "Oferta për pronarë",
+    tabOwnerDocs: "Dokumente pronari",
+    tabPropertyDocs: "Dokumente prone",
+    tabSignatures: "Në pritje për nënshkrim",
+    title: "Titulli",
+    upload: "Ngarko",
+    uploadDocument: "Ngarko dokument",
+    validUntil: "E vlefshme deri",
+    value: "Vlerë",
+    version: "Version",
+  },
+  en: {
+    accepted: "Accepted",
+    allCategories: "All categories",
+    allStatuses: "All statuses",
+    approve: "Approve",
+    auditBody: "Uploads, versions, approvals, and signatures are recorded as activity.",
+    auditTitle: "Audit",
+    contractCreateDescription: "Draft, parties, and legal review.",
+    contractCreateTitle: "Create contract",
+    contractEmpty:
+      "No contracts in this view. Create a draft contract, add parties, and send it for legal review.",
+    contractLifecycleDescription:
+      "Contract lifecycle, parties, legal/manager review, and manual signature tracking.",
+    contractsTitle: "Contracts",
+    documentCenterDescription:
+      "Versioning, preview, download, approval, and CRM record linking.",
+    documentCenterTitle: "Document center",
+    documentEmpty:
+      "Upload documents, link them to properties/offers/contracts, and submit them for review when ready.",
+    documentEmptyTitle: "No documents in this view",
+    filter: "Filter",
+    file: "File",
+    files: "Files",
+    fileHint: "Maximum 50 MB per file. Files are stored privately.",
+    headerBadge: "PRONA X Documents",
+    headerSubtitle:
+      "Manage private documents, Excel owner offers, approvals, and contract lifecycles without treating them as isolated files.",
+    headerTitle: "Documents, Offers & Contracts",
+    linkWith: "Link with",
+    amount: "Amount",
+    chooseProperty: "Choose property",
+    contractNotesPlaceholder: "Terms, conditions, notary, payments...",
+    contractTitlePlaceholder: "Contract title",
+    contractType: "Contract type",
+    currency: "Currency",
+    endDate: "End date",
+    estimatedValuePlaceholder: "Estimated value",
+    excelFile: "Offer Excel",
+    investorPercentagePlaceholder: "Investor %",
+    landAreaPlaceholder: "Land area",
+    missingBody: (count: number) => `${count} checklist items are not approved.`,
+    missingTitle: "Missing documents",
+    noLink: "No link",
+    noParties: "Parties are not set",
+    noProperty: "No property",
+    notes: "Notes",
+    notesPlaceholder: "Context, source, review reason...",
+    number: "Number",
+    offerCreateDescription: "Owner/investor percentages + Excel.",
+    offerCreateTitle: "Create offer",
+    offerTitlePlaceholder: "Offer title",
+    offerEmpty:
+      "No offers in this view. Create a percentage-based Excel offer when the owner property is ready for negotiation.",
+    offerSectionDescription: "Offers are commercial records with Excel files, versioning, and approval.",
+    offersTitle: "Owner offers",
+    operationalControl: "Operational control",
+    owner: "Owner",
+    ownerPercentagePlaceholder: "Owner %",
+    ownerRepresentativePlaceholder: "Owner / representative",
+    partyA: "Party A",
+    partyB: "Party B",
+    preview: "Preview",
+    property: "Property",
+    record: "Record",
+    reject: "Reject",
+    saveRuleBody: "Files are stored in a private bucket and opened through temporary URLs.",
+    saveRuleTitle: "Storage rule",
+    searchPlaceholder: "Search title, document number, property...",
+    sent: "Sent",
+    sendForApproval: "Send for approval",
+    sendForLegal: "Send for legal",
+    setupBody:
+      "Open Supabase SQL Editor, run supabase/migrations/0017_documents_offers_contracts.sql, then refresh this page.",
+    setupTitle: "Supabase setup required.",
+    signedPdf: "Upload signed PDF",
+    size: "Size",
+    startDate: "Start date",
+    statDocuments: "Doc. review",
+    statLegal: "Legal",
+    statOffers: "Offers",
+    statSignatures: "Signatures",
+    storageFormats: "PDF, Excel, Word, images, video, or ZIP.",
+    tabAll: "All documents",
+    tabApprovals: "Pending approval",
+    tabArchive: "Archive",
+    tabContracts: "Contracts",
+    tabOffers: "Owner offers",
+    tabOwnerDocs: "Owner documents",
+    tabPropertyDocs: "Property documents",
+    tabSignatures: "Pending signature",
+    title: "Title",
+    upload: "Upload",
+    uploadDocument: "Upload document",
+    validUntil: "Valid until",
+    value: "Value",
+    version: "Version",
+  },
+} satisfies Record<Locale, Record<string, string | ((count: number) => string)>>;
+
+function getDocumentsCopy(locale: Locale) {
+  return documentsCopy[locale];
+}
+
+function getTabs(locale: Locale) {
+  const copy = getDocumentsCopy(locale);
+
+  return [
+    { value: "all", label: copy.tabAll as string },
+    { value: "property-docs", label: copy.tabPropertyDocs as string },
+    { value: "owner-docs", label: copy.tabOwnerDocs as string },
+    { value: "offers", label: copy.tabOffers as string },
+    { value: "contracts", label: copy.tabContracts as string },
+    { value: "approvals", label: copy.tabApprovals as string },
+    { value: "signatures", label: copy.tabSignatures as string },
+    { value: "archive", label: copy.tabArchive as string },
+  ];
+}
 
 const setupErrorCodes = new Set(["42P01", "PGRST205", "PGRST200"]);
 
@@ -208,20 +421,20 @@ function statCard(label: string, value: number, tone = "slate") {
   );
 }
 
-function getPropertyLabel(property: PropertyOption | undefined) {
+function getPropertyLabel(property: PropertyOption | undefined, locale: Locale = "sq") {
   if (!property) {
-    return "Pa pronë";
+    return locale === "sq" ? "Pa pronë" : "No property";
   }
 
   return [property.title, property.city, property.neighborhood].filter(Boolean).join(" - ");
 }
 
-function formatMoney(value: number | null | undefined) {
+function formatMoney(value: number | null | undefined, locale: Locale) {
   if (value == null) {
     return "-";
   }
 
-  return new Intl.NumberFormat("sq-AL", {
+  return new Intl.NumberFormat(locale === "sq" ? "sq-AL" : "en-US", {
     currency: "EUR",
     maximumFractionDigits: 0,
     style: "currency",
@@ -299,6 +512,8 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
   const params = await searchParams;
   const activeTab = params.tab || "all";
   const locale = await getCurrentLocale();
+  const copy = getDocumentsCopy(locale);
+  const tabs = getTabs(locale);
   const { profile, supabase, user } = await requireApprovedUser();
   const canWrite = ["admin", "manager", "agent", "legal", "finance"].includes(profile.role);
   const canManage = ["admin", "manager"].includes(profile.role);
@@ -372,11 +587,9 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
       <DashboardShell userEmail={user.email} userRole={profile.role}>
         <section className="mx-auto max-w-4xl px-3 py-6 sm:px-6">
           <div className="rounded-xl border border-orange-200 bg-orange-50 p-5 text-sm leading-6 text-orange-900">
-            <p className="font-semibold">Nevojitet konfigurim Supabase.</p>
+            <p className="font-semibold">{copy.setupTitle as string}</p>
             <p className="mt-2">
-              Run{" "}
-              <span className="font-mono">supabase/migrations/0017_documents_offers_contracts.sql</span>{" "}
-              in Supabase SQL Editor, then refresh this page.
+              {copy.setupBody as string}
             </p>
           </div>
         </section>
@@ -526,21 +739,20 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-white">
                 <FolderKanban className="h-3.5 w-3.5" />
-                PRONA X Dokumente
+                {copy.headerBadge as string}
               </span>
               <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
-                Dokumente, Oferta & Kontrata
+                {copy.headerTitle as string}
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                Menaxho dokumente private, oferta Excel për pronarë, aprovime dhe ciklin e
-                kontratave pa i trajtuar si skedarë të izoluar.
+                {copy.headerSubtitle as string}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:min-w-[560px]">
-              {statCard("Dok. review", pendingDocuments, "amber")}
-              {statCard("Oferta", pendingOffers, "cyan")}
-              {statCard("Legal", pendingLegalContracts, "rose")}
-              {statCard("Nënshkrime", pendingSignatureContracts, "emerald")}
+              {statCard(copy.statDocuments as string, pendingDocuments, "amber")}
+              {statCard(copy.statOffers as string, pendingOffers, "cyan")}
+              {statCard(copy.statLegal as string, pendingLegalContracts, "rose")}
+              {statCard(copy.statSignatures as string, pendingSignatureContracts, "emerald")}
             </div>
           </div>
         </div>
@@ -582,19 +794,19 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-slate-400"
                     defaultValue={params.q || ""}
                     name="q"
-                    placeholder="Kërko titull, numër dokumenti, pronë..."
+                    placeholder={copy.searchPlaceholder as string}
                   />
                 </label>
                 <SelectInput defaultValue={params.category || ""} name="category">
-                  <option value="">Të gjitha kategoritë</option>
+                  <option value="">{copy.allCategories as string}</option>
                   {documentCategories.map((category) => (
                     <option key={category} value={category}>
-                      {category}
+                      {formatDocumentCategory(category, locale)}
                     </option>
                   ))}
                 </SelectInput>
                 <SelectInput defaultValue={params.status || ""} name="status">
-                  <option value="">Të gjitha statuset</option>
+                  <option value="">{copy.allStatuses as string}</option>
                   {[
                     "Uploaded",
                     "Pending Review",
@@ -604,13 +816,13 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     "Archived",
                   ].map((status) => (
                     <option key={status} value={status}>
-                      {status}
+                      {formatDocumentStatus(status, locale)}
                     </option>
                   ))}
                 </SelectInput>
                 <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
                   <Filter className="h-4 w-4" />
-                  Filtro
+                  {copy.filter as string}
                 </button>
               </form>
             </div>
@@ -622,9 +834,9 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     <FileText className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-950">Qendra e dokumenteve</h2>
+                    <h2 className="text-lg font-semibold text-slate-950">{copy.documentCenterTitle as string}</h2>
                     <p className="text-sm text-slate-500">
-                      Versionim, preview, shkarkim, aprovim dhe lidhje me rekordet CRM.
+                      {copy.documentCenterDescription as string}
                     </p>
                   </div>
                 </div>
@@ -652,12 +864,15 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
-                                {statusBadge(document.status, getDocumentStatusTone(document.status))}
+                                {statusBadge(
+                                  formatDocumentStatus(document.status, locale),
+                                  getDocumentStatusTone(document.status),
+                                )}
                                 <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                                  {document.category}
+                                  {formatDocumentCategory(document.category, locale)}
                                 </span>
                                 <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-700">
-                                  {document.document_type}
+                                  {formatDocumentType(document.document_type, locale)}
                                 </span>
                               </div>
                               <h3 className="mt-3 break-words text-base font-semibold text-slate-950">
@@ -665,15 +880,15 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                               </h3>
                               <p className="mt-1 text-sm text-slate-500">
                                 {linkedProperty
-                                  ? getPropertyLabel(linkedProperty)
+                                  ? getPropertyLabel(linkedProperty, locale)
                                   : documentLinks.length
-                                    ? `${documentLinks[0].entity_type}: ${documentLinks[0].entity_id}`
-                                    : "Pa lidhje"}
+                                    ? `${formatEntityType(documentLinks[0].entity_type, locale)}: ${documentLinks[0].entity_id}`
+                                    : (copy.noLink as string)}
                               </p>
                               <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
-                                <span>Version: {version?.version_number || "-"}</span>
-                                <span>Skedar: {version?.original_file_name || "-"}</span>
-                                <span>Madhësia: {formatBytes(version?.file_size)}</span>
+                                <span>{copy.version as string}: {version?.version_number || "-"}</span>
+                                <span>{copy.file as string}: {version?.original_file_name || "-"}</span>
+                                <span>{copy.size as string}: {formatBytes(version?.file_size)}</span>
                               </div>
                             </div>
 
@@ -687,7 +902,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                     prefetch={false}
                                   >
                                     <ImageIcon className="h-4 w-4" />
-                                    Shiko
+                                    {copy.preview as string}
                                   </Link>
                                   <Link
                                     className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
@@ -696,7 +911,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                     prefetch={false}
                                   >
                                     <Download className="h-4 w-4" />
-                                    Shkarko
+                                    {locale === "sq" ? "Shkarko" : "Download"}
                                   </Link>
                                 </>
                               ) : null}
@@ -705,7 +920,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                   <input name="return_to" type="hidden" value="/documents" />
                                   <input name="document_id" type="hidden" value={document.id} />
                                   <input name="status" type="hidden" value="Pending Review" />
-                                  <ActionButton>Dërgo për aprovim</ActionButton>
+                                  <ActionButton>{copy.sendForApproval as string}</ActionButton>
                                 </form>
                               ) : null}
                               {canManage && document.status === "Pending Review" ? (
@@ -714,14 +929,14 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                     <input name="return_to" type="hidden" value="/documents" />
                                     <input name="document_id" type="hidden" value={document.id} />
                                     <input name="status" type="hidden" value="Approved" />
-                                    <ActionButton tone="green">Aprovo</ActionButton>
+                                    <ActionButton tone="green">{copy.approve as string}</ActionButton>
                                   </form>
                                   <form action={updateDocumentStatusAction}>
                                     <input name="return_to" type="hidden" value="/documents" />
                                     <input name="document_id" type="hidden" value={document.id} />
                                     <input name="status" type="hidden" value="Rejected" />
                                     <input name="reason" type="hidden" value="Rejected from review" />
-                                    <ActionButton tone="red">Refuzo</ActionButton>
+                                    <ActionButton tone="red">{copy.reject as string}</ActionButton>
                                   </form>
                                 </>
                               ) : null}
@@ -731,7 +946,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                           {canWrite ? (
                             <details className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
                               <summary className="cursor-pointer text-sm font-semibold text-slate-700">
-                                Krijo version të ri
+                                {locale === "sq" ? "Krijo version të ri" : "Create new version"}
                               </summary>
                               <form action={createDocumentVersionAction} className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
                                 <input name="return_to" type="hidden" value="/documents" />
@@ -741,8 +956,11 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                   name="file"
                                   type="file"
                                 />
-                                <TextInput name="change_notes" placeholder="Çfarë ndryshoi?" />
-                                <ActionButton tone="dark">Ruaj versionin</ActionButton>
+                                <TextInput
+                                  name="change_notes"
+                                  placeholder={locale === "sq" ? "Çfarë ndryshoi?" : "What changed?"}
+                                />
+                                <ActionButton tone="dark">{locale === "sq" ? "Ruaj versionin" : "Save version"}</ActionButton>
                               </form>
                             </details>
                           ) : null}
@@ -754,10 +972,10 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                   <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
                     <FileArchive className="mx-auto h-10 w-10 text-slate-400" />
                     <h3 className="mt-3 text-lg font-semibold text-slate-950">
-                      Nuk ka dokumente për këtë pamje
+                      {copy.documentEmptyTitle as string}
                     </h3>
                     <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
-                      Ngarko dokumente, lidhi me prona/oferta/kontrata dhe dërgoji për review kur janë gati.
+                      {copy.documentEmpty as string}
                     </p>
                   </div>
                 )}
@@ -771,9 +989,9 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     <FileSpreadsheet className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-950">Oferta për pronarë</h2>
+                    <h2 className="text-lg font-semibold text-slate-950">{copy.offersTitle as string}</h2>
                     <p className="text-sm text-slate-500">
-                      Oferta janë rekorde komerciale me Excel, versionim dhe aprovim.
+                      {copy.offerSectionDescription as string}
                     </p>
                   </div>
                 </div>
@@ -784,27 +1002,29 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                       return (
                         <article className="rounded-xl border border-slate-200 p-4" key={offer.id}>
                           <div className="flex flex-wrap items-center gap-2">
-                            {statusBadge(offer.status, getOfferStatusTone(offer.status))}
+                            {statusBadge(formatOfferStatus(offer.status, locale), getOfferStatusTone(offer.status))}
                             <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                               v{latestVersion?.version_number || 1}
                             </span>
                           </div>
                           <h3 className="mt-3 text-base font-semibold text-slate-950">{offer.title}</h3>
                           <p className="mt-1 text-sm text-slate-500">
-                            {getPropertyLabel(propertyById.get(offer.property_id))}
+                            {getPropertyLabel(propertyById.get(offer.property_id), locale)}
                           </p>
                           <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
                             <div className="rounded-lg bg-slate-50 p-3">
-                              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Pronar</p>
+                              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">{copy.owner as string}</p>
                               <p className="font-semibold text-slate-950">{offer.owner_percentage || "-"}%</p>
                             </div>
                             <div className="rounded-lg bg-slate-50 p-3">
-                              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Investor</p>
+                              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                                {locale === "sq" ? "Investitor" : "Investor"}
+                              </p>
                               <p className="font-semibold text-slate-950">{offer.investor_percentage || "-"}%</p>
                             </div>
                             <div className="rounded-lg bg-slate-50 p-3">
-                              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Vlerë</p>
-                              <p className="font-semibold text-slate-950">{formatMoney(offer.estimated_sale_price)}</p>
+                              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">{copy.value as string}</p>
+                              <p className="font-semibold text-slate-950">{formatMoney(offer.estimated_sale_price, locale)}</p>
                             </div>
                           </div>
                           <div className="mt-4 flex flex-wrap gap-2">
@@ -813,7 +1033,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                 <input name="return_to" type="hidden" value="/documents?tab=offers" />
                                 <input name="offer_id" type="hidden" value={offer.id} />
                                 <input name="status" type="hidden" value="Pending Approval" />
-                                <ActionButton>Dërgo për aprovim</ActionButton>
+                                <ActionButton>{copy.sendForApproval as string}</ActionButton>
                               </form>
                             ) : null}
                             {canManage && offer.status === "Pending Approval" ? (
@@ -821,7 +1041,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                 <input name="return_to" type="hidden" value="/documents?tab=offers" />
                                 <input name="offer_id" type="hidden" value={offer.id} />
                                 <input name="status" type="hidden" value="Approved" />
-                                <ActionButton tone="green">Aprovo</ActionButton>
+                                <ActionButton tone="green">{copy.approve as string}</ActionButton>
                               </form>
                             ) : null}
                             {offer.status === "Approved" ? (
@@ -829,7 +1049,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                 <input name="return_to" type="hidden" value="/documents?tab=offers" />
                                 <input name="offer_id" type="hidden" value={offer.id} />
                                 <input name="status" type="hidden" value="Sent to Owner" />
-                                <ActionButton>Dërguar</ActionButton>
+                                <ActionButton>{copy.sent as string}</ActionButton>
                               </form>
                             ) : null}
                             {offer.status === "Sent to Owner" ? (
@@ -837,7 +1057,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                 <input name="return_to" type="hidden" value="/documents?tab=offers" />
                                 <input name="offer_id" type="hidden" value={offer.id} />
                                 <input name="status" type="hidden" value="Accepted" />
-                                <ActionButton tone="green">Pranuar</ActionButton>
+                                <ActionButton tone="green">{copy.accepted as string}</ActionButton>
                               </form>
                             ) : null}
                           </div>
@@ -847,7 +1067,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                   </div>
                 ) : (
                   <div className="rounded-xl border border-dashed border-cyan-200 bg-cyan-50 p-6 text-sm text-cyan-900">
-                    Nuk ka oferta në këtë pamje. Krijo një ofertë me përqindje dhe Excel kur prona e pronarit është gati për negocim.
+                    {copy.offerEmpty as string}
                   </div>
                 )}
               </div>
@@ -860,9 +1080,9 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     <Gavel className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-950">Kontrata</h2>
+                    <h2 className="text-lg font-semibold text-slate-950">{copy.contractsTitle as string}</h2>
                     <p className="text-sm text-slate-500">
-                      Lifecycle, palë, review ligjor/menaxherial dhe nënshkrim manual.
+                      {copy.contractLifecycleDescription as string}
                     </p>
                   </div>
                 </div>
@@ -875,7 +1095,10 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
-                                {statusBadge(contract.status, getContractStatusTone(contract.status))}
+                                {statusBadge(
+                                  formatContractStatus(contract.status, locale),
+                                  getContractStatusTone(contract.status),
+                                )}
                                 <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                                   {formatContractType(contract.contract_type, locale)}
                                 </span>
@@ -884,13 +1107,16 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                 {contract.title}
                               </h3>
                               <p className="mt-1 text-sm text-slate-500">
-                                {contract.contract_number} · {contract.property_id ? getPropertyLabel(propertyById.get(contract.property_id)) : "Pa pronë"}
+                                {contract.contract_number} ·{" "}
+                                {contract.property_id
+                                  ? getPropertyLabel(propertyById.get(contract.property_id), locale)
+                                  : (copy.noProperty as string)}
                               </p>
                               <p className="mt-2 text-sm text-slate-600">
                                 {contractParties
                                   .map((party) => party.display_name)
                                   .filter(Boolean)
-                                  .join(" / ") || "Palët nuk janë vendosur"}
+                                  .join(" / ") || (copy.noParties as string)}
                               </p>
                               <p className="mt-2 text-xs text-slate-500">
                                 {formatDate(contract.start_date, locale)} - {formatDate(contract.end_date, locale)}
@@ -902,7 +1128,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                   <input name="return_to" type="hidden" value="/documents?tab=contracts" />
                                   <input name="contract_id" type="hidden" value={contract.id} />
                                   <input name="status" type="hidden" value="Pending Legal Review" />
-                                  <ActionButton>Dërgo për legal</ActionButton>
+                                  <ActionButton>{copy.sendForLegal as string}</ActionButton>
                                 </form>
                               ) : null}
                               {canLegalApprove && contract.status === "Pending Legal Review" ? (
@@ -910,7 +1136,9 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                   <input name="return_to" type="hidden" value="/documents?tab=contracts" />
                                   <input name="contract_id" type="hidden" value={contract.id} />
                                   <input name="status" type="hidden" value="Pending Manager Approval" />
-                                  <ActionButton tone="green">Legal OK</ActionButton>
+                                  <ActionButton tone="green">
+                                    {locale === "sq" ? "Legal OK" : "Legal approved"}
+                                  </ActionButton>
                                 </form>
                               ) : null}
                               {canManage && contract.status === "Pending Manager Approval" ? (
@@ -918,19 +1146,19 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                   <input name="return_to" type="hidden" value="/documents?tab=contracts" />
                                   <input name="contract_id" type="hidden" value={contract.id} />
                                   <input name="status" type="hidden" value="Approved" />
-                                  <ActionButton tone="green">Aprovo</ActionButton>
+                                  <ActionButton tone="green">{copy.approve as string}</ActionButton>
                                 </form>
                               ) : null}
                               {canWrite && ["Approved", "Sent for Signature", "Partially Signed"].includes(contract.status) ? (
                                 <details className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
                                   <summary className="cursor-pointer text-sm font-semibold text-slate-700">
-                                    Ngarko PDF të firmosur
+                                    {copy.signedPdf as string}
                                   </summary>
                                   <form action={uploadSignedContractAction} className="mt-3 grid gap-2">
                                     <input name="return_to" type="hidden" value="/documents?tab=contracts" />
                                     <input name="contract_id" type="hidden" value={contract.id} />
                                     <input className="text-sm" name="signed_file" type="file" accept=".pdf,application/pdf" />
-                                    <ActionButton tone="dark">Ngarko</ActionButton>
+                                    <ActionButton tone="dark">{copy.upload as string}</ActionButton>
                                   </form>
                                 </details>
                               ) : null}
@@ -938,7 +1166,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                 <form action={completeContractAction}>
                                   <input name="return_to" type="hidden" value="/documents?tab=contracts" />
                                   <input name="contract_id" type="hidden" value={contract.id} />
-                                  <ActionButton tone="green">Përfundo</ActionButton>
+                                  <ActionButton tone="green">{locale === "sq" ? "Përfundo" : "Complete"}</ActionButton>
                                 </form>
                               ) : null}
                             </div>
@@ -949,7 +1177,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                   </div>
                 ) : (
                   <div className="rounded-xl border border-dashed border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
-                    Nuk ka kontrata në këtë pamje. Krijo draft kontrate, shto palët dhe dërgoje për review ligjor.
+                    {copy.contractEmpty as string}
                   </div>
                 )}
               </div>
@@ -964,40 +1192,43 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     <UploadCloud className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="font-semibold text-slate-950">Ngarko dokument</h2>
-                    <p className="text-sm text-slate-500">PDF, Excel, Word, imazhe, video ose ZIP.</p>
+                    <h2 className="font-semibold text-slate-950">{copy.uploadDocument as string}</h2>
+                    <p className="text-sm text-slate-500">{copy.storageFormats as string}</p>
                   </div>
                 </div>
                 <form action={uploadDocumentAction} className="grid gap-3">
                   <input name="return_to" type="hidden" value="/documents" />
                   <div className="grid gap-1.5">
-                    <FieldLabel>Skedarët</FieldLabel>
+                    <FieldLabel>{copy.files as string}</FieldLabel>
                     <input className="rounded-lg border border-dashed border-slate-300 p-3 text-sm" multiple name="files" type="file" />
-                    <p className="text-xs text-slate-500">Maksimumi 50 MB për skedar. Skedarët ruhen privatisht.</p>
+                    <p className="text-xs text-slate-500">{copy.fileHint as string}</p>
                   </div>
                   <div className="grid gap-1.5">
-                    <FieldLabel>Titulli</FieldLabel>
-                    <TextInput name="title" placeholder="p.sh. Certifikatë pronësie" />
+                    <FieldLabel>{copy.title as string}</FieldLabel>
+                    <TextInput
+                      name="title"
+                      placeholder={locale === "sq" ? "p.sh. Certifikatë pronësie" : "e.g. Ownership certificate"}
+                    />
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <div className="grid gap-1.5">
-                      <FieldLabel>Kategoria</FieldLabel>
+                      <FieldLabel>{locale === "sq" ? "Kategoria" : "Category"}</FieldLabel>
                       <SelectInput name="category" defaultValue="Pronesia">
                         {documentCategories.map((category) => (
                           <option key={category} value={category}>
-                            {category}
+                            {formatDocumentCategory(category, locale)}
                           </option>
                         ))}
                       </SelectInput>
                     </div>
                     <div className="grid gap-1.5">
-                      <FieldLabel>Lloji</FieldLabel>
+                      <FieldLabel>{locale === "sq" ? "Lloji" : "Type"}</FieldLabel>
                       <SelectInput name="document_type" defaultValue="Property document">
                         {Object.entries(documentTypeOptions).map(([category, types]) => (
-                          <optgroup key={category} label={category}>
+                          <optgroup key={category} label={formatDocumentCategory(category, locale)}>
                             {types.map((type) => (
                               <option key={type} value={type}>
-                                {type}
+                                {formatDocumentType(type, locale)}
                               </option>
                             ))}
                           </optgroup>
@@ -1007,57 +1238,60 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <div className="grid gap-1.5">
-                      <FieldLabel>Lidhe me</FieldLabel>
+                      <FieldLabel>{copy.linkWith as string}</FieldLabel>
                       <SelectInput name="entity_type" defaultValue={params.entity_type || "property"}>
                         {entityTypes.map((entityType) => (
                           <option key={entityType} value={entityType}>
-                            {entityType}
+                            {formatEntityType(entityType, locale)}
                           </option>
                         ))}
                       </SelectInput>
                     </div>
                     <div className="grid gap-1.5">
-                      <FieldLabel>Rekordi</FieldLabel>
+                      <FieldLabel>{copy.record as string}</FieldLabel>
                       <TextInput
                         defaultValue={params.entity_id || ""}
                         list="document-entity-options"
                         name="entity_id"
-                        placeholder="Zgjidh pronë ose vendos UUID"
+                        placeholder={locale === "sq" ? "Zgjidh pronë ose vendos UUID" : "Choose property or enter UUID"}
                       />
                       <datalist id="document-entity-options">
                         {properties.map((property) => (
-                          <option key={property.id} label={getPropertyLabel(property)} value={property.id} />
+                        <option key={property.id} label={getPropertyLabel(property, locale)} value={property.id} />
                         ))}
                       </datalist>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <div className="grid gap-1.5">
-                      <FieldLabel>Numri</FieldLabel>
-                      <TextInput name="document_number" placeholder="Nr. dokumenti" />
+                      <FieldLabel>{copy.number as string}</FieldLabel>
+                      <TextInput
+                        name="document_number"
+                        placeholder={locale === "sq" ? "Nr. dokumenti" : "Document no."}
+                      />
                     </div>
                     <div className="grid gap-1.5">
-                      <FieldLabel>Skadon</FieldLabel>
+                      <FieldLabel>{locale === "sq" ? "Skadon" : "Expires"}</FieldLabel>
                       <TextInput name="expires_at" type="date" />
                     </div>
                   </div>
                   <div className="grid gap-1.5">
-                    <FieldLabel>Konfidencialiteti</FieldLabel>
+                    <FieldLabel>{locale === "sq" ? "Konfidencialiteti" : "Confidentiality"}</FieldLabel>
                     <SelectInput name="confidentiality_level" defaultValue="internal">
                       {confidentialityLevels.map((level) => (
                         <option key={level} value={level}>
-                          {level}
+                          {formatConfidentialityLevel(level, locale)}
                         </option>
                       ))}
                     </SelectInput>
                   </div>
                   <div className="grid gap-1.5">
-                    <FieldLabel>Shënime</FieldLabel>
-                    <TextAreaInput name="notes" placeholder="Kontekst, burim, arsye review..." />
+                    <FieldLabel>{copy.notes as string}</FieldLabel>
+                    <TextAreaInput name="notes" placeholder={copy.notesPlaceholder as string} />
                   </div>
                   <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
                     <UploadCloud className="h-4 w-4" />
-                    Ngarko dokument
+                    {copy.uploadDocument as string}
                   </button>
                 </form>
               </div>
@@ -1070,38 +1304,76 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     <FileSpreadsheet className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="font-semibold text-slate-950">Krijo ofertë</h2>
-                    <p className="text-sm text-slate-500">Përqindje pronari/investitori + Excel.</p>
+                    <h2 className="font-semibold text-slate-950">{copy.offerCreateTitle as string}</h2>
+                    <p className="text-sm text-slate-500">{copy.offerCreateDescription as string}</p>
                   </div>
                 </div>
                 <form action={createOfferAction} className="grid gap-3">
                   <div className="grid gap-1.5">
-                    <FieldLabel>Prona</FieldLabel>
+                    <FieldLabel>{copy.property as string}</FieldLabel>
                     <SelectInput name="property_id" required>
-                      <option value="">Zgjidh pronën</option>
+                      <option value="">{copy.chooseProperty as string}</option>
                       {properties.map((property) => (
                         <option key={property.id} value={property.id}>
-                          {getPropertyLabel(property)}
+                          {getPropertyLabel(property, locale)}
                         </option>
                       ))}
                     </SelectInput>
                   </div>
-                  <TextInput name="title" placeholder="Titulli i ofertës" required />
-                  <TextInput name="owner_name" placeholder="Pronari / përfaqësuesi" />
+                  <TextInput
+                    name="title"
+                    placeholder={copy.offerTitlePlaceholder as string}
+                    required
+                  />
+                  <TextInput
+                    name="owner_name"
+                    placeholder={copy.ownerRepresentativePlaceholder as string}
+                  />
                   <div className="grid grid-cols-2 gap-3">
-                    <TextInput name="owner_percentage" placeholder="Pronar %" type="number" step="0.01" required />
-                    <TextInput name="investor_percentage" placeholder="Investor %" type="number" step="0.01" required />
+                    <TextInput
+                      name="owner_percentage"
+                      placeholder={copy.ownerPercentagePlaceholder as string}
+                      type="number"
+                      step="0.01"
+                      required
+                    />
+                    <TextInput
+                      name="investor_percentage"
+                      placeholder={copy.investorPercentagePlaceholder as string}
+                      type="number"
+                      step="0.01"
+                      required
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <TextInput name="land_area" placeholder="Sipërfaqe toke" type="number" step="0.01" />
-                    <TextInput name="estimated_sale_price" placeholder="Vlerë e pritshme" type="number" step="0.01" />
+                    <TextInput
+                      name="land_area"
+                      placeholder={copy.landAreaPlaceholder as string}
+                      type="number"
+                      step="0.01"
+                    />
+                    <TextInput
+                      name="estimated_sale_price"
+                      placeholder={copy.estimatedValuePlaceholder as string}
+                      type="number"
+                      step="0.01"
+                    />
                   </div>
-                  <TextInput name="valid_until" type="date" />
-                  <input className="rounded-lg border border-dashed border-slate-300 p-3 text-sm" name="excel_file" type="file" accept=".xls,.xlsx" />
-                  <TextAreaInput name="notes" placeholder="Shënime negocimi..." />
+                  <div className="grid gap-1.5">
+                    <FieldLabel>{copy.validUntil as string}</FieldLabel>
+                    <TextInput name="valid_until" type="date" />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <FieldLabel>{copy.excelFile as string}</FieldLabel>
+                    <input className="rounded-lg border border-dashed border-slate-300 p-3 text-sm" name="excel_file" type="file" accept=".xls,.xlsx" />
+                  </div>
+                  <TextAreaInput
+                    name="notes"
+                    placeholder={copy.notesPlaceholder as string}
+                  />
                   <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
                     <FileSpreadsheet className="h-4 w-4" />
-                    Krijo ofertë
+                    {copy.offerCreateTitle as string}
                   </button>
                 </form>
               </div>
@@ -1114,43 +1386,55 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                     <ClipboardCheck className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="font-semibold text-slate-950">Krijo kontratë</h2>
-                    <p className="text-sm text-slate-500">Draft, palë dhe review ligjor.</p>
+                    <h2 className="font-semibold text-slate-950">{copy.contractCreateTitle as string}</h2>
+                    <p className="text-sm text-slate-500">{copy.contractCreateDescription as string}</p>
                   </div>
                 </div>
                 <form action={createContractAction} className="grid gap-3">
-                  <SelectInput name="contract_type" defaultValue="rent_contract">
-                    {contractTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {formatContractType(type, locale)}
-                      </option>
-                    ))}
-                  </SelectInput>
-                  <TextInput name="title" placeholder="Titulli i kontratës" required />
-                  <SelectInput name="property_id">
-                    <option value="">Pa pronë</option>
-                    {properties.map((property) => (
-                      <option key={property.id} value={property.id}>
-                        {getPropertyLabel(property)}
-                      </option>
-                    ))}
-                  </SelectInput>
+                  <div className="grid gap-1.5">
+                    <FieldLabel>{copy.contractType as string}</FieldLabel>
+                    <SelectInput name="contract_type" defaultValue="rent_contract">
+                      {contractTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {formatContractType(type, locale)}
+                        </option>
+                      ))}
+                    </SelectInput>
+                  </div>
+                  <TextInput name="title" placeholder={copy.contractTitlePlaceholder as string} required />
+                  <div className="grid gap-1.5">
+                    <FieldLabel>{copy.property as string}</FieldLabel>
+                    <SelectInput name="property_id">
+                      <option value="">{copy.noProperty as string}</option>
+                      {properties.map((property) => (
+                        <option key={property.id} value={property.id}>
+                          {getPropertyLabel(property, locale)}
+                        </option>
+                      ))}
+                    </SelectInput>
+                  </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                    <TextInput name="party_a" placeholder="Pala A" required />
-                    <TextInput name="party_b" placeholder="Pala B" required />
+                    <TextInput name="party_a" placeholder={copy.partyA as string} required />
+                    <TextInput name="party_b" placeholder={copy.partyB as string} required />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <TextInput name="amount" placeholder="Shuma" type="number" step="0.01" />
-                    <TextInput name="currency" defaultValue="EUR" />
+                    <TextInput name="amount" placeholder={copy.amount as string} type="number" step="0.01" />
+                    <TextInput name="currency" aria-label={copy.currency as string} defaultValue="EUR" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <TextInput name="start_date" type="date" />
-                    <TextInput name="end_date" type="date" />
+                    <div className="grid gap-1.5">
+                      <FieldLabel>{copy.startDate as string}</FieldLabel>
+                      <TextInput name="start_date" type="date" />
+                    </div>
+                    <div className="grid gap-1.5">
+                      <FieldLabel>{copy.endDate as string}</FieldLabel>
+                      <TextInput name="end_date" type="date" />
+                    </div>
                   </div>
-                  <TextAreaInput name="notes" placeholder="Terma, kushte, noteri, pagesa..." />
+                  <TextAreaInput name="notes" placeholder={copy.contractNotesPlaceholder as string} />
                   <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
                     <Gavel className="h-4 w-4" />
-                    Krijo kontratë
+                    {copy.contractCreateTitle as string}
                   </button>
                 </form>
               </div>
@@ -1159,20 +1443,20 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5 text-emerald-600" />
-                <h2 className="font-semibold text-slate-950">Kontroll operativ</h2>
+                <h2 className="font-semibold text-slate-950">{copy.operationalControl as string}</h2>
               </div>
               <div className="mt-4 grid gap-3 text-sm text-slate-600">
                 <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-950">Dokumente që mungojnë</p>
-                  <p>{missingChecklist} checklist items nuk janë të aprovuar.</p>
+                  <p className="font-semibold text-slate-950">{copy.missingTitle as string}</p>
+                  <p>{(copy.missingBody as (count: number) => string)(missingChecklist)}</p>
                 </div>
                 <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-950">Rregulli i ruajtjes</p>
-                  <p>Skedarët ruhen në bucket privat dhe hapen me URL të përkohshme.</p>
+                  <p className="font-semibold text-slate-950">{copy.saveRuleTitle as string}</p>
+                  <p>{copy.saveRuleBody as string}</p>
                 </div>
                 <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-950">Audit</p>
-                  <p>Ngarkimet, versionet, aprovimet dhe nënshkrimet logohen si aktivitet.</p>
+                  <p className="font-semibold text-slate-950">{copy.auditTitle as string}</p>
+                  <p>{copy.auditBody as string}</p>
                 </div>
               </div>
             </div>

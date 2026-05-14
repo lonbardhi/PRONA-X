@@ -151,6 +151,109 @@ export const documentTypeOptions = {
   "Te tjera": ["Other"],
 } satisfies Record<DocumentCategory, string[]>;
 
+const documentCategoryLabels: Record<string, Record<Locale, string>> = {
+  Autorizime: { sq: "Autorizime", en: "Authorizations" },
+  Financiare: { sq: "Financiare", en: "Financial" },
+  Identifikimi: { sq: "Identifikimi", en: "Identification" },
+  Kadastra: { sq: "Kadastra", en: "Cadastre" },
+  Kontrata: { sq: "Kontrata", en: "Contracts" },
+  Media: { sq: "Media", en: "Media" },
+  Oferta: { sq: "Oferta", en: "Offers" },
+  Pronesia: { sq: "Pronësia", en: "Ownership" },
+  Teknike: { sq: "Teknike", en: "Technical" },
+  "Te tjera": { sq: "Të tjera", en: "Other" },
+};
+
+const documentTypeLabels: Record<string, Record<Locale, string>> = {
+  "Agency mandate": { sq: "Mandat agjencie", en: "Agency mandate" },
+  "Architecture plan": { sq: "Plan arkitekturor", en: "Architecture plan" },
+  "Boundary document": { sq: "Dokument kufijsh", en: "Boundary document" },
+  "Buyer ID": { sq: "ID blerësi", en: "Buyer ID" },
+  "Cadastral map": { sq: "Hartë kadastrale", en: "Cadastral map" },
+  "Commission calculation": { sq: "Llogaritje komisioni", en: "Commission calculation" },
+  "Company registration": { sq: "Regjistrim kompanie", en: "Company registration" },
+  "Construction document": { sq: "Dokument ndërtimi", en: "Construction document" },
+  "Contract Annex": { sq: "Aneks kontrate", en: "Contract annex" },
+  "Draft Contract": { sq: "Projekt-kontratë", en: "Draft contract" },
+  "Drone media": { sq: "Media me dron", en: "Drone media" },
+  "Excel Offer": { sq: "Ofertë Excel", en: "Excel offer" },
+  "Floor plan": { sq: "Planimetri", en: "Floor plan" },
+  "Generated Contract PDF": { sq: "PDF kontrate i gjeneruar", en: "Generated contract PDF" },
+  "Handover Protocol": { sq: "Akt-dorëzim", en: "Handover protocol" },
+  Invoice: { sq: "Faturë", en: "Invoice" },
+  "Offer PDF": { sq: "PDF oferte", en: "Offer PDF" },
+  "Other": { sq: "Tjetër", en: "Other" },
+  "Owner authorization": { sq: "Autorizim pronari", en: "Owner authorization" },
+  "Owner ID": { sq: "ID pronari", en: "Owner ID" },
+  "Ownership certificate": { sq: "Certifikatë pronësie", en: "Ownership certificate" },
+  "Parcel plan": { sq: "Plan parcele", en: "Parcel plan" },
+  "Payment proof": { sq: "Dëshmi pagese", en: "Payment proof" },
+  Permit: { sq: "Leje", en: "Permit" },
+  Photo: { sq: "Foto", en: "Photo" },
+  "Power of attorney": { sq: "Prokurë", en: "Power of attorney" },
+  "Property document": { sq: "Dokument prone", en: "Property document" },
+  Receipt: { sq: "Dëftesë", en: "Receipt" },
+  "Seller ID": { sq: "ID shitësi", en: "Seller ID" },
+  "Signed Contract": { sq: "Kontratë e firmosur", en: "Signed contract" },
+  "Signed Offer": { sq: "Ofertë e firmosur", en: "Signed offer" },
+  "Tenant ID": { sq: "ID qiramarrësi", en: "Tenant ID" },
+  "Termination Agreement": { sq: "Marrëveshje përfundimi", en: "Termination agreement" },
+  "Title deed": { sq: "Akt pronësie", en: "Title deed" },
+  Video: { sq: "Video", en: "Video" },
+};
+
+const statusLabels: Record<string, Record<Locale, string>> = {
+  Accepted: { sq: "Pranuar", en: "Accepted" },
+  Active: { sq: "Aktive", en: "Active" },
+  Approved: { sq: "Aprovuar", en: "Approved" },
+  Archived: { sq: "Arkivuar", en: "Archived" },
+  Cancelled: { sq: "Anuluar", en: "Cancelled" },
+  "Closing in Progress": { sq: "Mbyllje në proces", en: "Closing in progress" },
+  Completed: { sq: "Përfunduar", en: "Completed" },
+  Draft: { sq: "Projekt", en: "Draft" },
+  Expired: { sq: "Skaduar", en: "Expired" },
+  "Expiring Soon": { sq: "Skadon së shpejti", en: "Expiring soon" },
+  Generated: { sq: "Gjeneruar", en: "Generated" },
+  "Needs Changes": { sq: "Kërkon ndryshime", en: "Needs changes" },
+  "Notary Scheduled": { sq: "Noteri i planifikuar", en: "Notary scheduled" },
+  "Partially Signed": { sq: "Firmosur pjesërisht", en: "Partially signed" },
+  "Pending Approval": { sq: "Në pritje për aprovim", en: "Pending approval" },
+  "Pending Finance Review": { sq: "Në pritje të financës", en: "Pending finance review" },
+  "Pending Legal Review": { sq: "Në pritje të rishikimit ligjor", en: "Pending legal review" },
+  "Pending Manager Approval": { sq: "Në pritje të menaxherit", en: "Pending manager approval" },
+  "Pending Review": { sq: "Në pritje për rishikim", en: "Pending review" },
+  Quarantined: { sq: "Në karantinë", en: "Quarantined" },
+  Rejected: { sq: "Refuzuar", en: "Rejected" },
+  Renewed: { sq: "Rinovuar", en: "Renewed" },
+  Sent: { sq: "Dërguar", en: "Sent" },
+  "Sent for Signature": { sq: "Dërguar për firmë", en: "Sent for signature" },
+  "Sent to Owner": { sq: "Dërguar pronarit", en: "Sent to owner" },
+  "Signature Declined": { sq: "Firma u refuzua", en: "Signature declined" },
+  Signed: { sq: "Firmosur", en: "Signed" },
+  Superseded: { sq: "Zëvendësuar", en: "Superseded" },
+  Terminated: { sq: "Ndërprerë", en: "Terminated" },
+  Uploaded: { sq: "Ngarkuar", en: "Uploaded" },
+};
+
+const entityTypeLabels: Record<string, Record<Locale, string>> = {
+  client: { sq: "Klient", en: "Client" },
+  contract: { sq: "Kontratë", en: "Contract" },
+  deal: { sq: "Marrëveshje", en: "Deal" },
+  general: { sq: "Bibliotekë e përgjithshme", en: "General library" },
+  lead: { sq: "Lead", en: "Lead" },
+  offer: { sq: "Ofertë", en: "Offer" },
+  owner: { sq: "Pronar", en: "Owner" },
+  property: { sq: "Pronë", en: "Property" },
+  template: { sq: "Shabllon", en: "Template" },
+};
+
+const confidentialityLabels: Record<string, Record<Locale, string>> = {
+  confidential: { sq: "Konfidencial", en: "Confidential" },
+  internal: { sq: "I brendshëm", en: "Internal" },
+  public_share: { sq: "Për shpërndarje publike", en: "Public share" },
+  restricted: { sq: "I kufizuar", en: "Restricted" },
+};
+
 export const allowedDocumentMimeTypes = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -220,24 +323,60 @@ export function cleanDocumentStorageName(name: string) {
   return `${base || "document"}${extension ? `.${extension}` : ""}`;
 }
 
-export function validateDocumentFile(file: File) {
+export function formatDocumentCategory(category: string, locale: Locale) {
+  return documentCategoryLabels[category]?.[locale] || category;
+}
+
+export function formatDocumentType(type: string, locale: Locale) {
+  return documentTypeLabels[type]?.[locale] || type;
+}
+
+export function formatDocumentStatus(status: string, locale: Locale) {
+  return statusLabels[status]?.[locale] || status;
+}
+
+export function formatOfferStatus(status: string, locale: Locale) {
+  return statusLabels[status]?.[locale] || status;
+}
+
+export function formatContractStatus(status: string, locale: Locale) {
+  return statusLabels[status]?.[locale] || status;
+}
+
+export function formatEntityType(entityType: string, locale: Locale) {
+  return entityTypeLabels[entityType]?.[locale] || entityType;
+}
+
+export function formatConfidentialityLevel(level: string, locale: Locale) {
+  return confidentialityLabels[level]?.[locale] || level;
+}
+
+export function validateDocumentFile(file: File, locale: Locale = "sq") {
   if (file.size <= 0) {
-    return `${file.name} eshte bosh. Ngarko nje skedar te vlefshem.`;
+    return locale === "sq"
+      ? `${file.name} është bosh. Ngarko një skedar të vlefshëm.`
+      : `${file.name} is empty. Upload a valid file.`;
   }
 
   if (file.size > documentMaxBytes) {
-    return `${file.name} eshte me i madh se 50 MB.`;
+    return locale === "sq"
+      ? `${file.name} është më i madh se 50 MB.`
+      : `${file.name} is larger than 50 MB.`;
   }
 
   const extension = getFileExtension(file.name);
   const allowedMimes = extensionMimeMap[extension];
 
   if (!allowedMimes) {
-    return `${file.name} nuk mbeshtetet. Perdorni PDF, Excel, Word, imazhe, MP4, MOV ose ZIP.`;
+    return locale === "sq"
+      ? `${file.name} nuk mbështetet. Përdor PDF, Excel, Word, imazhe, MP4, MOV ose ZIP.`
+      : `${file.name} is not supported. Use PDF, Excel, Word, images, MP4, MOV, or ZIP.`;
   }
 
   if (file.type && !allowedMimes.includes(file.type)) {
-    return `${file.name} ka format qe nuk perputhet me prapashtesen.`;
+    return locale === "sq"
+      ? `${file.name} ka format që nuk përputhet me prapashtesën.`
+      : `${file.name} has a MIME type that does not match the extension.`;
   }
 
   return null;
@@ -454,16 +593,16 @@ export function getContractStatusTone(status: string) {
 
 export function formatContractType(type: string, locale: Locale = "sq") {
   const labels: Record<string, { en: string; sq: string }> = {
-    rent_contract: { sq: "Kontrate Qiraje", en: "Rent Contract" },
-    buying_contract: { sq: "Kontrate Shitblerjeje", en: "Buying Contract" },
-    reservation_contract: { sq: "Kontrate Rezervimi", en: "Reservation Agreement" },
-    owner_mandate_contract: { sq: "Kontrate Ndermjetesimi Pronari", en: "Owner Mandate" },
-    buyer_brokerage_contract: { sq: "Kontrate Ndermjetesimi Bleresi", en: "Buyer Brokerage" },
-    tenant_brokerage_contract: { sq: "Kontrate Ndermjetesimi Qiramarresi", en: "Tenant Brokerage" },
-    commission_agreement: { sq: "Marreveshje Komisioni", en: "Commission Agreement" },
-    annex: { sq: "Aneks Kontrate", en: "Contract Annex" },
-    handover_protocol: { sq: "Akt-Dorezim", en: "Handover Protocol" },
-    termination_agreement: { sq: "Marreveshje Perfundimi", en: "Termination Agreement" },
+    rent_contract: { sq: "Kontratë qiraje", en: "Rent contract" },
+    buying_contract: { sq: "Kontratë shitblerjeje", en: "Buying contract" },
+    reservation_contract: { sq: "Kontratë rezervimi", en: "Reservation agreement" },
+    owner_mandate_contract: { sq: "Kontratë ndërmjetësimi pronari", en: "Owner mandate contract" },
+    buyer_brokerage_contract: { sq: "Kontratë ndërmjetësimi blerësi", en: "Buyer brokerage contract" },
+    tenant_brokerage_contract: { sq: "Kontratë ndërmjetësimi qiramarrësi", en: "Tenant brokerage contract" },
+    commission_agreement: { sq: "Marrëveshje komisioni", en: "Commission agreement" },
+    annex: { sq: "Aneks kontrate", en: "Contract annex" },
+    handover_protocol: { sq: "Akt-dorëzim", en: "Handover protocol" },
+    termination_agreement: { sq: "Marrëveshje përfundimi", en: "Termination agreement" },
   };
 
   return labels[type]?.[locale] || type;

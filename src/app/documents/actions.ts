@@ -24,29 +24,198 @@ import {
   requireApprovedUser,
   type AppRole,
 } from "@/lib/supabase/server";
+import { getCurrentLocale } from "@/lib/i18n-server";
+import type { Locale } from "@/lib/i18n";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 const zeroUuid = "00000000-0000-0000-0000-000000000000";
 
-function getActionErrorMessage(error: unknown) {
+const actionMessages = {
+  sq: {
+    approvedDocumentNeedsVersion: "Dokumentet e aprovuara kërkojnë version të ri për rishikim.",
+    canOnlySendDraftLegal: "Vetëm projekt-kontratat dërgohen për rishikim ligjor.",
+    contractBeforeComplete: "Kontrata duhet të jetë e firmosur para përfundimit.",
+    contractCreated: "Kontrata u krijua.",
+    contractMissingSignedFile: "Zgjidh kontratën dhe PDF-në e firmosur.",
+    contractNotFound: "Kontrata nuk u gjet.",
+    contractRequiresLegal: "Kontrata kërkon rishikim ligjor para aprovimit menaxherial.",
+    contractSignedUploaded: "Kontrata e firmosur u ngarkua.",
+    contractUpdated: "Kontrata u përditësua.",
+    documentCreatedFailed: "Dokumenti nuk u krijua.",
+    documentMissingStatus: "Mungon dokumenti ose statusi.",
+    documentNotFound: "Dokumenti nuk u gjet.",
+    documentStatusUpdated: "Statusi i dokumentit u përditësua.",
+    duplicate: "Ky regjistrim duket se ekziston tashmë.",
+    excelMustBeExcel: "Oferta Excel duhet të jetë XLS ose XLSX.",
+    fieldsInvalid: "Kontrollo fushat e formularit.",
+    genericFailure: "Veprimi dështoi. Provo përsëri.",
+    noCreateContractPermission: "Nuk ke leje për të krijuar kontrata.",
+    noCreateOfferPermission: "Nuk ke leje për të krijuar oferta.",
+    noNewVersionPermission: "Nuk ke leje për version të ri.",
+    noPermission: "Nuk ke leje për këtë veprim.",
+    noUploadContractPermission: "Nuk ke leje për të ngarkuar kontratë të firmosur.",
+    noUploadPermission: "Nuk ke leje për të ngarkuar dokumente.",
+    offerCreated: "Oferta u krijua.",
+    offerMustBeApprovedBeforeSending: "Oferta duhet të aprovohet para dërgimit.",
+    offerMustBeSentBeforeAccepted: "Oferta duhet të jetë dërguar para pranimit.",
+    offerNotFound: "Oferta nuk u gjet.",
+    offerStatusUpdated: "Statusi i ofertës u përditësua.",
+    ownContractApproval: "Nuk mund të aprovosh kontratën tënde.",
+    ownDocumentApproval: "Nuk mund të aprovosh dokumentin tënd.",
+    ownOfferApproval: "Nuk mund të aprovosh ofertën tënde.",
+    propertyArchived: "Prona nuk u gjet ose është arkivuar.",
+    soldPropertyContract: "Nuk mund të krijosh kontratë shitblerjeje për pronë të shitur.",
+    uploadDocumentSuccess: "Dokumenti u ngarkua me sukses.",
+    versionCreated: "Versioni i ri u krijua.",
+    versionMissingFile: "Zgjidh dokumentin dhe skedarin e ri.",
+    versionSaveFailed: "Versioni i dokumentit nuk u ruajt.",
+    needManagerForContract: "Vetëm Manager/Admin mund të aprovojë kontratën.",
+    needManagerForDocument: "Vetëm Manager/Admin mund të aprovojë ose refuzojë dokumente.",
+    needManagerForOffer: "Vetëm Manager/Admin mund të aprovojë ofertat.",
+    needManagerForComplete: "Vetëm Manager/Admin mund të përfundojë kontratën.",
+    needLegalForReview: "Vetëm Legal/Manager/Admin mund të aprovojë rishikimin ligjor.",
+    selectDocumentFiles: "Zgjidh të paktën një dokument.",
+  },
+  en: {
+    approvedDocumentNeedsVersion: "Approved documents require a reviewed new version.",
+    canOnlySendDraftLegal: "Only draft contracts can be sent for legal review.",
+    contractBeforeComplete: "The contract must be signed before completion.",
+    contractCreated: "Contract created.",
+    contractMissingSignedFile: "Choose the contract and signed PDF.",
+    contractNotFound: "Contract not found.",
+    contractRequiresLegal: "The contract requires legal review before manager approval.",
+    contractSignedUploaded: "Signed contract uploaded.",
+    contractUpdated: "Contract updated.",
+    documentCreatedFailed: "The document could not be created.",
+    documentMissingStatus: "Document or status is missing.",
+    documentNotFound: "Document not found.",
+    documentStatusUpdated: "Document status updated.",
+    duplicate: "This record appears to already exist.",
+    excelMustBeExcel: "The offer Excel file must be XLS or XLSX.",
+    fieldsInvalid: "Check the form fields.",
+    genericFailure: "The action failed. Try again.",
+    noCreateContractPermission: "You do not have permission to create contracts.",
+    noCreateOfferPermission: "You do not have permission to create offers.",
+    noNewVersionPermission: "You do not have permission to create a new version.",
+    noPermission: "You do not have permission for this action.",
+    noUploadContractPermission: "You do not have permission to upload a signed contract.",
+    noUploadPermission: "You do not have permission to upload documents.",
+    offerCreated: "Offer created.",
+    offerMustBeApprovedBeforeSending: "The offer must be approved before sending.",
+    offerMustBeSentBeforeAccepted: "The offer must be sent before acceptance.",
+    offerNotFound: "Offer not found.",
+    offerStatusUpdated: "Offer status updated.",
+    ownContractApproval: "You cannot approve your own contract.",
+    ownDocumentApproval: "You cannot approve your own document.",
+    ownOfferApproval: "You cannot approve your own offer.",
+    propertyArchived: "Property was not found or is archived.",
+    soldPropertyContract: "You cannot create a buying contract for a sold property.",
+    uploadDocumentSuccess: "Document uploaded successfully.",
+    versionCreated: "New version created.",
+    versionMissingFile: "Choose the document and new file.",
+    versionSaveFailed: "Document version was not saved.",
+    needManagerForContract: "Only Manager/Admin can approve the contract.",
+    needManagerForDocument: "Only Manager/Admin can approve or reject documents.",
+    needManagerForOffer: "Only Manager/Admin can approve offers.",
+    needManagerForComplete: "Only Manager/Admin can complete the contract.",
+    needLegalForReview: "Only Legal/Manager/Admin can approve legal review.",
+    selectDocumentFiles: "Choose at least one document.",
+  },
+} satisfies Record<Locale, Record<string, string>>;
+
+const validationMessageMap: Record<string, Record<Locale, string>> = {
+  "Afati i ofertes nuk mund te jete ne te kaluaren.": {
+    sq: "Afati i ofertës nuk mund të jetë në të kaluarën.",
+    en: "The offer validity date cannot be in the past.",
+  },
+  "Lidhe dokumentin me prone, pronar, lead, oferte ose kontrate.": {
+    sq: "Lidhe dokumentin me pronë, pronar, lead, ofertë ose kontratë.",
+    en: "Link the document to a property, owner, lead, offer, or contract.",
+  },
+  "Lloji i dokumentit eshte i detyrueshem.": {
+    sq: "Lloji i dokumentit është i detyrueshëm.",
+    en: "Document type is required.",
+  },
+  "Lloji i dokumentit eshte i detyrueshem per kete kategori.": {
+    sq: "Lloji i dokumentit është i detyrueshëm për këtë kategori.",
+    en: "Document type is required for this category.",
+  },
+  "Pala e dyte eshte e detyrueshme.": {
+    sq: "Pala e dytë është e detyrueshme.",
+    en: "The second party is required.",
+  },
+  "Pala e pare eshte e detyrueshme.": {
+    sq: "Pala e parë është e detyrueshme.",
+    en: "The first party is required.",
+  },
+  "Perqindja e pronarit dhe investitorit duhet te bejne 100%.": {
+    sq: "Përqindja e pronarit dhe investitorit duhet të bëjnë 100%.",
+    en: "Owner and investor percentages must total 100%.",
+  },
+  "Prona eshte e detyrueshme per kete kontrate.": {
+    sq: "Prona është e detyrueshme për këtë kontratë.",
+    en: "Property is required for this contract.",
+  },
+  "Shuma duhet te jete me e madhe se zero.": {
+    sq: "Shuma duhet të jetë më e madhe se zero.",
+    en: "Amount must be greater than zero.",
+  },
+  "Titulli eshte i detyrueshem.": {
+    sq: "Titulli është i detyrueshëm.",
+    en: "Title is required.",
+  },
+  "Titulli i kontrates eshte i detyrueshem.": {
+    sq: "Titulli i kontratës është i detyrueshëm.",
+    en: "Contract title is required.",
+  },
+  "Titulli i ofertes eshte i detyrueshem.": {
+    sq: "Titulli i ofertës është i detyrueshëm.",
+    en: "Offer title is required.",
+  },
+  "Zgjidh pronen.": {
+    sq: "Zgjidh pronën.",
+    en: "Choose a property.",
+  },
+};
+
+function actionMessage(locale: Locale, key: keyof (typeof actionMessages)["sq"]) {
+  return actionMessages[locale][key];
+}
+
+function localizedValidationMessage(message: string, locale: Locale) {
+  return validationMessageMap[message]?.[locale] || message;
+}
+
+function redirectWithMessage(returnTo: string, message: string): never {
+  const separator = returnTo.includes("?") ? "&" : "?";
+  redirect(`${returnTo}${separator}message=${encodeURIComponent(message)}`);
+}
+
+function getActionErrorMessage(error: unknown, locale: Locale) {
   if (error instanceof z.ZodError) {
-    return error.issues[0]?.message || "Kontrollo fushat e formularit.";
+    const message = error.issues[0]?.message;
+    return message ? localizedValidationMessage(message, locale) : actionMessage(locale, "fieldsInvalid");
   }
 
   if (error instanceof Error) {
     if (error.message.toLowerCase().includes("row-level security")) {
-      return "Nuk ke leje per kete veprim.";
+      return actionMessage(locale, "noPermission");
     }
 
     if (error.message.toLowerCase().includes("duplicate")) {
-      return "Ky regjistrim duket se ekziston tashme.";
+      return actionMessage(locale, "duplicate");
     }
 
-    return error.message;
+    const localized = localizedValidationMessage(error.message, locale);
+    if (localized !== error.message || Object.values(actionMessages[locale]).includes(error.message)) {
+      return localized;
+    }
+
+    return actionMessage(locale, "genericFailure");
   }
 
-  return "Veprimi deshtoi. Provo perseri.";
+  return actionMessage(locale, "genericFailure");
 }
 
 function getSafeReturnTo(formData: FormData, fallback = "/documents") {
@@ -122,6 +291,7 @@ async function uploadDocumentVersion({
   changeNotes,
   documentId,
   file,
+  locale,
   status = "Uploaded",
   supabase,
   userId,
@@ -129,11 +299,12 @@ async function uploadDocumentVersion({
   changeNotes?: string | null;
   documentId: string;
   file: File;
+  locale: Locale;
   status?: string;
   supabase: SupabaseClient;
   userId: string;
 }) {
-  const validationError = validateDocumentFile(file);
+  const validationError = validateDocumentFile(file, locale);
   if (validationError) {
     throw new Error(validationError);
   }
@@ -182,7 +353,7 @@ async function uploadDocumentVersion({
 
   if (versionError || !version) {
     await supabase.storage.from(documentStorageBucket).remove([storageKey]);
-    throw new Error(versionError?.message || "Versioni i dokumentit nuk u ruajt.");
+    throw new Error(versionError?.message || actionMessage(locale, "versionSaveFailed"));
   }
 
   return {
@@ -201,6 +372,7 @@ async function createDocumentRecord({
   expiresAt,
   confidentialityLevel = "internal",
   file,
+  locale,
   notes,
   status = "Uploaded",
   supabase,
@@ -215,6 +387,7 @@ async function createDocumentRecord({
   expiresAt?: string | null;
   confidentialityLevel?: string;
   file: File;
+  locale: Locale;
   notes?: string | null;
   status?: string;
   supabase: SupabaseClient;
@@ -240,13 +413,14 @@ async function createDocumentRecord({
     .single();
 
   if (documentError || !document) {
-    throw new Error(documentError?.message || "Dokumenti nuk u krijua.");
+    throw new Error(documentError?.message || actionMessage(locale, "documentCreatedFailed"));
   }
 
   try {
     const version = await uploadDocumentVersion({
       documentId: document.id,
       file,
+      locale,
       status,
       supabase,
       userId,
@@ -298,16 +472,17 @@ async function createDocumentRecord({
 }
 
 export async function uploadDocumentAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const returnTo = getSafeReturnTo(formData);
   const { profile, supabase, user } = await requireApprovedUser();
 
   if (!hasWriteRole(profile.role)) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Nuk ke leje per te ngarkuar dokumente.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "noUploadPermission"));
   }
 
   const files = getFiles(formData);
   if (files.length === 0) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Zgjidh te pakten nje dokument.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "selectDocumentFiles"));
   }
 
   let input: z.infer<typeof documentMetadataSchema>;
@@ -324,7 +499,7 @@ export async function uploadDocumentAction(formData: FormData) {
       title: formData.get("title") || files[0]?.name,
     });
   } catch (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   try {
@@ -343,6 +518,7 @@ export async function uploadDocumentAction(formData: FormData) {
         expiresAt: input.expires_at || null,
         confidentialityLevel: input.confidentiality_level,
         file,
+        locale,
         notes: sanitizeDocumentText(input.notes, 1000),
         status: index === 0 ? "Uploaded" : "Uploaded",
         supabase,
@@ -351,25 +527,26 @@ export async function uploadDocumentAction(formData: FormData) {
       });
     }
   } catch (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   revalidatePath("/documents");
-  redirect(`${returnTo}?message=${encodeURIComponent("Dokumenti u ngarkua me sukses.")}`);
+  redirectWithMessage(returnTo, actionMessage(locale, "uploadDocumentSuccess"));
 }
 
 export async function createDocumentVersionAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const returnTo = getSafeReturnTo(formData);
   const { profile, supabase, user } = await requireApprovedUser();
 
   if (!hasWriteRole(profile.role)) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Nuk ke leje per version te ri.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "noNewVersionPermission"));
   }
 
   const documentId = String(formData.get("document_id") || "");
   const file = formData.get("file");
   if (!documentId || !(file instanceof File) || file.size <= 0) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Zgjidh dokumentin dhe skedarin e ri.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "versionMissingFile"));
   }
 
   const { data: document } = await supabase
@@ -379,11 +556,11 @@ export async function createDocumentVersionAction(formData: FormData) {
     .single();
 
   if (!document) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Dokumenti nuk u gjet.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "documentNotFound"));
   }
 
   if (["Approved", "Signed"].includes(String(document.status)) && profile.role === "agent") {
-    redirect(`${returnTo}?message=${encodeURIComponent("Dokumentet e aprovuara kerkojne version te ri me rishikim.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "approvedDocumentNeedsVersion"));
   }
 
   let uploadedStorageKey: string | null = null;
@@ -392,6 +569,7 @@ export async function createDocumentVersionAction(formData: FormData) {
       changeNotes: sanitizeDocumentText(formData.get("change_notes"), 500),
       documentId,
       file,
+      locale,
       status: "Uploaded",
       supabase,
       userId: user.id,
@@ -414,14 +592,15 @@ export async function createDocumentVersionAction(formData: FormData) {
     if (uploadedStorageKey) {
       await supabase.storage.from(documentStorageBucket).remove([uploadedStorageKey]);
     }
-    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   revalidatePath("/documents");
-  redirect(`${returnTo}?message=${encodeURIComponent("Versioni i ri u krijua.")}`);
+  redirectWithMessage(returnTo, actionMessage(locale, "versionCreated"));
 }
 
 export async function updateDocumentStatusAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const returnTo = getSafeReturnTo(formData);
   const { profile, supabase, user } = await requireApprovedUser();
   const documentId = String(formData.get("document_id") || "");
@@ -429,7 +608,7 @@ export async function updateDocumentStatusAction(formData: FormData) {
   const reason = sanitizeDocumentText(formData.get("reason"), 500);
 
   if (!documentId || !nextStatus) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Mungon dokumenti ose statusi.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "documentMissingStatus"));
   }
 
   const { data: document } = await supabase
@@ -439,19 +618,19 @@ export async function updateDocumentStatusAction(formData: FormData) {
     .single();
 
   if (!document) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Dokumenti nuk u gjet.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "documentNotFound"));
   }
 
   const managerStatuses = ["Approved", "Rejected", "Needs Changes"];
   if (managerStatuses.includes(nextStatus) && !hasManagerRole(profile.role)) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Vetem Manager/Admin mund te aprovoje ose refuzoje dokumente.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "needManagerForDocument"));
   }
 
   if (
     managerStatuses.includes(nextStatus) &&
     String(document.created_by_user_id || "") === user.id
   ) {
-    redirect(`${returnTo}?message=${encodeURIComponent("Nuk mund te aprovesh dokumentin tend.")}`);
+    redirectWithMessage(returnTo, actionMessage(locale, "ownDocumentApproval"));
   }
 
   const updatePayload: Record<string, unknown> = {
@@ -470,7 +649,7 @@ export async function updateDocumentStatusAction(formData: FormData) {
     .eq("id", documentId);
 
   if (error) {
-    redirect(`${returnTo}?message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   await logDocumentActivity(supabase, documentId, user.id, nextStatus.toLowerCase().replaceAll(" ", "_"), {
@@ -480,14 +659,15 @@ export async function updateDocumentStatusAction(formData: FormData) {
   });
 
   revalidatePath("/documents");
-  redirect(`${returnTo}?message=${encodeURIComponent("Statusi i dokumentit u perditesua.")}`);
+  redirectWithMessage(returnTo, actionMessage(locale, "documentStatusUpdated"));
 }
 
 export async function createOfferAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireApprovedUser();
 
   if (!["admin", "manager", "agent"].includes(profile.role)) {
-    redirect("/documents?tab=offers&message=Nuk ke leje per te krijuar oferta.");
+    redirectWithMessage("/documents?tab=offers", actionMessage(locale, "noCreateOfferPermission"));
   }
 
   let input: z.infer<typeof offerSchema>;
@@ -504,7 +684,7 @@ export async function createOfferAction(formData: FormData) {
       valid_until: formData.get("valid_until") || undefined,
     });
   } catch (error) {
-    redirect(`/documents?tab=offers&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage("/documents?tab=offers", getActionErrorMessage(error, locale));
   }
 
   const { data: property } = await supabase
@@ -514,7 +694,7 @@ export async function createOfferAction(formData: FormData) {
     .single();
 
   if (!property || property.status === "archived") {
-    redirect("/documents?tab=offers&message=Prona nuk u gjet ose eshte arkivuar.");
+    redirectWithMessage("/documents?tab=offers", actionMessage(locale, "propertyArchived"));
   }
 
   const { data: offer, error } = await supabase
@@ -534,7 +714,7 @@ export async function createOfferAction(formData: FormData) {
     .single();
 
   if (error || !offer) {
-    redirect(`/documents?tab=offers&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage("/documents?tab=offers", getActionErrorMessage(error, locale));
   }
 
   await supabase.from("offer_parties").insert({
@@ -566,7 +746,7 @@ export async function createOfferAction(formData: FormData) {
   const file = formData.get("excel_file");
   if (file instanceof File && file.size > 0) {
     if (!isExcelDocument(file)) {
-      redirect(`/documents?tab=offers&message=${encodeURIComponent("Oferta Excel duhet te jete XLS ose XLSX.")}`);
+      redirectWithMessage("/documents?tab=offers", actionMessage(locale, "excelMustBeExcel"));
     }
 
     try {
@@ -576,6 +756,7 @@ export async function createOfferAction(formData: FormData) {
         entityId: offer.id,
         entityType: "offer",
         file,
+        locale,
         notes: sanitizeDocumentText(input.notes, 1000),
         status: "Uploaded",
         supabase,
@@ -588,7 +769,7 @@ export async function createOfferAction(formData: FormData) {
         .update({ excel_document_id: documentId })
         .eq("id", version?.id);
     } catch (uploadError) {
-      redirect(`/documents?tab=offers&message=${encodeURIComponent(getActionErrorMessage(uploadError))}`);
+      redirectWithMessage("/documents?tab=offers", getActionErrorMessage(uploadError, locale));
     }
   }
 
@@ -598,10 +779,11 @@ export async function createOfferAction(formData: FormData) {
   });
 
   revalidatePath("/documents");
-  redirect("/documents?tab=offers&message=Oferta u krijua.");
+  redirectWithMessage("/documents?tab=offers", actionMessage(locale, "offerCreated"));
 }
 
 export async function updateOfferStatusAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const returnTo = getSafeReturnTo(formData, "/documents?tab=offers");
   const { profile, supabase, user } = await requireApprovedUser();
   const offerId = String(formData.get("offer_id") || "");
@@ -615,23 +797,23 @@ export async function updateOfferStatusAction(formData: FormData) {
     .single();
 
   if (!offer) {
-    redirect(`${returnTo}&message=Oferta nuk u gjet.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "offerNotFound"));
   }
 
   if (["Approved", "Rejected"].includes(nextStatus) && !hasManagerRole(profile.role)) {
-    redirect(`${returnTo}&message=Vetem Manager/Admin mund te aprovoje ofertat.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "needManagerForOffer"));
   }
 
   if (["Approved", "Rejected"].includes(nextStatus) && offer.created_by_user_id === user.id) {
-    redirect(`${returnTo}&message=Nuk mund te aprovesh oferten tende.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "ownOfferApproval"));
   }
 
   if (nextStatus === "Sent to Owner" && offer.status !== "Approved") {
-    redirect(`${returnTo}&message=Oferta duhet te aprovohet para dergimit.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "offerMustBeApprovedBeforeSending"));
   }
 
   if (nextStatus === "Accepted" && offer.status !== "Sent to Owner") {
-    redirect(`${returnTo}&message=Oferta duhet te jete derguar para pranimit.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "offerMustBeSentBeforeAccepted"));
   }
 
   const updatePayload: Record<string, unknown> = { status: nextStatus };
@@ -649,7 +831,7 @@ export async function updateOfferStatusAction(formData: FormData) {
 
   const { error } = await supabase.from("offers").update(updatePayload).eq("id", offerId);
   if (error) {
-    redirect(`${returnTo}&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   await logOfferActivity(supabase, offerId, user.id, nextStatus.toLowerCase().replaceAll(" ", "_"), {
@@ -659,14 +841,15 @@ export async function updateOfferStatusAction(formData: FormData) {
   });
 
   revalidatePath("/documents");
-  redirect(`${returnTo}&message=Statusi i ofertes u perditesua.`);
+  redirectWithMessage(returnTo, actionMessage(locale, "offerStatusUpdated"));
 }
 
 export async function createContractAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const { profile, supabase, user } = await requireApprovedUser();
 
   if (!["admin", "manager", "agent", "legal"].includes(profile.role)) {
-    redirect("/documents?tab=contracts&message=Nuk ke leje per te krijuar kontrata.");
+    redirectWithMessage("/documents?tab=contracts", actionMessage(locale, "noCreateContractPermission"));
   }
 
   let input: z.infer<typeof contractSchema>;
@@ -684,7 +867,7 @@ export async function createContractAction(formData: FormData) {
       title: formData.get("title"),
     });
   } catch (error) {
-    redirect(`/documents?tab=contracts&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage("/documents?tab=contracts", getActionErrorMessage(error, locale));
   }
 
   if (input.property_id) {
@@ -695,11 +878,11 @@ export async function createContractAction(formData: FormData) {
       .single();
 
     if (!property || property.status === "archived") {
-      redirect("/documents?tab=contracts&message=Prona nuk u gjet ose eshte arkivuar.");
+      redirectWithMessage("/documents?tab=contracts", actionMessage(locale, "propertyArchived"));
     }
 
     if (input.contract_type === "buying_contract" && property.status === "sold") {
-      redirect("/documents?tab=contracts&message=Nuk mund te krijosh kontrate shitblerjeje per prone te shitur.");
+      redirectWithMessage("/documents?tab=contracts", actionMessage(locale, "soldPropertyContract"));
     }
   }
 
@@ -727,7 +910,7 @@ export async function createContractAction(formData: FormData) {
     .single();
 
   if (error || !contract) {
-    redirect(`/documents?tab=contracts&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage("/documents?tab=contracts", getActionErrorMessage(error, locale));
   }
 
   const [partyARole, partyBRole] =
@@ -770,10 +953,11 @@ export async function createContractAction(formData: FormData) {
   });
 
   revalidatePath("/documents");
-  redirect("/documents?tab=contracts&message=Kontrata u krijua.");
+  redirectWithMessage("/documents?tab=contracts", actionMessage(locale, "contractCreated"));
 }
 
 export async function updateContractStatusAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const returnTo = getSafeReturnTo(formData, "/documents?tab=contracts");
   const { profile, supabase, user } = await requireApprovedUser();
   const contractId = String(formData.get("contract_id") || "");
@@ -787,23 +971,23 @@ export async function updateContractStatusAction(formData: FormData) {
     .single();
 
   if (!contract) {
-    redirect(`${returnTo}&message=Kontrata nuk u gjet.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "contractNotFound"));
   }
 
   if (nextStatus === "Pending Legal Review" && contract.status !== "Draft") {
-    redirect(`${returnTo}&message=Vetem draft kontratat dergohen per legal review.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "canOnlySendDraftLegal"));
   }
 
   if (nextStatus === "Pending Manager Approval" && !hasLegalRole(profile.role)) {
-    redirect(`${returnTo}&message=Vetem Legal/Manager/Admin mund te aprovoje review ligjor.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "needLegalForReview"));
   }
 
   if (nextStatus === "Approved" && !hasManagerRole(profile.role)) {
-    redirect(`${returnTo}&message=Vetem Manager/Admin mund te aprovoje kontraten.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "needManagerForContract"));
   }
 
   if (["Pending Manager Approval", "Approved", "Rejected"].includes(nextStatus) && contract.created_by_user_id === user.id) {
-    redirect(`${returnTo}&message=Nuk mund te aprovesh kontraten tende.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "ownContractApproval"));
   }
 
   const updatePayload: Record<string, unknown> = { status: nextStatus };
@@ -813,7 +997,7 @@ export async function updateContractStatusAction(formData: FormData) {
   }
   if (nextStatus === "Approved") {
     if (!contract.legal_approved_at && contract.status !== "Pending Manager Approval") {
-      redirect(`${returnTo}&message=Kontrata kerkon legal review para aprovimit menaxherial.`);
+      redirectWithMessage(returnTo, actionMessage(locale, "contractRequiresLegal"));
     }
     updatePayload.manager_approved_at = new Date().toISOString();
     updatePayload.manager_approved_by_user_id = user.id;
@@ -828,7 +1012,7 @@ export async function updateContractStatusAction(formData: FormData) {
 
   const { error } = await supabase.from("contracts").update(updatePayload).eq("id", contractId);
   if (error) {
-    redirect(`${returnTo}&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   await supabase.from("contract_approvals").insert({
@@ -862,22 +1046,23 @@ export async function updateContractStatusAction(formData: FormData) {
   });
 
   revalidatePath("/documents");
-  redirect(`${returnTo}&message=Statusi i kontrates u perditesua.`);
+  redirectWithMessage(returnTo, actionMessage(locale, "contractUpdated"));
 }
 
 export async function uploadSignedContractAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const returnTo = getSafeReturnTo(formData, "/documents?tab=contracts");
   const { profile, supabase, user } = await requireApprovedUser();
 
   if (!hasWriteRole(profile.role)) {
-    redirect(`${returnTo}&message=Nuk ke leje per te ngarkuar kontrate te firmosur.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "noUploadContractPermission"));
   }
 
   const contractId = String(formData.get("contract_id") || "");
   const file = formData.get("signed_file");
 
   if (!contractId || !(file instanceof File) || file.size <= 0) {
-    redirect(`${returnTo}&message=Zgjidh kontraten dhe PDF-ne e firmosur.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "contractMissingSignedFile"));
   }
 
   const { data: contract } = await supabase
@@ -887,7 +1072,7 @@ export async function uploadSignedContractAction(formData: FormData) {
     .single();
 
   if (!contract) {
-    redirect(`${returnTo}&message=Kontrata nuk u gjet.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "contractNotFound"));
   }
 
   try {
@@ -897,9 +1082,10 @@ export async function uploadSignedContractAction(formData: FormData) {
       entityId: contractId,
       entityType: "contract",
       file,
+      locale,
       status: "Signed",
       supabase,
-      title: `${contract.title} - e firmosur`,
+      title: `${contract.title} - ${locale === "sq" ? "e firmosur" : "signed"}`,
       userId: user.id,
     });
 
@@ -941,20 +1127,21 @@ export async function uploadSignedContractAction(formData: FormData) {
       document_id: documentId,
     });
   } catch (error) {
-    redirect(`${returnTo}&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   revalidatePath("/documents");
-  redirect(`${returnTo}&message=Kontrata e firmosur u ngarkua.`);
+  redirectWithMessage(returnTo, actionMessage(locale, "contractSignedUploaded"));
 }
 
 export async function completeContractAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const returnTo = getSafeReturnTo(formData, "/documents?tab=contracts");
   const { profile, supabase, user } = await requireApprovedUser();
   const contractId = String(formData.get("contract_id") || "");
 
   if (!hasManagerRole(profile.role)) {
-    redirect(`${returnTo}&message=Vetem Manager/Admin mund te perfundoje kontraten.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "needManagerForComplete"));
   }
 
   const { data: contract } = await supabase
@@ -964,7 +1151,7 @@ export async function completeContractAction(formData: FormData) {
     .single();
 
   if (!contract || contract.status !== "Signed") {
-    redirect(`${returnTo}&message=Kontrata duhet te jete e firmosur para perfundimit.`);
+    redirectWithMessage(returnTo, actionMessage(locale, "contractBeforeComplete"));
   }
 
   const { error } = await supabase
@@ -976,7 +1163,7 @@ export async function completeContractAction(formData: FormData) {
     .eq("id", contractId);
 
   if (error) {
-    redirect(`${returnTo}&message=${encodeURIComponent(getActionErrorMessage(error))}`);
+    redirectWithMessage(returnTo, getActionErrorMessage(error, locale));
   }
 
   if (contract.property_id) {
@@ -1003,5 +1190,5 @@ export async function completeContractAction(formData: FormData) {
 
   revalidatePath("/documents");
   revalidatePath("/sales");
-  redirect(`${returnTo}&message=Kontrata u perditesua.`);
+  redirectWithMessage(returnTo, actionMessage(locale, "contractUpdated"));
 }
