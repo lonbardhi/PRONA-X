@@ -11,6 +11,8 @@ const roleOptions: AppRole[] = [
   "agent",
   "manager",
   "support",
+  "legal",
+  "finance",
   "admin",
 ];
 

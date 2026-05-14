@@ -11,6 +11,8 @@ export type AppRole =
   | "agent"
   | "viewer"
   | "support"
+  | "legal"
+  | "finance"
   | "pending";
 
 export type AccountStatus =
@@ -37,6 +39,8 @@ export const approvedAppRoles: AppRole[] = [
   "agent",
   "viewer",
   "support",
+  "legal",
+  "finance",
 ];
 
 export const operatorAppRoles: AppRole[] = ["admin", "manager", "agent"];

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { FileText, Gavel, Sheet } from "lucide-react";
 
 import { DashboardShell } from "@/components/DashboardShell";
 import { EntityDiscussionPanel } from "@/components/messaging/EntityDiscussionPanel";
@@ -86,6 +88,58 @@ export default async function EditPropertyPage({
           locale={locale}
           returnTo={`/properties/${typedProperty.id}/edit`}
         />
+
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                {locale === "sq" ? "Dokumente & Kontrata" : "Documents & Contracts"}
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-slate-950">
+                {locale === "sq" ? "Dosja ligjore dhe komerciale" : "Legal and commercial file"}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                {locale === "sq"
+                  ? "Menaxho dokumentet, ofertat Excel dhe kontratat e lidhura me këtë pronë."
+                  : "Manage documents, Excel offers, and contracts linked to this property."}
+              </p>
+            </div>
+            <Link
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+              href={`/documents?entity_type=property&entity_id=${typedProperty.id}`}
+              prefetch={false}
+            >
+              <FileText className="h-4 w-4" />
+              {locale === "sq" ? "Hap dosjen" : "Open file"}
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <Link
+              className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700 transition hover:bg-white"
+              href={`/documents?tab=property-docs&entity_type=property&entity_id=${typedProperty.id}`}
+              prefetch={false}
+            >
+              <FileText className="mb-3 h-5 w-5 text-emerald-600" />
+              {locale === "sq" ? "Dokumente" : "Documents"}
+            </Link>
+            <Link
+              className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700 transition hover:bg-white"
+              href={`/documents?tab=offers&entity_type=property&entity_id=${typedProperty.id}`}
+              prefetch={false}
+            >
+              <Sheet className="mb-3 h-5 w-5 text-cyan-600" />
+              {locale === "sq" ? "Oferta" : "Offers"}
+            </Link>
+            <Link
+              className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700 transition hover:bg-white"
+              href={`/documents?tab=contracts&entity_type=property&entity_id=${typedProperty.id}`}
+              prefetch={false}
+            >
+              <Gavel className="mb-3 h-5 w-5 text-amber-600" />
+              {locale === "sq" ? "Kontrata" : "Contracts"}
+            </Link>
+          </div>
+        </div>
       </section>
     </DashboardShell>
   );

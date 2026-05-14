@@ -71,6 +71,7 @@ type TranslationKey =
   | "nav.adminUsers"
   | "nav.calendar"
   | "nav.dashboard"
+  | "nav.documents"
   | "nav.land"
   | "nav.messages"
   | "nav.rentals"
@@ -241,6 +242,7 @@ const messages: Record<Locale, LocaleMessages> = {
     "nav.adminUsers": "Përdoruesit",
     "nav.calendar": "Kalendari",
     "nav.dashboard": "Paneli",
+    "nav.documents": "Dokumente & Kontrata",
     "nav.land": "Tokë",
     "nav.messages": "Mesazhe",
     "nav.rentals": "Qira",
@@ -414,6 +416,7 @@ const messages: Record<Locale, LocaleMessages> = {
     "nav.adminUsers": "Admin Users",
     "nav.calendar": "Calendar",
     "nav.dashboard": "Dashboard",
+    "nav.documents": "Documents & Contracts",
     "nav.land": "Land",
     "nav.messages": "Messages",
     "nav.rentals": "Rentals",
@@ -533,6 +536,8 @@ export function getRoleLabel(locale: Locale, role: string) {
       agent: "Agjent",
       manager: "Menaxher",
       pending: "Në pritje",
+      finance: "Financë",
+      legal: "Legal",
       support: "Support",
       viewer: "Viewer",
     },
@@ -541,6 +546,8 @@ export function getRoleLabel(locale: Locale, role: string) {
       agent: "Agent",
       manager: "Manager",
       pending: "Pending approval",
+      finance: "Finance",
+      legal: "Legal",
       support: "Support",
       viewer: "Viewer",
     },
