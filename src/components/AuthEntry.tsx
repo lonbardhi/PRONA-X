@@ -250,7 +250,7 @@ export function AuthEntry({
             </div>
 
             {message ? (
-              <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+              <div className="crm-card mt-6 border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
                 {message}
               </div>
             ) : null}
@@ -260,7 +260,7 @@ export function AuthEntry({
                 <form action={signInWithGoogleAction}>
                   <input name="next" type="hidden" value={nextPath} />
                   <button
-                    className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                    className="crm-button crm-button-secondary w-full gap-3"
                     type="submit"
                   >
                     <span className="text-base font-bold">G</span>
@@ -271,7 +271,7 @@ export function AuthEntry({
                 <form action={signInWithAppleAction}>
                   <input name="next" type="hidden" value={nextPath} />
                   <button
-                    className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                    className="crm-button crm-button-secondary w-full gap-3"
                     type="submit"
                   >
                     <Apple className="h-4 w-4" />
@@ -298,7 +298,7 @@ export function AuthEntry({
                   <div className="relative">
                     <UserPlus className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
-                      className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                      className="crm-input pl-10 pr-3 text-slate-950 focus:border-orange-500"
                       name="full_name"
                       placeholder={t(locale, "auth.fullNamePlaceholder")}
                       required
@@ -312,7 +312,7 @@ export function AuthEntry({
                 <div className="relative">
                   <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
-                    className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    className="crm-input pl-10 pr-3 text-slate-950 focus:border-orange-500"
                     name="email"
                     placeholder={t(locale, "auth.emailPlaceholder")}
                     required
@@ -338,7 +338,7 @@ export function AuthEntry({
                   <div className="relative">
                     <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
-                      className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-11 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                      className="crm-input pl-10 pr-11 text-slate-950 focus:border-orange-500"
                       id="auth-password"
                       minLength={mode === "signup" ? 10 : 1}
                       name="password"
@@ -348,7 +348,7 @@ export function AuthEntry({
                     />
                     <button
                       aria-label={showPassword ? t(locale, "auth.hidePassword") : t(locale, "auth.showPassword")}
-                      className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      className="crm-icon-button absolute right-2 top-1/2 h-8 min-h-8 w-8 -translate-y-1/2 rounded-md border-0 bg-transparent text-slate-400 shadow-none hover:bg-slate-100 hover:text-slate-700"
                       onClick={() => setShowPassword((value) => !value)}
                       type="button"
                     >
@@ -373,7 +373,7 @@ export function AuthEntry({
                   <div className="relative">
                     <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
-                      className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                      className="crm-input pl-10 pr-3 text-slate-950 focus:border-orange-500"
                       minLength={10}
                       name="confirm_password"
                       placeholder={t(locale, "auth.confirmPasswordPlaceholder")}
@@ -395,7 +395,7 @@ export function AuthEntry({
                 </label>
               ) : null}
 
-              <button className="mt-2 h-12 rounded-lg bg-slate-950 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">
+              <button className="crm-button crm-button-primary mt-2 h-12 w-full">
                 {mode === "login"
                   ? t(locale, "auth.signIn")
                   : mode === "recovery"

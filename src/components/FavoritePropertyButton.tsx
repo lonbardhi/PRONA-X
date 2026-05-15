@@ -75,7 +75,7 @@ export function FavoritePropertyButton({
     <button
       aria-pressed={isSaved}
       aria-label={`${isSaved ? "Unsave" : "Save"} ${title}`}
-      className={`flex h-9 w-9 items-center justify-center rounded-full border bg-white/95 shadow-sm transition hover:scale-105 ${
+      className={`crm-icon-button h-9 min-h-9 w-9 bg-white/95 ${
         isSaved
           ? "border-rose-200 text-rose-600"
           : "border-white/80 text-slate-600 hover:text-rose-600"

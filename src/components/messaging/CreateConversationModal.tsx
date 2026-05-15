@@ -60,10 +60,10 @@ export function CreateConversationModal({
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-[90] flex h-[100dvh] min-h-[100svh] items-end bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:justify-center sm:p-4"
+      className="crm-modal-backdrop fixed inset-0 z-[90] flex h-[100dvh] min-h-[100svh] items-end bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:justify-center sm:p-4"
       role="dialog"
     >
-      <div className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+      <div className="crm-modal-panel flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-slate-200 p-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export function CreateConversationModal({
           </div>
           <button
             aria-label={locale === "sq" ? "Mbyll" : "Close"}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-100"
+            className="crm-icon-button h-9 min-h-9 w-9 shrink-0"
             onClick={onClose}
             type="button"
           >
@@ -123,7 +123,7 @@ export function CreateConversationModal({
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {locale === "sq" ? "Titulli" : "Title"}
                 <input
-                  className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  className="crm-input text-slate-950"
                   maxLength={140}
                   name="title"
                   placeholder={
@@ -139,7 +139,7 @@ export function CreateConversationModal({
               </span>
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                className="crm-input h-10 min-h-10 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 focus:bg-white"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={locale === "sq" ? "Kerko emër, email, rol" : "Search name, email, role"}
                 value={query}
@@ -148,14 +148,14 @@ export function CreateConversationModal({
 
             <div className="grid gap-2">
               {visibleProfiles.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">
+                <div className="crm-empty-state p-4 text-sm text-slate-500">
                   {locale === "sq" ? "Nuk u gjet asnje perdorues." : "No users found."}
                 </div>
               ) : null}
 
               {visibleProfiles.map((profile) => (
                 <label
-                  className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:bg-slate-50"
+                  className="crm-card-interactive flex cursor-pointer items-center gap-3 p-3"
                   key={profile.id}
                 >
                   <input
@@ -181,7 +181,7 @@ export function CreateConversationModal({
           </div>
 
           <div className="border-t border-slate-200 bg-white p-4">
-            <button className="h-11 w-full rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700">
+            <button className="crm-button crm-button-success w-full">
               {locale === "sq" ? "Krijo biseden" : "Create conversation"}
             </button>
           </div>

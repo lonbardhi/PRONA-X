@@ -68,7 +68,7 @@ export default async function AdminUsersPage({
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="crm-card p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white">
@@ -84,7 +84,7 @@ export default async function AdminUsersPage({
             </div>
 
             <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[420px]">
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 sm:p-3">
+              <div className="crm-card border-amber-200 bg-amber-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-amber-700 sm:tracking-[0.12em]">
                   {t(locale, "admin.stat.pending")}
                 </p>
@@ -92,7 +92,7 @@ export default async function AdminUsersPage({
                   {pendingCount}
                 </p>
               </div>
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
+              <div className="crm-card border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:tracking-[0.12em]">
                   {t(locale, "admin.stat.approved")}
                 </p>
@@ -100,7 +100,7 @@ export default async function AdminUsersPage({
                   {approvedCount}
                 </p>
               </div>
-              <div className="rounded-xl border border-blue-200 bg-blue-50 p-2.5 sm:p-3">
+              <div className="crm-card border-blue-200 bg-blue-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-blue-700 sm:tracking-[0.12em]">
                   {t(locale, "admin.stat.admins")}
                 </p>
@@ -112,7 +112,7 @@ export default async function AdminUsersPage({
           </div>
         </div>
 
-        <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm md:grid-cols-3">
+        <div className="crm-card grid gap-3 p-4 text-sm text-slate-600 md:grid-cols-3">
           <p>
             <span className="font-semibold text-slate-950">
               {t(locale, "admin.stat.pending")}
@@ -140,18 +140,18 @@ export default async function AdminUsersPage({
         </div>
 
         {params.message ? (
-          <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          <div className="crm-card border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
             {params.message}
           </div>
         ) : null}
 
         {error ? (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          <div className="crm-card border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
             {error.message}
           </div>
         ) : null}
 
-        <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <section className="crm-card overflow-hidden">
           <div className="border-b border-slate-200 p-4 sm:p-5">
             <h2 className="text-lg font-semibold text-slate-950">
               {t(locale, "admin.userAccounts")}
@@ -163,7 +163,7 @@ export default async function AdminUsersPage({
 
           <div className="grid gap-3 p-3 sm:p-4">
             {profiles.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+              <div className="crm-empty-state p-6 text-sm text-slate-500">
                 {t(locale, "admin.usersEmpty")}
               </div>
             ) : null}
@@ -178,7 +178,7 @@ export default async function AdminUsersPage({
 
               return (
                 <div
-                  className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[minmax(0,1fr)_220px]"
+                  className="crm-card-interactive grid gap-4 bg-slate-50 p-4 md:grid-cols-[minmax(0,1fr)_220px]"
                   key={item.id}
                 >
                   <div className="min-w-0">
@@ -230,7 +230,7 @@ export default async function AdminUsersPage({
                         {t(locale, "admin.role")}
                       </span>
                       <select
-                        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold capitalize text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                        className="crm-input h-10 min-h-10 text-sm font-semibold capitalize text-slate-800"
                         defaultValue={item.role}
                         name="role"
                       >
@@ -241,7 +241,7 @@ export default async function AdminUsersPage({
                         ))}
                       </select>
                     </label>
-                    <button className="h-10 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
+                    <button className="crm-button crm-button-primary h-10 min-h-10 px-4">
                       {t(locale, "admin.saveRole")}
                     </button>
                   </form>

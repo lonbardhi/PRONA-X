@@ -26,7 +26,7 @@ function humanizeAction(action: string, locale: Locale) {
 export function ActivityFeed({ activityLogs, locale }: ActivityFeedProps) {
   if (activityLogs.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500">
+      <div className="crm-empty-state p-5 text-sm text-slate-500">
         {locale === "sq"
           ? "Aktiviteti do te shfaqet ketu sapo te perdoret CRM."
           : "Activity will appear here as the CRM is used."}
@@ -38,7 +38,7 @@ export function ActivityFeed({ activityLogs, locale }: ActivityFeedProps) {
     <div className="grid gap-2">
       {activityLogs.map((log) => (
         <article
-          className="flex gap-3 rounded-xl border border-slate-200 bg-white p-3"
+          className="crm-card flex gap-3 p-3"
           key={log.id}
         >
           <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">

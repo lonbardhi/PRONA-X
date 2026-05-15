@@ -229,7 +229,7 @@ export function PropertyMediaViewer({
     <div
       aria-label={isSq ? "Shikuesi i medias së pronës" : "Property media viewer"}
       aria-modal="true"
-      className="fixed inset-0 z-[70] overflow-hidden bg-slate-950/86 px-2 py-3 backdrop-blur-md sm:px-5 sm:py-5"
+      className="crm-modal-backdrop fixed inset-0 z-[70] overflow-hidden bg-slate-950/86 px-2 py-3 backdrop-blur-md sm:px-5 sm:py-5"
       onClick={(event) => {
         event.stopPropagation();
         onClose();
@@ -237,7 +237,7 @@ export function PropertyMediaViewer({
       role="dialog"
     >
       <div
-        className="mx-auto grid h-full w-full max-w-7xl min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-xl border border-white/10 bg-slate-950 text-white shadow-2xl"
+        className="crm-modal-panel mx-auto grid h-full w-full max-w-7xl min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-xl border border-white/10 bg-slate-950 text-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         ref={viewerRef}
       >
@@ -256,7 +256,7 @@ export function PropertyMediaViewer({
             </span>
             <button
               aria-label={isSq ? "Mbyll shikuesin e medias" : "Close media viewer"}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white transition hover:bg-white/10"
+              className="crm-icon-button h-10 min-h-10 w-10 border-white/15 bg-transparent text-white hover:bg-white/10"
               onClick={onClose}
               ref={closeButtonRef}
               type="button"
@@ -336,7 +336,7 @@ export function PropertyMediaViewer({
                       : "This media item could not be previewed."}
                   </p>
                   <a
-                    className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/15 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="crm-button h-10 min-h-10 border border-white/15 px-4 text-sm text-white hover:bg-white/10"
                     href={activeMedia.public_url}
                     rel="noreferrer"
                     target="_blank"
@@ -353,7 +353,7 @@ export function PropertyMediaViewer({
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <button
                   aria-label={isSq ? "Zvogëlo" : "Zoom out"}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="crm-button h-9 min-h-9 border border-white/15 px-3 font-semibold text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={!canZoom || scale === 1}
                   onClick={zoomOut}
                   type="button"
@@ -363,7 +363,7 @@ export function PropertyMediaViewer({
                 </button>
                 <button
                   aria-label={isSq ? "Rivendos pamjen" : "Reset media view"}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="crm-button h-9 min-h-9 border border-white/15 px-3 font-semibold text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={!canZoom || (scale === 1 && offset.x === 0 && offset.y === 0)}
                   onClick={resetView}
                   type="button"
@@ -373,7 +373,7 @@ export function PropertyMediaViewer({
                 </button>
                 <button
                   aria-label={isSq ? "Zmadho" : "Zoom in"}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="crm-button h-9 min-h-9 border border-white/15 px-3 font-semibold text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={!canZoom || scale >= 3}
                   onClick={zoomIn}
                   type="button"

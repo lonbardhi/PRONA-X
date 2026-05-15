@@ -38,7 +38,7 @@ function StatCard({
   value: number | string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="crm-card p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
         {label}
       </p>
@@ -79,7 +79,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="crm-card p-4 sm:p-5">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 gap-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-950 text-lg font-bold text-white">
@@ -145,7 +145,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </div>
 
         {params.message ? (
-          <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          <div className="crm-card border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
             {isMissingAgentWorkspaceSchemaError({ message: params.message })
               ? agentWorkspaceMigrationMessage
               : params.message}
@@ -153,7 +153,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         ) : null}
 
         {setupWarning ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+          <div className="crm-card border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
             <strong className="font-semibold">
               {locale === "sq" ? "Nevojitet konfigurim Supabase:" : "Supabase setup needed:"}
             </strong>{" "}
@@ -163,7 +163,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
           <section className="grid gap-5">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="crm-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-emerald-700" />
                 <h2 className="text-lg font-semibold text-slate-950">
@@ -190,7 +190,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="crm-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <BriefcaseBusiness className="h-5 w-5 text-emerald-700" />
                 <h2 className="text-lg font-semibold text-slate-950">
@@ -203,7 +203,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   <label className="grid gap-2 text-sm font-medium text-slate-700">
                     {locale === "sq" ? "Emri i plote" : "Full name"}
                     <input
-                      className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="crm-input text-slate-950"
                       defaultValue={workspace.profile.full_name || ""}
                       name="full_name"
                       required
@@ -212,7 +212,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   <label className="grid gap-2 text-sm font-medium text-slate-700">
                     {locale === "sq" ? "Telefoni" : "Phone"}
                     <input
-                      className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="crm-input text-slate-950"
                       defaultValue={workspace.profile.phone || ""}
                       name="phone"
                     />
@@ -220,7 +220,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   <label className="grid gap-2 text-sm font-medium text-slate-700">
                     {locale === "sq" ? "Agjencia / ekipi" : "Agency / team"}
                     <input
-                      className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="crm-input text-slate-950"
                       defaultValue={workspace.profile.agency_name || ""}
                       name="agency_name"
                     />
@@ -228,20 +228,20 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   <label className="grid gap-2 text-sm font-medium text-slate-700">
                     {locale === "sq" ? "URL e avatarit" : "Avatar URL"}
                     <input
-                      className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="crm-input text-slate-950"
                       defaultValue={workspace.profile.avatar_url || ""}
                       name="avatar_url"
                       type="url"
                     />
                   </label>
                 </div>
-                <button className="h-11 w-full rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-fit">
+                <button className="crm-button crm-button-primary w-full sm:w-fit">
                   {locale === "sq" ? "Ruaj profilin" : "Save profile"}
                 </button>
               </form>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="crm-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <Bell className="h-5 w-5 text-emerald-700" />
                 <h2 className="text-lg font-semibold text-slate-950">
@@ -257,7 +257,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="crm-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <BriefcaseBusiness className="h-5 w-5 text-emerald-700" />
                 <h2 className="text-lg font-semibold text-slate-950">
@@ -271,7 +271,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           </section>
 
           <aside className="grid gap-5 xl:sticky xl:top-24">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="crm-card p-4 sm:p-5">
               <h2 className="text-lg font-semibold text-slate-950">
                 {locale === "sq" ? "Statusi aktual" : "Current status"}
               </h2>
@@ -284,7 +284,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="crm-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-emerald-700" />
                 <h2 className="text-lg font-semibold text-slate-950">
@@ -325,7 +325,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               </dl>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="crm-card p-4 sm:p-5">
               <h2 className="text-lg font-semibold text-slate-950">
                 {locale === "sq" ? "Performanca" : "Performance"}
               </h2>

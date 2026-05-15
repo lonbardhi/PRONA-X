@@ -88,7 +88,7 @@ export function ConversationList({
   const filters = getFilters(locale);
 
   return (
-    <aside className="min-h-0 min-w-0 rounded-xl border border-slate-200 bg-white shadow-sm">
+    <aside className="crm-card min-h-0 min-w-0 overflow-hidden">
       <div className="border-b border-slate-200 p-3 sm:p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -102,7 +102,7 @@ export function ConversationList({
             </p>
           </div>
           <button
-            className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-slate-950 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="crm-button crm-button-primary h-9 min-h-9 shrink-0 px-3"
             onClick={onCreateClick}
             type="button"
           >
@@ -114,14 +114,14 @@ export function ConversationList({
           <span className="sr-only">{locale === "sq" ? "Kerko mesazhe" : "Search messages"}</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
-            className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+            className="crm-input h-10 min-h-10 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 focus:bg-white"
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder={locale === "sq" ? "Kerko biseda, prona, dergues" : "Search conversations, properties, senders"}
             value={query}
           />
         </label>
 
-        <div className="mt-3 flex gap-1 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="crm-scroll-area mt-3 flex gap-1 overflow-x-auto pb-1">
           {filters.map((item) => (
             <button
               className={`h-8 shrink-0 rounded-full px-3 text-xs font-semibold transition ${
@@ -141,7 +141,7 @@ export function ConversationList({
 
       <div className="grid max-h-[min(70dvh,620px)] min-h-[360px] content-start gap-1 overflow-y-auto p-2 xl:max-h-[72dvh]">
         {conversations.length === 0 ? (
-          <div className="m-2 rounded-xl border border-dashed border-slate-300 p-4 text-sm leading-6 text-slate-500">
+          <div className="crm-empty-state m-2 p-4 text-sm leading-6 text-slate-500">
             {filter === "unread"
               ? locale === "sq"
                 ? "Nuk ka mesazhe te palexuara."
@@ -162,7 +162,7 @@ export function ConversationList({
               className={`grid w-full min-w-0 gap-2 rounded-xl p-3 text-left transition ${
                 active
                   ? "bg-emerald-50 ring-1 ring-emerald-200"
-                  : "hover:bg-slate-50"
+                  : "hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100"
               }`}
               key={conversation.id}
               onClick={() => onSelectConversation(conversation.id)}

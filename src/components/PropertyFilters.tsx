@@ -76,7 +76,7 @@ function FilterControls({ cities, filters, locale = defaultLocale }: PropertyFil
           <label className="grid gap-1 text-xs font-medium text-slate-500">
             {locale === "sq" ? "Min EUR" : "Min EUR"}
             <input
-              className="h-10 min-w-0 rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="crm-input h-10 min-h-10 text-sm"
               defaultValue={filters.minPrice}
               min="0"
               name="minPrice"
@@ -88,7 +88,7 @@ function FilterControls({ cities, filters, locale = defaultLocale }: PropertyFil
           <label className="grid gap-1 text-xs font-medium text-slate-500">
             {locale === "sq" ? "Max EUR" : "Max EUR"}
             <input
-              className="h-10 min-w-0 rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="crm-input h-10 min-h-10 text-sm"
               defaultValue={filters.maxPrice}
               min="0"
               name="maxPrice"
@@ -127,7 +127,7 @@ function FilterControls({ cities, filters, locale = defaultLocale }: PropertyFil
           {locale === "sq" ? "Qyteti / lokacioni" : "City / location"}
         </div>
         <select
-          className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="crm-input h-10 min-h-10 text-sm"
           defaultValue={filters.city}
           name="city"
         >
@@ -146,7 +146,7 @@ function FilterControls({ cities, filters, locale = defaultLocale }: PropertyFil
           {locale === "sq" ? "Dhomat e pronës" : "Property rooms"}
         </div>
         <select
-          className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="crm-input h-10 min-h-10 text-sm"
           defaultValue={filters.minBedrooms}
           name="minBedrooms"
         >
@@ -183,7 +183,7 @@ function FilterControls({ cities, filters, locale = defaultLocale }: PropertyFil
       </div>
 
       <div className="border-t border-slate-200 p-4">
-        <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
+        <button className="crm-button crm-button-primary h-10 min-h-10 w-full">
           <Filter className="h-4 w-4" />
           {locale === "sq" ? "Apliko filtrat" : "Apply filters"}
         </button>
@@ -201,7 +201,7 @@ export function PropertyFilters({
 
   return (
     <>
-      <details className="rounded-xl border border-slate-200 bg-white shadow-sm lg:hidden">
+      <details className="crm-card lg:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 [&::-webkit-details-marker]:hidden">
           <FilterHeader activeFilterCount={activeFilterCount} compact locale={locale} />
           <div className="flex shrink-0 items-center gap-3">
@@ -220,7 +220,7 @@ export function PropertyFilters({
         </form>
       </details>
 
-      <aside className="hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:sticky lg:top-24 lg:block lg:h-fit">
+      <aside className="crm-card hidden lg:sticky lg:top-24 lg:block lg:h-fit">
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-4">
           <FilterHeader activeFilterCount={activeFilterCount} locale={locale} />
           <Link

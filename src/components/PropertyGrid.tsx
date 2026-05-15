@@ -99,7 +99,7 @@ export function PropertyGrid({
 
   if (properties.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center sm:p-8">
+      <div className="crm-empty-state sm:p-8">
         <h2 className="text-lg font-semibold text-slate-950">
           {t(locale, "property.noProperties")}
         </h2>
@@ -137,7 +137,7 @@ export function PropertyGrid({
           return (
             <article
               aria-label={`${locale === "sq" ? "Hap detajet për" : "Open details for"} ${property.title}`}
-              className="min-w-0 cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-emerald-100"
+              className="crm-card-interactive min-w-0 cursor-pointer overflow-hidden"
               key={property.id}
               onClick={(event) => {
                 if (!shouldIgnoreCardOpen(event)) {
@@ -280,14 +280,14 @@ export function PropertyGrid({
                   <Link
                     href={`/properties/${property.id}/edit`}
                     prefetch={false}
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                    className="crm-button crm-button-secondary h-9 min-h-9 px-3"
                   >
                     <Edit3 className="h-4 w-4" />
                     {locale === "sq" ? "Ndrysho" : "Edit"}
                   </Link>
                   <form action={deletePropertyAction}>
                     <input type="hidden" name="property_id" value={property.id} />
-                    <button className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
+                    <button className="crm-button crm-button-danger h-9 min-h-9 w-full px-3">
                       <Trash2 className="h-4 w-4" />
                       {locale === "sq" ? "Fshi" : "Delete"}
                     </button>

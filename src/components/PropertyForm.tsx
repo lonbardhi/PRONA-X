@@ -70,7 +70,7 @@ function Section({
   title: string;
 }) {
   return (
-    <section className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+    <section className="crm-section">
       <div>
         <h3 className="text-sm font-semibold text-slate-950">{title}</h3>
         {description ? (
@@ -83,9 +83,9 @@ function Section({
 }
 
 const inputClass =
-  "h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
+  "crm-input focus:border-orange-500 focus:ring-orange-100";
 const textareaClass =
-  "w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-950 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
+  "crm-textarea focus:border-orange-500 focus:ring-orange-100";
 
 function toNumber(value: string) {
   return value.trim() === "" ? null : Number(value);
@@ -938,7 +938,7 @@ export function PropertyForm({
         >
           <input
             accept={propertyMediaAccept}
-            className="w-full min-w-0 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-orange-700"
+            className="w-full min-w-0 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 transition file:mr-4 file:rounded-md file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-orange-700 hover:border-orange-200 focus:outline-none focus:ring-4 focus:ring-orange-100"
             onChange={handleMediaChange}
             multiple
             name="media"
@@ -1034,7 +1034,7 @@ export function PropertyForm({
       </Section>
 
       <button
-        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-orange-500 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300 sm:w-fit"
+        className="crm-button crm-button-accent w-full sm:w-fit"
         disabled={isUploadingMedia}
       >
         {isUploadingMedia

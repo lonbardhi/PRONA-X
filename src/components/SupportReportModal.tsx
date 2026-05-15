@@ -34,7 +34,7 @@ function SubmitButton({ locale }: { locale: Locale }) {
 
   return (
     <button
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+      className="crm-button crm-button-primary disabled:cursor-not-allowed disabled:opacity-60"
       disabled={pending}
     >
       <AlertCircle className="h-4 w-4" />
@@ -72,7 +72,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
   return (
     <>
       <button
-        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto"
+        className="crm-button crm-button-primary w-full sm:w-auto"
         onClick={() => {
           setEnvironment(getClientEnvironment());
           setOpen(true);
@@ -86,10 +86,10 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
       {open ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/55 px-3 py-4 backdrop-blur-sm"
+          className="crm-modal-backdrop fixed inset-0 z-50 overflow-y-auto bg-slate-950/55 px-3 py-4 backdrop-blur-sm"
           role="dialog"
         >
-          <div className="mx-auto max-w-4xl overflow-hidden rounded-xl bg-white shadow-2xl">
+          <div className="crm-modal-panel mx-auto max-w-4xl overflow-hidden rounded-xl bg-white shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-600">
@@ -104,7 +104,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
               </div>
               <button
                 aria-label={t(locale, "common.cancel")}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+                className="crm-icon-button shrink-0"
                 onClick={() => setOpen(false)}
                 type="button"
               >
@@ -122,7 +122,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.title")}
                 <input
-                  className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  className="crm-input"
                   name="title"
                   placeholder={t(locale, "support.titlePlaceholder")}
                   required
@@ -133,7 +133,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   {t(locale, "support.category")}
                   <select
-                    className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    className="crm-input"
                     name="category"
                     required
                   >
@@ -148,7 +148,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   {t(locale, "support.priority")}
                   <select
-                    className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    className="crm-input"
                     name="priority"
                     required
                   >
@@ -163,7 +163,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   {t(locale, "support.module")}
                   <select
-                    className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    className="crm-input"
                     name="related_module"
                   >
                     <option value="">{t(locale, "support.module")}</option>
@@ -179,7 +179,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.property")}
                 <select
-                  className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  className="crm-input"
                   name="related_property_id"
                 >
                   <option value="">{t(locale, "support.noProperty")}</option>
@@ -195,7 +195,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.description")}
                 <textarea
-                  className="min-h-32 rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  className="crm-textarea min-h-32"
                   minLength={20}
                   name="description"
                   placeholder={t(locale, "support.descriptionPlaceholder")}
@@ -206,7 +206,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.steps")}
                 <textarea
-                  className="min-h-24 rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  className="crm-textarea min-h-24"
                   name="steps_to_reproduce"
                   placeholder={t(locale, "support.stepsPlaceholder")}
                 />
@@ -214,7 +214,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
 
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.files")}
-                <span className="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center transition hover:border-emerald-300 hover:bg-emerald-50">
+                <span className="crm-card-interactive flex min-h-24 cursor-pointer flex-col items-center justify-center border-dashed bg-slate-50 px-4 py-5 text-center">
                   <FileUp className="h-6 w-6 text-slate-400" />
                   <span className="mt-2 text-sm font-semibold text-slate-700">
                     {t(locale, "support.filesTitle")}
@@ -232,7 +232,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                 </span>
               </label>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="crm-card bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-950">
                   {t(locale, "support.autoContext")}
                 </p>
@@ -249,7 +249,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
 
               <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
                 <button
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="crm-button crm-button-secondary"
                   onClick={() => setOpen(false)}
                   type="button"
                 >

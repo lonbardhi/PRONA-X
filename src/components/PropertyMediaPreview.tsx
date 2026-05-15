@@ -79,7 +79,7 @@ export function PropertyMediaPreview({
             href={media.public_url}
             target="_blank"
             rel="noreferrer"
-            className="mt-2 inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+            className="crm-button crm-button-secondary mt-2 h-9 min-h-9 px-3 text-sm"
           >
             Open PDF
           </a>
@@ -99,7 +99,7 @@ export function PropertyMediaPreview({
           href={media.public_url}
           target="_blank"
           rel="noreferrer"
-          className="mt-2 inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+          className="crm-button crm-button-secondary mt-2 h-9 min-h-9 px-3 text-sm"
         >
           Open file
         </a>

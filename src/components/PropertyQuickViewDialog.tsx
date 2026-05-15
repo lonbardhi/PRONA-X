@@ -218,7 +218,7 @@ export function PropertyQuickViewDialog({
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden bg-slate-950/55 px-2 py-3 backdrop-blur-sm sm:px-6 sm:py-4"
+      className="crm-modal-backdrop fixed inset-0 z-50 overflow-y-auto overflow-x-hidden bg-slate-950/55 px-2 py-3 backdrop-blur-sm sm:px-6 sm:py-4"
       onClick={onClose}
       role="dialog"
     >
@@ -226,7 +226,7 @@ export function PropertyQuickViewDialog({
         className="mx-auto grid min-h-full w-full max-w-[1180px] min-w-0 items-start sm:items-center"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="min-w-0 overflow-hidden rounded-xl bg-white shadow-2xl">
+        <div className="crm-modal-panel min-w-0 overflow-hidden rounded-xl bg-white shadow-2xl">
           <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-3 py-4 sm:gap-4 sm:px-5">
             <div className="min-w-0">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -249,7 +249,7 @@ export function PropertyQuickViewDialog({
             </div>
             <button
               aria-label={locale === "sq" ? "Mbyll detajet e pronës" : "Close property details"}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+              className="crm-icon-button h-10 min-h-10 w-10 shrink-0"
               onClick={onClose}
               type="button"
             >
@@ -322,7 +322,7 @@ export function PropertyQuickViewDialog({
                     />
                     <button
                       aria-label={`Open media viewer with ${media.length} media items`}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-slate-50 px-3 text-xs font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="crm-button crm-button-secondary h-9 min-h-9 rounded-full px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={media.length === 0}
                       onClick={(event) => openMediaViewer(0, event)}
                       type="button"
@@ -596,7 +596,7 @@ export function PropertyQuickViewDialog({
                         {locale === "sq" ? "Takimet" : "Appointments"}
                       </h3>
                       <Link
-                        className="inline-flex h-8 items-center rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                        className="crm-button crm-button-success h-8 min-h-8 px-3 text-xs"
                         href={`/appointments?property_id=${property.id}#new-appointment`}
                         prefetch={false}
                       >
@@ -620,7 +620,7 @@ export function PropertyQuickViewDialog({
 
                   <div className="grid min-w-0 grid-cols-2 gap-2 border-t border-slate-200 pt-4 min-[420px]:flex min-[420px]:flex-wrap">
                     <Link
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                      className="crm-button crm-button-secondary h-10 min-h-10 px-3"
                       href={`/properties/${property.id}/edit`}
                       prefetch={false}
                     >
@@ -629,7 +629,7 @@ export function PropertyQuickViewDialog({
                     </Link>
                     <form action={deletePropertyAction}>
                       <input name="property_id" type="hidden" value={property.id} />
-                      <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 px-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
+                      <button className="crm-button crm-button-danger h-10 min-h-10 w-full px-3">
                         <Trash2 className="h-4 w-4" />
                         {locale === "sq" ? "Fshi" : "Delete"}
                       </button>

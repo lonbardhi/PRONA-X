@@ -138,7 +138,7 @@ function StatCard({
   };
 
   return (
-    <div className={`rounded-xl border p-3 ${tones[tone]}`}>
+    <div className={`crm-card p-3 ${tones[tone]}`}>
       <p className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
     </div>
@@ -160,7 +160,7 @@ function SelectField({
     <label className="grid gap-2 text-sm font-medium text-slate-700">
       {label}
       <select
-        className="h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+        className="crm-input text-slate-950"
         defaultValue={defaultValue || ""}
         name={name}
       >
@@ -189,7 +189,7 @@ function TextField({
     <label className="grid gap-2 text-sm font-medium text-slate-700">
       {label}
       <input
-        className="h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+        className="crm-input text-slate-950"
         defaultValue={defaultValue ?? ""}
         name={name}
         placeholder={placeholder}
@@ -209,7 +209,7 @@ function SellerLeadForm({
 }) {
   return (
     <section
-      className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+      className="crm-card overflow-hidden"
       id="add-lead"
     >
       <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
@@ -235,7 +235,7 @@ function SellerLeadForm({
       <form action={createSellerLeadAction} className="grid gap-5 p-4 sm:p-5">
         <input name="status" type="hidden" value="new" />
 
-        <div className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4 md:grid-cols-2">
+        <div className="crm-section md:grid-cols-2">
           <div className="md:col-span-2">
             <h3 className="text-sm font-semibold text-slate-950">
               Informacioni i shitësit
@@ -262,7 +262,7 @@ function SellerLeadForm({
           </SelectField>
         </div>
 
-        <div className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4 md:grid-cols-2">
+        <div className="crm-section md:grid-cols-2">
           <div className="md:col-span-2">
             <h3 className="text-sm font-semibold text-slate-950">
               Informacioni i pronës së mundshme
@@ -293,7 +293,7 @@ function SellerLeadForm({
           </SelectField>
         </div>
 
-        <div className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4 md:grid-cols-2">
+        <div className="crm-section md:grid-cols-2">
           <div className="md:col-span-2">
             <h3 className="text-sm font-semibold text-slate-950">
               Konteksti i shitjes dhe menaxhimi
@@ -342,14 +342,14 @@ function SellerLeadForm({
           <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2">
             Shënime
             <textarea
-              className="min-h-28 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="crm-textarea min-h-28 text-slate-950"
               name="seller_notes"
               placeholder="Çfarë tha pronari, pengesat, çmimi, dokumentet dhe hapi i radhës."
             />
           </label>
         </div>
 
-        <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-fit">
+        <button className="crm-button crm-button-primary w-full sm:w-fit">
           <UserPlus className="h-4 w-4" />
           Shto Lead
         </button>
@@ -371,7 +371,7 @@ function LeadActionButton({
     <form action={updateSellerLeadStatusAction}>
       <input name="lead_id" type="hidden" value={leadId} />
       <input name="status" type="hidden" value={status} />
-      <button className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 sm:w-auto">
+      <button className="crm-button crm-button-secondary h-9 min-h-9 w-full px-3 sm:w-auto">
         {children}
       </button>
     </form>
@@ -393,7 +393,7 @@ function SellerLeadCard({
 
   return (
     <article
-      className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+      className="crm-card-interactive grid gap-4 p-4"
       id={`lead-${lead.id}`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -430,14 +430,14 @@ function SellerLeadCard({
         <div className="flex shrink-0 gap-2">
           <a
             aria-label={`Telefononi ${lead.seller_name}`}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+            className="crm-icon-button h-10 min-h-10 w-10"
             href={`tel:${lead.phone}`}
           >
             <Phone className="h-4 w-4" />
           </a>
           <a
             aria-label={`Hap WhatsApp për ${lead.seller_name}`}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-100"
+            className="crm-icon-button h-10 min-h-10 w-10 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
             href={createWhatsAppUrl(lead.phone)}
             rel="noreferrer"
             target="_blank"
@@ -489,7 +489,7 @@ function SellerLeadCard({
       <div className="flex flex-wrap gap-2">
         <form action={markSellerLeadContactedAction}>
           <input name="lead_id" type="hidden" value={lead.id} />
-          <button className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 sm:w-auto">
+          <button className="crm-button crm-button-secondary h-9 min-h-9 w-full px-3 sm:w-auto">
             Kontaktuar
           </button>
         </form>
@@ -521,7 +521,7 @@ function SellerLeadCard({
         {canConvert ? (
           <form action={convertSellerLeadToPropertyAction}>
             <input name="lead_id" type="hidden" value={lead.id} />
-            <button className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto">
+            <button className="crm-button crm-button-success h-9 min-h-9 w-full px-3 sm:w-auto">
               <CheckCircle2 className="h-4 w-4" />
               Krijo Pronë nga Lead
             </button>
@@ -687,7 +687,7 @@ export default async function SellerLeadsPage({
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="crm-card p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
@@ -713,26 +713,26 @@ export default async function SellerLeadsPage({
         </div>
 
         {params.message ? (
-          <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          <div className="crm-card border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
             {params.message}
           </div>
         ) : null}
 
         {tableMissing ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="crm-card border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             Nevojitet konfigurim Supabase: ekzekuto{" "}
             <code>supabase/migrations/0014_seller_leads.sql</code> në SQL Editor,
             pastaj rifresko faqen.
           </div>
         ) : leadsError ? (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          <div className="crm-card border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
             {leadsError.message}
           </div>
         ) : null}
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="grid gap-5">
-            <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <section className="crm-card p-3">
               <form
                 action="/seller-leads"
                 className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px_180px_auto]"
@@ -741,14 +741,14 @@ export default async function SellerLeadsPage({
                   <span className="sr-only">Kërko lead</span>
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
-                    className="h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                    className="crm-input bg-slate-50 pl-9 pr-3 text-sm text-slate-950 focus:bg-white"
                     defaultValue={q}
                     name="q"
                     placeholder="Kërko emër, telefon, qytet, adresë"
                   />
                 </label>
                 <select
-                  className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                  className="crm-input bg-slate-50 text-sm font-medium text-slate-700 focus:bg-white"
                   defaultValue={statusFilter}
                   name="status"
                 >
@@ -760,7 +760,7 @@ export default async function SellerLeadsPage({
                   ))}
                 </select>
                 <select
-                  className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                  className="crm-input bg-slate-50 text-sm font-medium text-slate-700 focus:bg-white"
                   defaultValue={sourceFilter}
                   name="source"
                 >
@@ -772,7 +772,7 @@ export default async function SellerLeadsPage({
                   ))}
                 </select>
                 <select
-                  className="h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                  className="crm-input bg-slate-50 text-sm font-medium text-slate-700 focus:bg-white"
                   defaultValue={params.sort || "newest"}
                   name="sort"
                 >
@@ -782,19 +782,19 @@ export default async function SellerLeadsPage({
                     </option>
                   ))}
                 </select>
-                <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
+                <button className="crm-button crm-button-primary">
                   <SlidersHorizontal className="h-4 w-4" />
                   Filtro
                 </button>
               </form>
             </section>
 
-            <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
+            <div className="crm-card grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard label="Humbur" tone="rose" value={lostCount} />
               <StatCard label="Norma e konvertimit" tone="emerald" value={conversionRate} />
               <StatCard label="Totali në pamje" value={leadResult.count ?? leads.length} />
               <a
-                className="inline-flex min-h-20 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                className="crm-button crm-button-success min-h-20 rounded-xl px-4"
                 href="#add-lead"
               >
                 <Plus className="h-4 w-4" />
@@ -804,7 +804,7 @@ export default async function SellerLeadsPage({
 
             <section className="grid gap-4">
               {leads.length === 0 && !leadsError ? (
-                <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center shadow-sm sm:p-8">
+                <div className="crm-empty-state sm:p-8">
                   <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
                     <ClipboardList className="h-6 w-6" />
                   </span>
@@ -818,14 +818,14 @@ export default async function SellerLeadsPage({
                   </p>
                   <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
                     <a
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                      className="crm-button crm-button-success h-10 min-h-10 px-4"
                       href="#add-lead"
                     >
                       Shto Lead
                       <ArrowRight className="h-4 w-4" />
                     </a>
                     <Link
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                      className="crm-button crm-button-secondary h-10 min-h-10 px-4"
                       href="/sales"
                       prefetch={false}
                     >
@@ -852,7 +852,7 @@ export default async function SellerLeadsPage({
           </div>
 
           <aside className="grid content-start gap-5">
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="crm-card p-5">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white">
                   <UserCheck className="h-5 w-5" />
@@ -887,7 +887,7 @@ export default async function SellerLeadsPage({
               </ol>
             </section>
 
-            <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+            <section className="crm-card border-emerald-200 bg-emerald-50 p-5">
               <h2 className="text-base font-semibold text-slate-950">
                 Kur përdoret kjo faqe?
               </h2>
@@ -897,7 +897,7 @@ export default async function SellerLeadsPage({
               </p>
             </section>
 
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="crm-card p-5">
               <h2 className="text-base font-semibold text-slate-950">
                 Tubacioni
               </h2>
@@ -907,7 +907,7 @@ export default async function SellerLeadsPage({
 
                   return (
                     <a
-                      className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                      className="crm-card-interactive flex items-center justify-between bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
                       href={`/seller-leads?status=${group.key}`}
                       key={group.key}
                     >
@@ -919,20 +919,20 @@ export default async function SellerLeadsPage({
               </div>
             </section>
 
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="crm-card p-5">
               <h2 className="flex items-center gap-2 text-base font-semibold text-slate-950">
                 <CalendarClock className="h-4 w-4 text-emerald-600" />
                 Ndjekje të shpejta
               </h2>
               <div className="mt-4 grid gap-2">
                 <a
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
+                  className="crm-card-interactive bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
                   href="/seller-leads?followUp=due"
                 >
                   Ndjekje të vonuara
                 </a>
                 <a
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
+                  className="crm-card-interactive bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
                   href="/seller-leads?followUp=upcoming"
                 >
                   Ndjekje të ardhshme

@@ -20,7 +20,7 @@ export function ProfileAvatarButton({
   return (
     <button
       aria-label="Open profile workspace"
-      className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+      className="crm-icon-button relative h-10 min-h-10 w-10 text-slate-700"
       onClick={onClick}
       type="button"
     >

@@ -31,7 +31,7 @@ export function CommunicationChannelTabs({
   ];
 
   return (
-    <div className="flex w-full gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:w-auto [&::-webkit-scrollbar]:hidden">
+    <div className="crm-scroll-area flex w-full gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 sm:w-auto">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = active === tab.key;
@@ -42,7 +42,7 @@ export function CommunicationChannelTabs({
             className={`inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition ${
               isActive
                 ? "bg-slate-950 text-white shadow-sm"
-                : "text-slate-600 hover:bg-white hover:text-slate-950"
+                : "crm-nav-link justify-center px-3"
             }`}
             href={tab.href}
             key={tab.key}

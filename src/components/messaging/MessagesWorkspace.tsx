@@ -78,7 +78,7 @@ export function MessagesWorkspace({
   return (
     <>
       <section className="mx-auto grid max-w-[1500px] gap-4 overflow-x-hidden px-3 py-4 sm:gap-5 sm:px-6 sm:py-6">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="crm-card p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
@@ -98,7 +98,7 @@ export function MessagesWorkspace({
             <div className="grid w-full grid-cols-1 gap-3 lg:w-auto lg:min-w-[420px]">
               <CommunicationChannelTabs active="internal" locale={locale} />
               <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
-                <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
+                <div className="crm-card min-w-0 bg-slate-50 p-2.5 sm:p-3">
                   <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:text-xs sm:tracking-[0.12em]">
                     {locale === "sq" ? "Biseda" : "Threads"}
                   </p>
@@ -106,7 +106,7 @@ export function MessagesWorkspace({
                     {conversations.length}
                   </p>
                 </div>
-                <div className="min-w-0 rounded-xl border border-rose-200 bg-rose-50 p-2.5 sm:p-3">
+                <div className="crm-card min-w-0 border-rose-200 bg-rose-50 p-2.5 sm:p-3">
                   <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-700 sm:text-xs sm:tracking-[0.12em]">
                     {locale === "sq" ? "Pa lexuar" : "Unread"}
                   </p>
@@ -117,7 +117,7 @@ export function MessagesWorkspace({
                     )}
                   </p>
                 </div>
-                <div className="min-w-0 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
+                <div className="crm-card min-w-0 border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
                   <p className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:text-xs sm:tracking-[0.12em]">
                     {locale === "sq" ? "Prona" : "Properties"}
                   </p>
@@ -135,13 +135,13 @@ export function MessagesWorkspace({
         </div>
 
         {message ? (
-          <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          <div className="crm-card border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
             {message}
           </div>
         ) : null}
 
         <div className="xl:hidden">
-          <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="crm-card grid grid-cols-2 p-1">
             <button
               className={`h-10 rounded-lg text-sm font-semibold transition ${
                 mobilePane === "list"
@@ -188,7 +188,7 @@ export function MessagesWorkspace({
             {activeConversation ? (
               <div className="mb-2 flex items-center justify-between gap-2 xl:hidden">
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm"
+                  className="crm-button crm-button-secondary h-10 min-h-10 px-3"
                   onClick={() => setMobilePane("list")}
                   type="button"
                 >

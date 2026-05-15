@@ -30,7 +30,7 @@ export function AvailabilityStatusSelector({
         {locale === "sq" ? "Statusi i punes" : "Work status"}
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <select
-            className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="crm-input h-10 min-h-10 min-w-0 text-sm font-semibold normal-case tracking-normal text-slate-800"
             defaultValue={status.status}
             name="status"
           >
@@ -40,14 +40,14 @@ export function AvailabilityStatusSelector({
               </option>
             ))}
           </select>
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-semibold normal-case tracking-normal text-white transition hover:bg-slate-800">
+          <button className="crm-button crm-button-primary h-10 min-h-10 px-3 text-sm normal-case tracking-normal">
             <CircleDot className="h-4 w-4" />
             {locale === "sq" ? "Ruaj" : "Save"}
           </button>
         </div>
       </label>
       <input
-        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+        className="crm-input h-10 min-h-10 text-sm text-slate-800"
         defaultValue={status.status_message || ""}
         maxLength={160}
         name="status_message"

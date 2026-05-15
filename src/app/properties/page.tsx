@@ -261,7 +261,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="crm-card p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -299,7 +299,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
             </div>
 
             <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[420px]">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
+              <div className="crm-card bg-slate-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 sm:tracking-[0.12em]">
                   {t(locale, "property.salesProperties")}
                 </p>
@@ -307,7 +307,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   {resultCount}
                 </p>
               </div>
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
+              <div className="crm-card border-emerald-200 bg-emerald-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-700 sm:tracking-[0.12em]">
                   {locale === "sq" ? "Publikuar" : "Published"}
                 </p>
@@ -315,7 +315,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   {publishedCount}
                 </p>
               </div>
-              <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-2.5 sm:p-3">
+              <div className="crm-card border-cyan-200 bg-cyan-50 p-2.5 sm:p-3">
                 <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-700 sm:tracking-[0.12em]">
                   {canManage ? (
                     <ImageUp className="h-3.5 w-3.5" />
@@ -345,7 +345,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
         ) : null}
 
         {canManage && !appointmentResult.error ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <section className="crm-card p-4">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
@@ -381,7 +381,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
           <PropertyFilters cities={cities} filters={filters} locale={locale} />
 
           <section className="grid min-w-0 content-start gap-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="crm-card p-3">
               <form action="/sales" className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px_auto]">
                 <FilterStateFields
                   exclude={["q", "sort"]}
@@ -392,7 +392,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   <span className="sr-only">{t(locale, "property.searchPlaceholder")}</span>
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
-                    className="h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                    className="crm-input bg-slate-50 pl-9 pr-3 text-sm focus:bg-white"
                     defaultValue={filters.q}
                     name="q"
                     placeholder={t(locale, "property.searchPlaceholder")}
@@ -403,7 +403,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   <span className="sr-only">Sort properties</span>
                   <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <select
-                    className="h-11 w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                    className="crm-input appearance-none bg-slate-50 pl-9 pr-3 text-sm font-medium text-slate-700 focus:bg-white"
                     defaultValue={filters.sort}
                     name="sort"
                   >
@@ -415,7 +415,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   </select>
                 </label>
 
-                <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 xl:w-auto">
+                <button className="crm-button crm-button-primary w-full xl:w-auto">
                   <SlidersHorizontal className="h-4 w-4" />
                   {t(locale, "common.search")}
                 </button>
@@ -437,7 +437,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
               </div>
               {canManage ? (
                 <a
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"
+                  className="crm-button crm-button-success w-full sm:w-auto"
                   href="#add-property"
                 >
                   <Plus className="h-4 w-4" />

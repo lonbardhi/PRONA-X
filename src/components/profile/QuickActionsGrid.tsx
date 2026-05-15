@@ -97,7 +97,7 @@ export function QuickActionsGrid({ locale, role }: QuickActionsGridProps) {
 
         return (
           <Link
-            className="flex min-h-16 items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold text-slate-800 transition hover:border-emerald-200 hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+            className="crm-card-interactive flex min-h-16 items-center gap-2 p-3 text-sm font-semibold text-slate-800"
             href={action.href}
             key={action.href}
             prefetch={false}

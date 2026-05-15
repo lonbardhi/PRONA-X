@@ -44,7 +44,7 @@ function MetricCard({
   value: number;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
+    <div className="crm-card p-3">
       <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
         {label}
       </p>
@@ -157,11 +157,11 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
       ? createPortal(
         <div
           aria-label={locale === "sq" ? "Paneli i profilit" : "Profile workspace"}
-          className="fixed inset-0 z-[80] flex h-[100dvh] min-h-[100svh] bg-slate-950/35 p-0 backdrop-blur-sm md:items-start md:justify-end md:bg-transparent md:p-6 md:pt-20 md:backdrop-blur-none"
+          className="crm-modal-backdrop fixed inset-0 z-[80] flex h-[100dvh] min-h-[100svh] bg-slate-950/35 p-0 backdrop-blur-sm md:items-start md:justify-end md:bg-transparent md:p-6 md:pt-20 md:backdrop-blur-none"
           role="dialog"
         >
           <div
-            className="flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-slate-50 shadow-2xl md:h-auto md:max-h-[calc(100dvh-6rem)] md:w-[440px] md:rounded-2xl md:border md:border-slate-200"
+            className="crm-modal-panel flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-slate-50 shadow-2xl md:h-auto md:max-h-[calc(100dvh-6rem)] md:w-[440px] md:rounded-2xl md:border md:border-slate-200"
             ref={panelRef}
           >
             <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-white p-4">
@@ -198,7 +198,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
               </div>
               <button
                 aria-label={locale === "sq" ? "Mbyll" : "Close"}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-100"
+                className="crm-icon-button h-9 min-h-9 w-9 shrink-0"
                 onClick={() => setOpen(false)}
                 type="button"
               >
@@ -207,7 +207,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
             </div>
 
             <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto overscroll-contain p-4 [-webkit-overflow-scrolling:touch]">
-              <section className="rounded-xl border border-slate-200 bg-white p-3">
+              <section className="crm-card p-3">
                 <AvailabilityStatusSelector
                   locale={locale}
                   returnTo="/profile"
@@ -279,12 +279,12 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
                 <h3 className="text-sm font-semibold text-slate-950">
                   {locale === "sq" ? "Hapesira ime" : "My workspace"}
                 </h3>
-                <div className="grid gap-1 rounded-xl border border-slate-200 bg-white p-2">
+                <div className="crm-card grid gap-1 p-2">
                   {links.map((link) => {
                     const Icon = link.icon;
                     return (
                       <Link
-                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+                        className="crm-nav-link justify-start rounded-lg px-3 py-2 text-sm font-medium text-slate-700"
                         href={link.href}
                         key={link.href}
                         prefetch={false}
@@ -307,7 +307,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
 
             <div className="border-t border-slate-200 bg-white p-4">
               <form action={signOutAction}>
-                <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
+                <button className="crm-button crm-button-primary w-full rounded-xl">
                   <LogoutIcon className="h-6 w-6 object-contain" />
                   {locale === "sq" ? "Dil nga llogaria" : "Logout"}
                 </button>

@@ -82,7 +82,7 @@ export async function DashboardShell({
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6">
           <BrandLockup subtitle={t(locale, "brand.subtitle")} />
 
-          <nav className="order-3 flex w-full gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:order-none lg:w-auto [&::-webkit-scrollbar]:hidden">
+          <nav className="crm-scroll-area order-3 flex w-full gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 lg:order-none lg:w-auto">
             {navItems.map((item) => {
               if (item.href === "/messages") {
                 return (
@@ -98,7 +98,7 @@ export async function DashboardShell({
 
               return (
                 <Link
-                  className="inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-slate-950"
+                  className="crm-nav-link"
                   href={item.href}
                   key={item.label}
                   prefetch={false}
@@ -116,7 +116,7 @@ export async function DashboardShell({
           <div className="flex shrink-0 items-center gap-2">
             <Link
               aria-label={t(locale, "notifications")}
-              className="hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100 md:flex"
+              className="crm-icon-button hidden md:flex"
               href="/profile?section=notifications"
               prefetch={false}
             >
@@ -135,7 +135,7 @@ export async function DashboardShell({
             <form action={signOutAction}>
               <button
                 aria-label={t(locale, "pending.signOut")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:bg-slate-100"
+                className="crm-icon-button"
               >
                 <LogoutIcon className="h-6 w-6 object-contain" />
               </button>

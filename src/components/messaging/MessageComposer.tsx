@@ -87,7 +87,7 @@ export function MessageComposer({
         />
       ) : null}
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-2 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-100">
+      <div className="crm-card bg-slate-50 p-2 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-100">
         <textarea
           className="max-h-40 min-h-20 w-full resize-none bg-transparent px-2 py-2 text-sm leading-6 text-slate-950 outline-none placeholder:text-slate-400"
           disabled={disabled}
@@ -121,7 +121,7 @@ export function MessageComposer({
 
         <div className="flex flex-col gap-2 border-t border-slate-200 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">
+            <label className="crm-button crm-button-secondary h-9 min-h-9 cursor-pointer px-3 text-xs">
               <Paperclip className="h-4 w-4" />
               {locale === "sq" ? "Skedare" : "Files"}
               <input
@@ -139,7 +139,7 @@ export function MessageComposer({
           </div>
 
           <button
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-auto"
+            className="crm-button crm-button-success h-10 min-h-10 w-full px-4 sm:h-9 sm:min-h-9 sm:w-auto"
             disabled={disabled}
           >
             <SendHorizontal className="h-4 w-4" />

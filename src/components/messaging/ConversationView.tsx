@@ -129,7 +129,7 @@ export function ConversationView({
 
   if (!conversation) {
     return (
-      <section className="grid min-h-[420px] place-items-center rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center sm:min-h-[520px]">
+      <section className="crm-empty-state grid min-h-[420px] place-items-center p-6 sm:min-h-[520px]">
         <div>
           <MessageSquareText className="mx-auto h-10 w-10 text-slate-300" />
           <h2 className="mt-3 text-lg font-semibold text-slate-950">
@@ -155,7 +155,7 @@ export function ConversationView({
 
   return (
     <section
-      className={`grid min-h-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${
+      className={`crm-card grid min-h-0 overflow-hidden ${
         compact
           ? "h-[640px]"
           : "h-[calc(100dvh-13rem)] min-h-[520px] sm:h-[calc(100dvh-10rem)] sm:min-h-[620px]"
@@ -194,7 +194,7 @@ export function ConversationView({
           <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap">
             {relatedHref ? (
               <Link
-                className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                className="crm-button crm-button-secondary h-9 min-h-9 min-w-0 px-3 text-xs"
                 href={relatedHref}
                 prefetch={false}
               >
@@ -208,7 +208,7 @@ export function ConversationView({
                 <input name="return_to" type="hidden" value={returnTo} />
                 <button
                   aria-label={locale === "sq" ? "Arkivo biseden" : "Archive conversation"}
-                  className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                  className="crm-button crm-button-secondary h-9 min-h-9 min-w-0 px-3 text-xs"
                 >
                   <Archive className="h-3.5 w-3.5" />
                   {locale === "sq" ? "Arkivo" : "Archive"}
@@ -221,19 +221,19 @@ export function ConversationView({
 
       <div className="min-h-0 overflow-y-auto bg-slate-50 p-3 sm:p-4">
         {loading ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+          <div className="crm-card bg-white p-4 text-sm text-slate-500">
             {locale === "sq" ? "Duke ngarkuar mesazhet..." : "Loading messages..."}
           </div>
         ) : null}
 
         {error ? (
-          <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+          <div className="crm-card mb-3 border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
             {error}
           </div>
         ) : null}
 
         {messages.length === 0 && !loading ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center text-sm leading-6 text-slate-500">
+          <div className="crm-empty-state p-5 text-sm leading-6 text-slate-500">
             {conversation.related_entity_type === "property"
               ? locale === "sq"
                 ? "Ende nuk ka diskutim te brendshem per kete prone."

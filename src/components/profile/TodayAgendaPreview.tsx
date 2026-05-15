@@ -32,7 +32,7 @@ export function TodayAgendaPreview({
 
   if (agenda.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">
+      <div className="crm-empty-state p-4 text-sm text-slate-500">
         {locale === "sq"
           ? "Nuk ka takime te tjera sot."
           : "No more meetings scheduled for today."}
@@ -44,7 +44,7 @@ export function TodayAgendaPreview({
     <div className="grid gap-2">
       {agenda.map((item) => (
         <article
-          className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
+          className="crm-card-interactive p-3"
           key={item.id}
         >
           <div className="flex items-start justify-between gap-3">
@@ -89,7 +89,7 @@ export function TodayAgendaPreview({
 
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="crm-button crm-button-secondary h-8 min-h-8 px-3 text-xs"
               href="/appointments"
               prefetch={false}
             >
@@ -97,7 +97,7 @@ export function TodayAgendaPreview({
             </Link>
             {item.client_phone ? (
               <a
-                className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-emerald-200 px-3 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+                className="crm-button crm-button-secondary h-8 min-h-8 border-emerald-200 px-3 text-xs text-emerald-700"
                 href={`tel:${item.client_phone}`}
               >
                 <Phone className="h-3.5 w-3.5" />
@@ -109,7 +109,7 @@ export function TodayAgendaPreview({
                 <input name="appointment_id" type="hidden" value={item.id} />
                 <input name="status" type="hidden" value="completed" />
                 <input name="return_to" type="hidden" value={returnTo} />
-                <button className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-blue-200 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50">
+                <button className="crm-button crm-button-secondary h-8 min-h-8 border-blue-200 px-3 text-xs text-blue-700">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   {locale === "sq" ? "Perfundo" : "Complete"}
                 </button>

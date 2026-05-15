@@ -97,8 +97,8 @@ function MeetingDiscussionButton({
       <input name="return_to" type="hidden" value="/messages" />
       <input name="title" type="hidden" value={appointment.title} />
       <button
-        className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 ${
-          compact ? "h-8 px-2 text-xs" : "h-10 px-3 text-sm"
+        className={`crm-button crm-button-secondary gap-1.5 ${
+          compact ? "h-8 min-h-8 px-2 text-xs" : "h-10 px-3 text-sm"
         }`}
       >
         <MessageCircle className="h-3.5 w-3.5" />
@@ -124,7 +124,7 @@ export function AppointmentAgenda({
   if (appointments.length === 0) {
     return (
       <div
-        className={`rounded-xl border border-dashed border-slate-300 bg-white text-center ${
+        className={`crm-empty-state ${
           isCompact ? "p-4" : "p-6"
         }`}
       >
@@ -151,7 +151,7 @@ export function AppointmentAgenda({
       >
         {appointments.map((appointment) => (
           <article
-            className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
+            className="crm-card-interactive min-w-0 p-3"
             key={appointment.id}
           >
             <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
@@ -216,7 +216,7 @@ export function AppointmentAgenda({
     <div className="grid gap-3">
       {appointments.map((appointment) => (
         <article
-          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+          className="crm-card-interactive p-4"
           key={appointment.id}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

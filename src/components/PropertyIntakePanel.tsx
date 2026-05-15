@@ -50,13 +50,13 @@ export function PropertyIntakePanel({
 
   return (
     <section
-      className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+      className="crm-card overflow-hidden"
       id="add-property"
     >
       <button
         aria-controls={contentId}
         aria-expanded={isOpen}
-        className="flex w-full items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50 sm:gap-4 sm:p-5"
+        className="flex w-full items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100 sm:gap-4 sm:p-5"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
@@ -83,7 +83,7 @@ export function PropertyIntakePanel({
                 ? "Hap formularin"
                 : "Open form"}
           </span>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600">
+          <span className="crm-icon-button h-9 min-h-9 w-9">
             <ChevronDown
               className={`h-4 w-4 transition ${isOpen ? "rotate-180" : ""}`}
             />

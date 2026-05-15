@@ -52,7 +52,7 @@ export function UserNotificationsPreview({
       </div>
 
       {notifications.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">
+        <div className="crm-empty-state p-4 text-sm text-slate-500">
           {locale === "sq"
             ? "Nuk ka njoftime te palexuara."
             : "No recent unread notifications."}
@@ -61,7 +61,7 @@ export function UserNotificationsPreview({
         <div className="grid gap-2">
           {notifications.slice(0, 4).map((notification) => (
             <article
-              className={`rounded-xl border p-3 ${
+              className={`crm-card p-3 ${
                 notification.read_at
                   ? "border-slate-200 bg-white"
                   : "border-emerald-200 bg-emerald-50"

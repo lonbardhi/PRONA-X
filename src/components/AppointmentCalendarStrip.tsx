@@ -123,10 +123,10 @@ export function AppointmentCalendarStrip({
               <Link
                 aria-current={isSelected ? "date" : undefined}
                 aria-label={`${copy.add}: ${day.label}`}
-                className={`flex min-h-44 w-[min(18rem,calc(100vw-5rem))] min-w-[min(18rem,calc(100vw-5rem))] snap-start flex-col rounded-xl border p-3 text-left transition focus:outline-none focus:ring-4 focus:ring-emerald-100 lg:min-h-40 lg:w-auto lg:min-w-0 ${
+                className={`crm-card-interactive flex min-h-44 w-[min(18rem,calc(100vw-5rem))] min-w-[min(18rem,calc(100vw-5rem))] snap-start flex-col p-3 text-left lg:min-h-40 lg:w-auto lg:min-w-0 ${
                   isSelected
                     ? "border-emerald-400 bg-emerald-50 shadow-sm"
-                    : "border-slate-200 bg-slate-50 hover:border-emerald-200 hover:bg-white"
+                    : "bg-slate-50"
                 }`}
                 href={`/appointments?date=${day.date}#new-appointment`}
                 key={day.date}
@@ -197,7 +197,7 @@ export function AppointmentCalendarStrip({
       </div>
 
       {selectedDay ? (
-        <div className="flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="crm-card flex min-w-0 flex-col gap-3 overflow-hidden border-emerald-100 bg-emerald-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
               {copy.selected}
@@ -208,7 +208,7 @@ export function AppointmentCalendarStrip({
             <p className="mt-1 text-xs text-slate-600">{copy.selectedHelp}</p>
           </div>
           <Link
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"
+            className="crm-button crm-button-success w-full sm:w-auto"
             href={`/appointments?date=${selectedDay.date}#new-appointment`}
             prefetch={false}
           >

@@ -12,7 +12,7 @@ type MessagesNavItemProps = {
 export function MessagesNavItem({ locale, unreadCount }: MessagesNavItemProps) {
   return (
     <Link
-      className="relative inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-slate-950"
+      className="crm-nav-link relative"
       href="/messages"
       prefetch={false}
     >

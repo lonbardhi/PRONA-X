@@ -53,7 +53,7 @@ export function PreferencesForm({
         <label className="grid gap-2 text-sm font-medium text-slate-700">
           {locale === "sq" ? "Kujtese para takimit" : "Reminder before meeting"}
           <select
-            className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="crm-input text-slate-950"
             defaultValue={preferences.reminder_minutes_before_meeting}
             name="reminder_minutes_before_meeting"
           >
@@ -68,7 +68,7 @@ export function PreferencesForm({
         <label className="grid gap-2 text-sm font-medium text-slate-700">
           {locale === "sq" ? "Pamja e kalendarit" : "Calendar view"}
           <select
-            className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="crm-input text-slate-950"
             defaultValue={preferences.preferred_calendar_view}
             name="preferred_calendar_view"
           >
@@ -88,7 +88,7 @@ export function PreferencesForm({
         <div className="grid gap-2 sm:grid-cols-2">
           {channels.map((channel) => (
             <label
-              className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm font-medium text-slate-700"
+              className="crm-card-interactive flex items-center gap-3 p-3 text-sm font-medium text-slate-700"
               key={channel.name}
             >
               <input
@@ -103,7 +103,7 @@ export function PreferencesForm({
         </div>
       </div>
 
-      <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-fit">
+      <button className="crm-button crm-button-primary w-full sm:w-fit">
         <BellRing className="h-4 w-4" />
         {locale === "sq" ? "Ruaj preferencat" : "Save preferences"}
       </button>

@@ -170,7 +170,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="crm-card p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white">
@@ -190,19 +190,19 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
         </div>
 
         {params.message ? (
-          <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          <div className="crm-card border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
             {params.message}
           </div>
         ) : null}
 
         {ticketResult.error ? (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          <div className="crm-card border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
             {ticketResult.error.message}
           </div>
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="crm-card p-4">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
               <Ticket className="h-4 w-4" />
               {t(locale, "support.open")}
@@ -211,7 +211,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
               {getStatCount(statsRows, "open")}
             </p>
           </div>
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+          <div className="crm-card border-blue-200 bg-blue-50 p-4">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
               <Clock3 className="h-4 w-4" />
               {t(locale, "support.inProgress")}
@@ -220,7 +220,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
               {getStatCount(statsRows, "in_progress")}
             </p>
           </div>
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+          <div className="crm-card border-emerald-200 bg-emerald-50 p-4">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
               {t(locale, "support.resolved")}
@@ -229,7 +229,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
               {getStatCount(statsRows, "resolved")}
             </p>
           </div>
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
+          <div className="crm-card border-rose-200 bg-rose-50 p-4">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">
               <AlertTriangle className="h-4 w-4" />
               {t(locale, "support.critical")}
@@ -240,7 +240,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="crm-card overflow-hidden">
           <div className="flex gap-1 overflow-x-auto border-b border-slate-200 p-2">
             {[
               ["tickets", locale === "sq" ? "Biletat e mia" : "My Tickets", MessageSquare],
@@ -291,7 +291,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                 ],
               ].map(([title, body]) => (
                 <article
-                  className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                  className="crm-card bg-slate-50 p-4"
                   key={title}
                 >
                   <h2 className="text-base font-semibold text-slate-950">
@@ -305,7 +305,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
 
           {activeTab === "contact" ? (
             <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-2">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="crm-card bg-slate-50 p-4">
                 <h2 className="text-base font-semibold text-slate-950">
                   {t(locale, "support.contactTitle")}
                 </h2>
@@ -313,13 +313,13 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                   {t(locale, "support.contactBody")}
                 </p>
                 <a
-                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                  className="crm-button crm-button-secondary mt-4 h-10 min-h-10 px-4"
                   href="mailto:support@pronax.al"
                 >
                   support@pronax.al
                 </a>
               </div>
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="crm-card border-emerald-200 bg-emerald-50 p-4">
                 <h2 className="text-base font-semibold text-slate-950">
                   {t(locale, "support.uploadContext")}
                 </h2>
@@ -386,7 +386,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
                   ))}
                 </select>
 
-                <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
+                <button className="crm-button crm-button-primary">
                   <Filter className="h-4 w-4" />
                   {t(locale, "common.filter")}
                 </button>
@@ -394,7 +394,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
 
               <div className="grid gap-3">
                 {tickets.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
+                  <div className="crm-empty-state p-8">
                     <Ticket className="mx-auto h-8 w-8 text-slate-300" />
                     <h2 className="mt-3 text-base font-semibold text-slate-950">
                       {t(locale, "support.noTickets")}
@@ -407,7 +407,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
 
                 {tickets.map((ticket) => (
                   <Link
-                    className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-emerald-200 hover:bg-emerald-50/30 md:grid-cols-[minmax(0,1fr)_auto]"
+                    className="crm-card-interactive grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_auto]"
                     href={`/support/${ticket.id}`}
                     key={ticket.id}
                     prefetch={false}
@@ -453,7 +453,7 @@ export default async function SupportPage({ searchParams }: SupportPageProps) {
         </div>
 
         {canManageSupport ? (
-          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          <div className="crm-card border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
             <ShieldCheck className="mr-2 inline h-4 w-4" />
             {t(locale, "support.adminView")}
           </div>
