@@ -3,54 +3,76 @@
 import { getSupabaseEnv } from "@/lib/env";
 import type { PropertyMedia } from "@/lib/properties";
 import {
-  getPropertyMediaMimeType,
+  createPropertyMediaStoragePath,
   getPropertyMediaKindFromUrl,
+  getPropertyMediaMimeType,
   propertyMediaMaxFiles,
   propertyMediaRules,
   propertyVideoMaxDurationSeconds,
+  validatePropertyMediaFile,
 } from "@/lib/property-media";
 import { createClient } from "@/lib/supabase/browser";
 
 const MEDIA_BUCKET = "property-media";
+const UPLOAD_TIMEOUT_MS = 120_000;
+const UPLOAD_STALL_MS = 45_000;
+
+export type PropertyUploadQueueStatus =
+  | "queued"
+  | "validating"
+  | "ready"
+  | "uploading"
+  | "saving"
+  | "done"
+  | "error"
+  | "cancelled";
 
 export type PropertyUploadQueueItem = {
   error?: string;
+  file: File;
+  id: string;
   name: string;
+  order: number;
   progress: number;
-  status:
-    | "queued"
-    | "validating"
-    | "ready"
-    | "uploading"
-    | "saving"
-    | "done"
-    | "error";
+  size: number;
+  status: PropertyUploadQueueStatus;
+  type: string;
 };
 
-type DirectUploadResult = {
-  mediaCount: number;
-  propertyId: string;
-  propertyTitle: string;
-  redirectPath: string;
+type PropertyUploadResult = {
+  error?: string;
+  itemId: string;
+  name: string;
+  storagePath?: string;
   success: boolean;
 };
 
-export type PropertyMutationResponse = Partial<DirectUploadResult> & {
-  message?: string;
-  success?: boolean;
+type PropertyUploadSummary = {
+  failed: PropertyUploadResult[];
+  succeeded: PropertyUploadResult[];
 };
 
 type UploadPropertyMediaOptions = {
-  files: File[];
+  items: PropertyUploadQueueItem[];
   locale: "sq" | "en";
   propertyId: string;
   propertyTitle: string;
   startIndex?: number;
   updateQueueItem: (
-    index: number,
+    itemId: string,
     patch: Partial<PropertyUploadQueueItem>,
   ) => void;
 };
+
+class PropertyMediaUploadError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = "PropertyMediaUploadError";
+    this.status = status;
+  }
+}
 
 function isSq(locale: "sq" | "en") {
   return locale === "sq";
@@ -61,16 +83,6 @@ function encodeStoragePath(path: string) {
     .split("/")
     .map((part) => encodeURIComponent(part))
     .join("/");
-}
-
-function cleanFilename(name: string) {
-  const fallback = "property-media";
-  const clean = name
-    .toLowerCase()
-    .replace(/[^a-z0-9.]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-
-  return clean || fallback;
 }
 
 function getVideoDuration(file: File) {
@@ -101,118 +113,164 @@ function getVideoDuration(file: File) {
   });
 }
 
-export async function validatePropertyMediaSelection(
+export function createInitialUploadQueue(
   files: File[],
+  startOrder = 0,
+): PropertyUploadQueueItem[] {
+  return files.map((file, index) => ({
+    file,
+    id: crypto.randomUUID(),
+    name: file.name,
+    order: startOrder + index,
+    progress: 0,
+    size: file.size,
+    status: "validating",
+    type: file.type,
+  }));
+}
+
+function translateValidationError(error: string, locale: "sq" | "en") {
+  if (!isSq(locale)) {
+    return error;
+  }
+
+  if (error.includes("empty")) {
+    return "Skedari eshte bosh dhe nuk mund te ngarkohet.";
+  }
+
+  if (error.includes("not a supported")) {
+    return "Formati nuk mbeshtetet. Ngarko JPG, PNG, WebP, AVIF, GIF, MP4, WebM, MOV ose PDF.";
+  }
+
+  if (error.includes("too large")) {
+    return "Skedari eshte shume i madh. Kompresoje dhe provo perseri.";
+  }
+
+  return "Skedari nuk kaloi validimin. Kontrollo formatin dhe madhesine.";
+}
+
+export async function validatePropertyMediaQueueItem(
+  item: PropertyUploadQueueItem,
   locale: "sq" | "en",
-  existingMedia: PropertyMedia[] = [],
 ) {
-  if (files.length > propertyMediaMaxFiles) {
-    return isSq(locale)
-      ? `Ngarko deri ne ${propertyMediaMaxFiles} skedare njekohesisht.`
-      : `Upload up to ${propertyMediaMaxFiles} files at once.`;
+  const fileError = validatePropertyMediaFile(item.file);
+
+  if (fileError) {
+    return `${item.name}: ${translateValidationError(fileError, locale)}`;
   }
 
-  const existingVideoCount = existingMedia.filter(
-    (item) => getPropertyMediaKindFromUrl(item.public_url) === "video",
-  ).length;
-  const selectedVideoFiles = files.filter((file) => {
-    const mimeType = getPropertyMediaMimeType(file);
-    return mimeType ? propertyMediaRules[mimeType]?.kind === "video" : false;
-  });
+  const mimeType = getPropertyMediaMimeType(item.file);
+  const rule = mimeType ? propertyMediaRules[mimeType] : null;
 
-  if (existingVideoCount + selectedVideoFiles.length > 1) {
-    return isSq(locale)
-      ? "Lejohet vetem nje video per prone. Hiq videon ekzistuese ose ngarko vetem nje video te re."
-      : "Only one video is allowed per property. Remove the existing video or upload just one new video.";
-  }
+  if (rule?.kind === "video") {
+    try {
+      const duration = await getVideoDuration(item.file);
 
-  for (const file of files) {
-    const mimeType = getPropertyMediaMimeType(file);
-    const rule = mimeType ? propertyMediaRules[mimeType] : null;
-
-    if (!rule) {
-      return isSq(locale)
-        ? `${file.name} nuk eshte format i mbeshtetur. Ngarko JPG, PNG, WebP, AVIF, GIF, MP4, WebM, MOV ose PDF.`
-        : `${file.name} is not a supported media file. Upload JPG, PNG, WebP, AVIF, GIF, MP4, WebM, MOV, or PDF files.`;
-    }
-
-    if (file.size > rule.maxSize) {
-      return isSq(locale)
-        ? `${file.name} eshte shume i madh. ${rule.label} duhet te jete ${Math.round(
-            rule.maxSize / (1024 * 1024),
-          )} MB ose me pak.`
-        : `${file.name} is too large. ${rule.label} files must be ${Math.round(
-            rule.maxSize / (1024 * 1024),
-          )} MB or smaller.`;
-    }
-
-    if (rule.kind === "video") {
-      try {
-        const duration = await getVideoDuration(file);
-        if (duration > propertyVideoMaxDurationSeconds) {
-          return isSq(locale)
-            ? `${file.name} eshte shume e gjate. Videoja duhet te jete maksimumi ${propertyVideoMaxDurationSeconds} sekonda.`
-            : `${file.name} is too long. Videos must be ${propertyVideoMaxDurationSeconds} seconds or shorter.`;
-        }
-      } catch {
+      if (duration > propertyVideoMaxDurationSeconds) {
         return isSq(locale)
-          ? `Nuk u lexua dot gjatesia e videos ${file.name}. Provo nje file tjeter ose kompresoje videon.`
-          : `Could not read the duration of ${file.name}. Try another file or compress the video.`;
+          ? `${item.name}: Videoja duhet te jete maksimumi ${propertyVideoMaxDurationSeconds} sekonda.`
+          : `${item.name}: Videos must be ${propertyVideoMaxDurationSeconds} seconds or shorter.`;
       }
+    } catch {
+      return isSq(locale)
+        ? `${item.name}: Nuk u lexua dot gjatesia e videos. Provo nje file tjeter ose kompresoje videon.`
+        : `${item.name}: Could not read the video duration. Try another file or compress the video.`;
     }
   }
 
   return null;
 }
 
+export function getPropertyMediaSelectionLimitMessage(
+  locale: "sq" | "en",
+  existingCount = 0,
+) {
+  return isSq(locale)
+    ? `Mund te kesh maksimumi ${propertyMediaMaxFiles} skedare media per prone. Aktualisht ka ${existingCount}.`
+    : `A property can have up to ${propertyMediaMaxFiles} media files. It currently has ${existingCount}.`;
+}
+
 async function uploadFileWithProgress(
   file: File,
   storagePath: string,
+  accessToken: string,
+  contentType: string,
   onProgress: (progress: number) => void,
 ) {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.access_token) {
-    throw new Error("AUTH_REQUIRED");
-  }
-
   const { url, anonKey } = getSupabaseEnv();
   const uploadUrl = `${url}/storage/v1/object/${MEDIA_BUCKET}/${encodeStoragePath(storagePath)}`;
 
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    let completed = false;
+    let stalledTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const finish = (callback: () => void) => {
+      if (completed) {
+        return;
+      }
+
+      completed = true;
+      if (stalledTimer) {
+        clearTimeout(stalledTimer);
+      }
+
+      callback();
+    };
+
+    stalledTimer = setTimeout(() => {
+      finish(() => reject(new PropertyMediaUploadError("UPLOAD_STALLED")));
+      xhr.abort();
+    }, UPLOAD_STALL_MS);
+
     xhr.open("POST", uploadUrl, true);
+    xhr.timeout = UPLOAD_TIMEOUT_MS;
     xhr.setRequestHeader("apikey", anonKey);
-    xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
+    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+    xhr.setRequestHeader("cache-control", "3600");
+    xhr.setRequestHeader("content-type", contentType);
     xhr.setRequestHeader("x-upsert", "false");
-    xhr.setRequestHeader(
-      "content-type",
-      file.type || "application/octet-stream",
-    );
+
+    xhr.upload.onloadstart = () => {
+      onProgress(1);
+    };
 
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) {
         return;
       }
 
-      onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+      if (stalledTimer) {
+        clearTimeout(stalledTimer);
+        stalledTimer = null;
+      }
+
+      onProgress(Math.max(1, Math.min(99, Math.round((event.loaded / event.total) * 100))));
     };
 
     xhr.onerror = () => {
-      reject(new Error("UPLOAD_NETWORK_ERROR"));
+      finish(() => reject(new PropertyMediaUploadError("UPLOAD_NETWORK_ERROR")));
+    };
+
+    xhr.ontimeout = () => {
+      finish(() => reject(new PropertyMediaUploadError("UPLOAD_TIMEOUT")));
     };
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         onProgress(100);
-        resolve();
+        finish(resolve);
         return;
       }
 
-      reject(new Error(xhr.responseText || "UPLOAD_FAILED"));
+      finish(() =>
+        reject(
+          new PropertyMediaUploadError(
+            xhr.responseText || "UPLOAD_FAILED",
+            xhr.status,
+          ),
+        ),
+      );
     };
 
     xhr.send(file);
@@ -220,8 +278,28 @@ async function uploadFileWithProgress(
 }
 
 function getUploadErrorMessage(error: unknown, locale: "sq" | "en") {
+  const status =
+    error instanceof PropertyMediaUploadError ? error.status : undefined;
   const message =
     error instanceof Error && error.message ? error.message : "UPLOAD_FAILED";
+
+  if (status === 401 || status === 403 || message.includes("AUTH_REQUIRED")) {
+    return isSq(locale)
+      ? "Sesioni skadoi gjate ngarkimit. Hyr perseri dhe provo."
+      : "Your session expired during upload. Sign in again and try once more.";
+  }
+
+  if (status === 413 || message.includes("Payload too large")) {
+    return isSq(locale)
+      ? "Skedari eshte shume i madh per ngarkim. Kompresoje dhe provo perseri."
+      : "The file is too large to upload. Compress it and try again.";
+  }
+
+  if (status === 415 || message.includes("Unsupported")) {
+    return isSq(locale)
+      ? "Formati i skedarit nuk mbeshtetet."
+      : "This file format is not supported.";
+  }
 
   if (message.includes("Duplicate")) {
     return isSq(locale)
@@ -229,50 +307,99 @@ function getUploadErrorMessage(error: unknown, locale: "sq" | "en") {
       : "This file was already uploaded. Rename it or try a different file.";
   }
 
-  if (message.includes("AUTH_REQUIRED")) {
+  if (message.includes("UPLOAD_STALLED") || message.includes("UPLOAD_TIMEOUT")) {
     return isSq(locale)
-      ? "Sesioni skadoi gjate ngarkimit. Hyr perseri dhe provo."
-      : "Your session expired during upload. Sign in again and try once more.";
-  }
-
-  if (message.includes("Payload too large")) {
-    return isSq(locale)
-      ? "Skedari eshte ende shume i madh per ngarkim. Kompresoje dhe provo perseri."
-      : "The file is still too large to upload. Compress it and try again.";
+      ? "Ngarkimi mbeti pa pergjigje. Kontrollo lidhjen dhe provo perseri."
+      : "The upload stalled. Check the connection and try again.";
   }
 
   return isSq(locale)
-    ? "Ngarkimi i medias deshtoi. Provo perseri me nje file me te vogel ose lidhje me te qendrueshme."
+    ? "Ngarkimi i medias deshtoi. Provo perseri me nje skedar me te vogel ose lidhje me te qendrueshme."
     : "Media upload failed. Try again with a smaller file or a more stable connection.";
 }
 
 export async function uploadPropertyMediaDirect({
-  files,
+  items,
   locale,
   propertyId,
   propertyTitle,
   startIndex = 0,
   updateQueueItem,
-}: UploadPropertyMediaOptions) {
+}: UploadPropertyMediaOptions): Promise<PropertyUploadSummary> {
   const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  for (const [index, file] of files.entries()) {
-    updateQueueItem(index, { progress: 0, status: "uploading" });
-    const storagePath = `properties/${propertyId}/${crypto.randomUUID()}-${cleanFilename(file.name)}`;
+  if (!session?.access_token || !user) {
+    const errorMessage = getUploadErrorMessage(new Error("AUTH_REQUIRED"), locale);
+    for (const item of items) {
+      updateQueueItem(item.id, { error: errorMessage, status: "error" });
+    }
+
+    return {
+      failed: items.map((item) => ({
+        error: errorMessage,
+        itemId: item.id,
+        name: item.name,
+        success: false,
+      })),
+      succeeded: [],
+    };
+  }
+
+  const summary: PropertyUploadSummary = {
+    failed: [],
+    succeeded: [],
+  };
+
+  for (const item of items) {
+    if (item.status === "cancelled" || item.status === "done") {
+      continue;
+    }
+
+    const contentType = getPropertyMediaMimeType(item.file);
+    if (!contentType) {
+      const errorMessage = getUploadErrorMessage(
+        new PropertyMediaUploadError("Unsupported property media format.", 415),
+        locale,
+      );
+      updateQueueItem(item.id, { error: errorMessage, status: "error" });
+      summary.failed.push({
+        error: errorMessage,
+        itemId: item.id,
+        name: item.name,
+        success: false,
+      });
+      continue;
+    }
+
+    updateQueueItem(item.id, { error: undefined, progress: 0, status: "uploading" });
+    const storagePath = createPropertyMediaStoragePath(propertyId, item.name);
 
     try {
-      await uploadFileWithProgress(file, storagePath, (progress) => {
-        updateQueueItem(index, { progress, status: "uploading" });
-      });
+      await uploadFileWithProgress(
+        item.file,
+        storagePath,
+        session.access_token,
+        contentType,
+        (progress) => {
+          updateQueueItem(item.id, { progress, status: "uploading" });
+        },
+      );
 
-      updateQueueItem(index, { progress: 100, status: "saving" });
+      updateQueueItem(item.id, { progress: 100, status: "saving" });
       const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(storagePath);
       const { error } = await supabase.from("property_media").insert({
         alt_text: propertyTitle,
         bucket_id: MEDIA_BUCKET,
+        created_by: user.id,
         property_id: propertyId,
         public_url: data.publicUrl,
-        sort_order: startIndex + index,
+        sort_order: startIndex + item.order,
         storage_path: storagePath,
       });
 
@@ -281,23 +408,29 @@ export async function uploadPropertyMediaDirect({
         throw error;
       }
 
-      updateQueueItem(index, { progress: 100, status: "done" });
+      updateQueueItem(item.id, { error: undefined, progress: 100, status: "done" });
+      summary.succeeded.push({
+        itemId: item.id,
+        name: item.name,
+        storagePath,
+        success: true,
+      });
     } catch (error) {
-      updateQueueItem(index, {
-        error: getUploadErrorMessage(error, locale),
+      const errorMessage = getUploadErrorMessage(error, locale);
+      updateQueueItem(item.id, {
+        error: errorMessage,
         status: "error",
       });
-      throw error;
+      summary.failed.push({
+        error: errorMessage,
+        itemId: item.id,
+        name: item.name,
+        success: false,
+      });
     }
   }
-}
 
-export function createInitialUploadQueue(files: File[]): PropertyUploadQueueItem[] {
-  return files.map((file) => ({
-    name: file.name,
-    progress: 0,
-    status: "queued",
-  }));
+  return summary;
 }
 
 export function getMediaMutationErrorMessage(
@@ -311,4 +444,50 @@ export function getMediaMutationErrorMessage(
   return isSq(locale)
     ? "Prona nuk u ruajt. Kontrollo fushat dhe provo perseri."
     : "The property could not be saved. Check the fields and try again.";
+}
+
+export function getUploadSummaryMessage(
+  locale: "sq" | "en",
+  failedCount: number,
+  succeededCount: number,
+) {
+  if (failedCount === 0) {
+    return null;
+  }
+
+  if (succeededCount > 0) {
+    return isSq(locale)
+      ? `${succeededCount} skedare u ngarkuan, por ${failedCount} deshtuan. Mund te provosh perseri vetem skedaret e deshtuar.`
+      : `${succeededCount} files uploaded, but ${failedCount} failed. You can retry only the failed files.`;
+  }
+
+  return isSq(locale)
+    ? "Ngarkimi i medias deshtoi. Provo perseri ose shtoje median nga faqja e ndryshimit."
+    : "Media upload failed. Try again or add the media from the edit page.";
+}
+
+export type PropertyMutationResponse = {
+  mediaCount?: number;
+  message?: string;
+  propertyId?: string;
+  propertyTitle?: string;
+  redirectPath?: string;
+  success?: boolean;
+};
+
+export function getExistingPropertyMediaCount(media?: PropertyMedia[]) {
+  if (!media) {
+    return 0;
+  }
+
+  return media.length;
+}
+
+export function getExistingPropertyVideoCount(media?: PropertyMedia[]) {
+  if (!media) {
+    return 0;
+  }
+
+  return media.filter((item) => getPropertyMediaKindFromUrl(item.public_url) === "video")
+    .length;
 }

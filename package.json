@@ -2,12 +2,14 @@
   "name": "prona-x-platform",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/lib/*.test.mts"
   },
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.19.2",

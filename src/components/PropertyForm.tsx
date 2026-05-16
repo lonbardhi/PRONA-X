@@ -2,6 +2,7 @@
 
 import {
   useMemo,
+  useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -21,11 +22,14 @@ import {
 } from "@/lib/properties";
 import {
   createInitialUploadQueue,
+  getExistingPropertyMediaCount,
   getMediaMutationErrorMessage,
+  getPropertyMediaSelectionLimitMessage,
+  getUploadSummaryMessage,
   type PropertyMutationResponse,
   type PropertyUploadQueueItem,
   uploadPropertyMediaDirect,
-  validatePropertyMediaSelection,
+  validatePropertyMediaQueueItem,
 } from "@/lib/property-media-client";
 import {
   propertyMediaAccept,
@@ -144,11 +148,26 @@ export function PropertyForm({
   const [coefficient, setCoefficient] = useState(
     String(property?.building_coefficient ?? ""),
   );
-  const [selectedMediaFiles, setSelectedMediaFiles] = useState<File[]>([]);
   const [uploadQueue, setUploadQueue] = useState<PropertyUploadQueueItem[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [savedMediaProperty, setSavedMediaProperty] = useState<{
+    id: string;
+    redirectPath?: string;
+    startIndex: number;
+    title: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaUploadLockRef = useRef(false);
   const isSq = locale === "sq";
+  const existingMediaCount = getExistingPropertyMediaCount(property?.property_media);
+  const mediaItemsPendingUpload = uploadQueue.filter(
+    (item) => item.status !== "done" && item.status !== "cancelled",
+  );
+  const hasBlockingMediaState = uploadQueue.some(
+    (item) => item.status === "validating" || item.status === "uploading" || item.status === "saving",
+  );
+  const isValidatingMedia = uploadQueue.some((item) => item.status === "validating");
 
   const grossBuildableArea = useMemo(() => {
     return calculateGrossBuildableArea(toNumber(plotSize), toNumber(coefficient));
@@ -182,86 +201,132 @@ export function PropertyForm({
   }
 
   function updateQueueItem(
-    index: number,
+    itemId: string,
     patch: Partial<PropertyUploadQueueItem>,
   ) {
     setUploadQueue((current) =>
-      current.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, ...patch } : item,
+      current.map((item) =>
+        item.id === itemId ? { ...item, ...patch } : item,
       ),
     );
   }
 
-  function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
+  async function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files || []);
-    setSelectedMediaFiles(files);
-    setUploadQueue(createInitialUploadQueue(files));
-    setUploadError(null);
-  }
-
-  async function handleDirectMediaSubmit(event: FormEvent<HTMLFormElement>) {
-    if (typeof action !== "string" || selectedMediaFiles.length === 0) {
+    event.target.value = "";
+    if (files.length === 0) {
       return;
     }
 
-    event.preventDefault();
     setUploadError(null);
-    setUploadQueue(
-      createInitialUploadQueue(selectedMediaFiles).map((item) => ({
-        ...item,
-        status: "validating",
-      })),
+
+    const activeQueueCount = uploadQueue.filter(
+      (item) => item.status !== "cancelled",
+    ).length;
+    const remainingSlots = Math.max(
+      0,
+      propertyMediaMaxFiles - existingMediaCount - activeQueueCount,
     );
 
-    const validationError = await validatePropertyMediaSelection(
-      selectedMediaFiles,
-      locale,
-      property?.property_media,
-    );
-
-    if (validationError) {
-      setUploadError(validationError);
-      setUploadQueue((current) =>
-        current.map((item) => ({ ...item, error: validationError, status: "error" })),
+    if (remainingSlots <= 0) {
+      setUploadError(
+        getPropertyMediaSelectionLimitMessage(locale, existingMediaCount + activeQueueCount),
       );
       return;
     }
 
-    setUploadQueue((current) =>
-      current.map((item) => ({ ...item, status: "ready" })),
+    const acceptedFiles = files.slice(0, remainingSlots);
+    const rejectedCount = files.length - acceptedFiles.length;
+    const nextItems = createInitialUploadQueue(acceptedFiles, activeQueueCount);
+
+    if (rejectedCount > 0) {
+      setUploadError(
+        isSq
+          ? `${rejectedCount} skedare nuk u shtuan sepse maksimumi eshte ${propertyMediaMaxFiles}.`
+          : `${rejectedCount} files were not added because the maximum is ${propertyMediaMaxFiles}.`,
+      );
+    }
+
+    setUploadQueue((current) => [...current, ...nextItems]);
+
+    await Promise.all(
+      nextItems.map(async (item) => {
+        const error = await validatePropertyMediaQueueItem(item, locale);
+        updateQueueItem(
+          item.id,
+          error ? { error, status: "error" } : { error: undefined, status: "ready" },
+        );
+      }),
     );
-    setIsUploadingMedia(true);
-    let savedPropertyId = property?.id;
+  }
+
+  async function handleDirectMediaSubmit(event: FormEvent<HTMLFormElement>) {
+    if (typeof action !== "string" || mediaItemsPendingUpload.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (mediaUploadLockRef.current) {
+      return;
+    }
+
+    mediaUploadLockRef.current = true;
+    setUploadError(null);
 
     try {
-      const payload = new FormData(event.currentTarget);
-      payload.delete("media");
-
-      const response = await fetch(action, {
-        body: payload,
-        headers: {
-          "x-prona-response": "json",
-        },
-        method: "POST",
-      });
-
-      const result = (await response.json()) as PropertyMutationResponse;
-
-      if (
-        !response.ok ||
-        !result.success ||
-        !result.propertyId ||
-        !result.propertyTitle
-      ) {
-        setUploadError(getMediaMutationErrorMessage(locale, result));
-        setIsUploadingMedia(false);
+      if (uploadQueue.some((item) => item.status === "validating")) {
+        setUploadError(
+          isSq
+            ? "Prit derisa validimi i medias te perfundoje."
+            : "Wait until media validation finishes.",
+        );
         return;
       }
 
-      savedPropertyId = result.propertyId;
+      const invalidItems = uploadQueue.filter((item) => item.status === "error");
+      if (invalidItems.length > 0) {
+        setUploadError(
+          isSq
+            ? "Hiq ose rregullo skedaret me gabim para se te ruash pronen."
+            : "Remove or fix files with errors before saving the property.",
+        );
+        return;
+      }
 
-      await uploadPropertyMediaDirect({
-        files: selectedMediaFiles,
+      const totalAfterUpload = existingMediaCount + mediaItemsPendingUpload.length;
+      if (totalAfterUpload > propertyMediaMaxFiles) {
+        setUploadError(
+          getPropertyMediaSelectionLimitMessage(locale, existingMediaCount),
+        );
+        return;
+      }
+
+      setIsUploadingMedia(true);
+      const result = savedMediaProperty
+        ? ({
+            mediaCount: savedMediaProperty.startIndex,
+            propertyId: savedMediaProperty.id,
+            propertyTitle: savedMediaProperty.title,
+            redirectPath: savedMediaProperty.redirectPath,
+            success: true,
+          } satisfies PropertyMutationResponse)
+        : await savePropertyForMediaUpload(event.currentTarget);
+
+      if (!result.propertyId || !result.propertyTitle) {
+        setUploadError(getMediaMutationErrorMessage(locale, result));
+        return;
+      }
+
+      setSavedMediaProperty({
+        id: result.propertyId,
+        redirectPath: result.redirectPath,
+        startIndex: result.mediaCount || 0,
+        title: result.propertyTitle,
+      });
+
+      const summary = await uploadPropertyMediaDirect({
+        items: mediaItemsPendingUpload,
         locale,
         propertyId: result.propertyId,
         propertyTitle: result.propertyTitle,
@@ -269,20 +334,112 @@ export function PropertyForm({
         updateQueueItem,
       });
 
-      window.location.assign(result.redirectPath || "/sales");
-    } catch {
-      const message = isSq
-        ? "Prona u ruajt, por ngarkimi i medias deshtoi. Do te kalosh te faqja e ndryshimit per te provuar perseri."
-        : "The property was saved, but media upload failed. You will be taken to the edit page to try again.";
+      const summaryMessage = getUploadSummaryMessage(
+        locale,
+        summary.failed.length,
+        summary.succeeded.length,
+      );
 
-      setUploadError(message);
-
-      if (savedPropertyId) {
-        window.location.assign(
-          `/properties/${savedPropertyId}/edit?message=${encodeURIComponent(message)}`,
-        );
+      if (summaryMessage) {
+        setUploadError(summaryMessage);
+        return;
       }
+
+      setUploadQueue([]);
+      setSavedMediaProperty(null);
+      window.location.assign(result.redirectPath || "/sales");
+    } catch (error) {
+      setUploadError(
+        error instanceof Error
+          ? error.message
+          : isSq
+            ? "Prona nuk u ruajt. Kontrollo fushat dhe provo perseri."
+            : "The property could not be saved. Check the fields and try again.",
+      );
     } finally {
+      mediaUploadLockRef.current = false;
+      setIsUploadingMedia(false);
+    }
+  }
+
+  async function savePropertyForMediaUpload(form: HTMLFormElement) {
+    const payload = new FormData(form);
+    payload.delete("media");
+
+    const response = await fetch(action as string, {
+      body: payload,
+      headers: {
+        "x-prona-response": "json",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as PropertyMutationResponse;
+
+    if (
+      !response.ok ||
+      !result.success ||
+      !result.propertyId ||
+      !result.propertyTitle
+    ) {
+      throw new Error(getMediaMutationErrorMessage(locale, result));
+    }
+
+    return result;
+  }
+
+  function removeQueueItem(itemId: string) {
+    if (isUploadingMedia) {
+      return;
+    }
+
+    setUploadQueue((current) => current.filter((item) => item.id !== itemId));
+    setUploadError(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  async function retryFailedUploads() {
+    if (!savedMediaProperty || mediaUploadLockRef.current) {
+      return;
+    }
+
+    const retryItems = uploadQueue.filter((item) => item.status === "error");
+    if (retryItems.length === 0) {
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploadingMedia(true);
+    mediaUploadLockRef.current = true;
+
+    try {
+      const summary = await uploadPropertyMediaDirect({
+        items: retryItems,
+        locale,
+        propertyId: savedMediaProperty.id,
+        propertyTitle: savedMediaProperty.title,
+        startIndex: savedMediaProperty.startIndex,
+        updateQueueItem,
+      });
+      const summaryMessage = getUploadSummaryMessage(
+        locale,
+        summary.failed.length,
+        summary.succeeded.length,
+      );
+
+      if (summaryMessage) {
+        setUploadError(summaryMessage);
+        return;
+      }
+
+      setUploadQueue([]);
+      setSavedMediaProperty(null);
+      window.location.assign(savedMediaProperty.redirectPath || "/sales");
+    } finally {
+      mediaUploadLockRef.current = false;
       setIsUploadingMedia(false);
     }
   }
@@ -293,7 +450,7 @@ export function PropertyForm({
       className="grid gap-5"
       encType={typeof action === "string" ? "multipart/form-data" : undefined}
       onSubmit={(event) => {
-        if (typeof action === "string" && selectedMediaFiles.length > 0) {
+        if (typeof action === "string" && mediaItemsPendingUpload.length > 0) {
           void handleDirectMediaSubmit(event);
         }
       }}
@@ -938,20 +1095,49 @@ export function PropertyForm({
         >
           <input
             accept={propertyMediaAccept}
+            aria-describedby="property-media-help property-media-error"
             className="w-full min-w-0 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 transition file:mr-4 file:rounded-md file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-orange-700 hover:border-orange-200 focus:outline-none focus:ring-4 focus:ring-orange-100"
             onChange={handleMediaChange}
             multiple
             name="media"
+            ref={fileInputRef}
             type="file"
           />
-          <span className="text-xs font-normal leading-5 text-slate-500">
+          <span
+            className="text-xs font-normal leading-5 text-slate-500"
+            id="property-media-help"
+          >
             {isSq
               ? `Ngarko deri ne ${propertyMediaMaxFiles} skedare njekohesisht. Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri ne ${propertyVideoMaxDurationSeconds} sekonda dhe ${propertyVideoMaxSizeMb} MB. Dokumente: PDF.`
               : propertyMediaHelpText}
           </span>
           {uploadError ? (
-            <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-800">
-              {uploadError}
+            <div
+              className="grid gap-3 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-800"
+              id="property-media-error"
+              role="alert"
+            >
+              <p>{uploadError}</p>
+              {savedMediaProperty ? (
+                <div className="flex flex-wrap gap-2">
+                  {uploadQueue.some((item) => item.status === "error") ? (
+                    <button
+                      className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-orange-700 disabled:opacity-60"
+                      disabled={isUploadingMedia}
+                      onClick={() => void retryFailedUploads()}
+                      type="button"
+                    >
+                      {isSq ? "Provo perseri median" : "Retry media"}
+                    </button>
+                  ) : null}
+                  <a
+                    className="rounded-lg border border-orange-200 bg-white px-3 py-2 text-xs font-semibold text-orange-800 transition hover:bg-orange-100"
+                    href={`/properties/${savedMediaProperty.id}/edit`}
+                  >
+                    {isSq ? "Hap faqen e ndryshimit" : "Open edit page"}
+                  </a>
+                </div>
+              ) : null}
             </div>
           ) : null}
           {uploadQueue.length > 0 ? (
@@ -967,23 +1153,45 @@ export function PropertyForm({
                 </p>
               </div>
               <div className="grid gap-2">
-                {uploadQueue.map((item, index) => (
+                {uploadQueue.map((item) => (
                   <div
-                    key={`${item.name}-${index}`}
+                    key={item.id}
                     className="rounded-lg border border-slate-200 bg-white p-3"
                   >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900">
+                        <p
+                          className="truncate text-sm font-semibold text-slate-900"
+                          title={item.name}
+                        >
                           {item.name}
                         </p>
                         <p className="text-xs text-slate-500">
                           {getQueueStatusLabel(item.status, locale)}
                         </p>
                       </div>
-                      <p className="text-xs font-semibold text-slate-600">
-                        {item.progress}%
-                      </p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-xs font-semibold text-slate-600">
+                          {item.progress}%
+                        </p>
+                        {item.status !== "uploading" &&
+                        item.status !== "saving" &&
+                        item.status !== "done" ? (
+                          <button
+                            aria-label={
+                              isSq
+                                ? `Hiq ${item.name} nga radha`
+                                : `Remove ${item.name} from queue`
+                            }
+                            className="rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                            disabled={isUploadingMedia}
+                            onClick={() => removeQueueItem(item.id)}
+                            type="button"
+                          >
+                            {isSq ? "Hiq" : "Remove"}
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200">
                       <div
@@ -1035,13 +1243,17 @@ export function PropertyForm({
 
       <button
         className="crm-button crm-button-accent w-full sm:w-fit"
-        disabled={isUploadingMedia}
+        disabled={isUploadingMedia || hasBlockingMediaState}
       >
         {isUploadingMedia
           ? isSq
             ? "Po ruhet dhe po ngarkohet media..."
             : "Saving and uploading media..."
-          : submitLabel}
+          : isValidatingMedia
+            ? isSq
+              ? "Po validohet media..."
+              : "Validating media..."
+            : submitLabel}
       </button>
     </form>
   );

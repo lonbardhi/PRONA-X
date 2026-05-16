@@ -12,6 +12,7 @@ import {
   normalizeOptionalNumber,
 } from "@/lib/properties";
 import {
+  createPropertyMediaStoragePath,
   getPropertyMediaMimeType,
   propertyMediaMaxFiles,
   validatePropertyMediaFile,
@@ -167,16 +168,6 @@ function getPropertyPayload(formData: FormData, userId: string) {
   };
 }
 
-function cleanFilename(name: string) {
-  const fallback = "property-media";
-  const clean = name
-    .toLowerCase()
-    .replace(/[^a-z0-9.]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-
-  return clean || fallback;
-}
-
 function getMediaFiles(formData: FormData) {
   return formData.getAll("media").filter((file): file is File => {
     return file instanceof File && file.size > 0;
@@ -211,7 +202,7 @@ async function uploadPropertyMedia(
       throw new Error("Unsupported property media format.");
     }
 
-    const storagePath = `properties/${propertyId}/${crypto.randomUUID()}-${cleanFilename(file.name)}`;
+    const storagePath = createPropertyMediaStoragePath(propertyId, file.name);
     const { error: uploadError } = await supabase.storage
       .from(MEDIA_BUCKET)
       .upload(storagePath, file, {

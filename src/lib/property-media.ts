@@ -90,21 +90,38 @@ export const propertyMediaAccept = Object.entries(propertyMediaRules)
 export const propertyMediaHelpText =
   "Upload up to 10 files at once. Photos: JPG, PNG, WebP, AVIF, GIF. Videos: MP4, WebM, MOV up to 60 seconds and 25 MB. Documents: PDF.";
 
+function getFileExtension(name: string) {
+  const match = name.toLowerCase().match(/\.[a-z0-9]+$/);
+  return match?.[0] || "";
+}
+
 export function getPropertyMediaMimeType(file: File) {
   const explicitType = file.type.toLowerCase();
-  if (propertyMediaRules[explicitType]) {
+  const extension = getFileExtension(file.name);
+  const mimeFromExtension = extensionToMime[extension];
+
+  if (
+    explicitType &&
+    propertyMediaRules[explicitType] &&
+    propertyMediaRules[explicitType].extensions.includes(extension)
+  ) {
     return explicitType;
   }
 
-  const filename = file.name.toLowerCase();
-  const extension = Object.keys(extensionToMime).find((item) => filename.endsWith(item));
+  if (!explicitType || explicitType === "application/octet-stream") {
+    return mimeFromExtension || null;
+  }
 
-  return extension ? extensionToMime[extension] : null;
+  return null;
 }
 
 export function validatePropertyMediaFile(file: File) {
   const mimeType = getPropertyMediaMimeType(file);
   const rule = mimeType ? propertyMediaRules[mimeType] : null;
+
+  if (file.size <= 0) {
+    return `${file.name} is empty and cannot be uploaded.`;
+  }
 
   if (!rule) {
     return `${file.name} is not a supported media file. Upload JPG, PNG, WebP, AVIF, GIF, MP4, WebM, MOV, or PDF files.`;
@@ -115,6 +132,45 @@ export function validatePropertyMediaFile(file: File) {
   }
 
   return null;
+}
+
+export function validatePropertyMediaFileCount(
+  newFileCount: number,
+  existingFileCount = 0,
+) {
+  const total = existingFileCount + newFileCount;
+
+  if (total > propertyMediaMaxFiles) {
+    return `Upload up to ${propertyMediaMaxFiles} files at once.`;
+  }
+
+  return null;
+}
+
+export function sanitizePropertyMediaFilename(name: string) {
+  const fallback = "property-media";
+  const extension = getFileExtension(name);
+  const basename = extension ? name.slice(0, -extension.length) : name;
+  const cleanBasename = basename
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 80);
+  const cleanExtension = extension.replace(/[^a-z0-9.]/g, "");
+
+  return `${cleanBasename || fallback}${cleanExtension}`;
+}
+
+export function createPropertyMediaStoragePath(
+  propertyId: string,
+  originalFilename: string,
+  uniqueId = crypto.randomUUID(),
+) {
+  return `properties/${propertyId}/${uniqueId}-${sanitizePropertyMediaFilename(
+    originalFilename,
+  )}`;
 }
 
 export function getPropertyMediaKindFromUrl(url: string): PropertyMediaKind {
