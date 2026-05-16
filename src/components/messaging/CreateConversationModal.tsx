@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { MessageSquarePlus, Search, X } from "lucide-react";
 
 import { createConversationAction } from "@/app/messages/actions";
+import { PronaAvatar } from "@/components/PronaAvatar";
 import { getMentionHandle, getProfileDisplayName, type MessagingProfile } from "@/lib/messaging";
 import type { Locale } from "@/lib/i18n";
 
@@ -164,9 +165,15 @@ export function CreateConversationModal({
                     type="checkbox"
                     value={profile.id}
                   />
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-xs font-bold text-white">
-                    {getProfileDisplayName(profile).slice(0, 2).toUpperCase()}
-                  </span>
+                  <PronaAvatar
+                    alt={getProfileDisplayName(profile)}
+                    email={profile.email}
+                    name={profile.full_name}
+                    shape="rounded"
+                    showBorder={false}
+                    size="md"
+                    src={profile.avatar_url}
+                  />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold text-slate-950">
                       {getProfileDisplayName(profile)}

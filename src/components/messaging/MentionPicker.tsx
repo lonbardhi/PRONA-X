@@ -1,5 +1,6 @@
 "use client";
 
+import { PronaAvatar } from "@/components/PronaAvatar";
 import {
   getMentionHandle,
   getProfileDisplayName,
@@ -59,9 +60,15 @@ export function MentionPicker({
           onClick={() => onSelect(profile)}
           type="button"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-[11px] font-bold text-white">
-            {getProfileDisplayName(profile).slice(0, 2).toUpperCase()}
-          </span>
+          <PronaAvatar
+            alt={getProfileDisplayName(profile)}
+            email={profile.email}
+            name={profile.full_name}
+            shape="rounded"
+            showBorder={false}
+            size="sm"
+            src={profile.avatar_url}
+          />
           <span className="min-w-0">
             <span className="block truncate text-sm font-semibold text-slate-950">
               {getProfileDisplayName(profile)}

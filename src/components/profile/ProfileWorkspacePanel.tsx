@@ -17,10 +17,10 @@ import {
 
 import { signOutAction } from "@/app/login/actions";
 import { LogoutIcon } from "@/components/LogoutIcon";
+import { PronaAvatar } from "@/components/PronaAvatar";
 import {
   formatWorkspaceDateTime,
   getAvailabilityStatusLabels,
-  getInitials,
   type AgentWorkspaceData,
 } from "@/lib/agent-workspace";
 import { getRoleLabel, type Locale } from "@/lib/i18n";
@@ -166,18 +166,16 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
           >
             <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-white p-4">
               <div className="flex min-w-0 gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-950 text-sm font-bold text-white">
-                  {data.profile.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      alt={displayName}
-                      className="h-full w-full object-cover"
-                      src={data.profile.avatar_url}
-                    />
-                  ) : (
-                    getInitials(displayName)
-                  )}
-                </div>
+                <PronaAvatar
+                  alt={displayName}
+                  email={data.profile.email}
+                  name={data.profile.full_name}
+                  shape="rounded"
+                  size="lg"
+                  src={data.profile.avatar_url}
+                  status={data.status.status}
+                  statusLabel={statusLabels[data.status.status]}
+                />
                 <div className="min-w-0">
                   <h2 className="truncate text-base font-semibold text-slate-950">
                     {displayName}
@@ -324,6 +322,8 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
       <ProfileAvatarButton
         onClick={() => setOpen((value) => !value)}
         profile={data.profile}
+        status={data.status.status}
+        statusLabel={statusLabels[data.status.status]}
         unreadCount={unreadCount}
       />
       {profilePanel}

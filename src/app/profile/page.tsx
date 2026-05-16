@@ -9,12 +9,12 @@ import { PreferencesForm } from "@/components/profile/PreferencesForm";
 import { TodayAgendaPreview } from "@/components/profile/TodayAgendaPreview";
 import { UserNotificationsPreview } from "@/components/profile/UserNotificationsPreview";
 import { DashboardShell } from "@/components/DashboardShell";
+import { PronaAvatar } from "@/components/PronaAvatar";
 import { SetupNotice } from "@/components/SetupNotice";
 import {
   agentWorkspaceMigrationMessage,
   formatWorkspaceDateTime,
   getAvailabilityStatusLabels,
-  getInitials,
   isMissingAgentWorkspaceSchemaError,
 } from "@/lib/agent-workspace";
 import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
@@ -82,18 +82,16 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         <div className="crm-card p-4 sm:p-5">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-950 text-lg font-bold text-white">
-                {workspace.profile.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt={displayName}
-                    className="h-full w-full object-cover"
-                    src={workspace.profile.avatar_url}
-                  />
-                ) : (
-                  getInitials(displayName)
-                )}
-              </div>
+              <PronaAvatar
+                alt={displayName}
+                email={workspace.profile.email}
+                name={workspace.profile.full_name}
+                shape="rounded"
+                size="2xl"
+                src={workspace.profile.avatar_url}
+                status={workspace.status.status}
+                statusLabel={statusLabels[workspace.status.status]}
+              />
               <div className="min-w-0">
                 <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
                   <User className="h-3.5 w-3.5" />

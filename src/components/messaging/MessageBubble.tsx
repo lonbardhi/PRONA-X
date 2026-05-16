@@ -3,6 +3,7 @@
 import { FileText, Trash2 } from "lucide-react";
 
 import { deleteMessageAction } from "@/app/messages/actions";
+import { PronaAvatar } from "@/components/PronaAvatar";
 import {
   formatMessageFileSize,
   formatMessagingDateTime,
@@ -78,9 +79,16 @@ export function MessageBubble({
   return (
     <article className={`flex min-w-0 gap-2 ${ownMessage ? "justify-end" : ""}`}>
       {!ownMessage ? (
-        <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-[11px] font-bold text-white">
-          {senderName.slice(0, 2).toUpperCase()}
-        </span>
+        <PronaAvatar
+          alt={senderName}
+          className="mt-1"
+          email={message.sender?.email}
+          name={message.sender?.full_name || senderName}
+          shape="rounded"
+          showBorder={false}
+          size="sm"
+          src={message.sender?.avatar_url}
+        />
       ) : null}
       <div
         className={`min-w-0 max-w-[min(680px,calc(100%-2.5rem))] ${
