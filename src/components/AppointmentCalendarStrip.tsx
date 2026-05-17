@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef } from "react";
 
 import {
   formatAppointmentTimeRange,
+  getAppointmentWorkflowBadge,
+  getAppointmentWorkflowType,
   type AppointmentRecord,
   type AppointmentType,
 } from "@/lib/appointments";
@@ -40,6 +42,12 @@ function getCountLabel(count: number, locale: Locale) {
   }
 
   return count === 1 ? "1 appointment" : `${count} appointments`;
+}
+
+function getWorkflowTone(appointment: AppointmentRecord) {
+  return getAppointmentWorkflowType(appointment.property) === "rentals"
+    ? "bg-sky-50 text-sky-700"
+    : "bg-emerald-50 text-emerald-700";
 }
 
 export function AppointmentCalendarStrip({
@@ -174,9 +182,18 @@ export function AppointmentCalendarStrip({
                       <p className="mt-1 line-clamp-2 text-slate-600">
                         {appointment.title}
                       </p>
-                      <p className="mt-1 text-emerald-700">
-                        {appointmentTypeLabels[appointment.appointment_type]}
-                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <span className="text-emerald-700">
+                          {appointmentTypeLabels[appointment.appointment_type]}
+                        </span>
+                        {appointment.property ? (
+                          <span
+                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${getWorkflowTone(appointment)}`}
+                          >
+                            {getAppointmentWorkflowBadge(appointment.property, locale)}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   ))}
                   {dayAppointments.length > 2 ? (

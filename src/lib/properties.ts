@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import type { AppointmentRecord } from "@/lib/appointments";
-import { defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
+import type { AppointmentRecord } from "./appointments.ts";
+import { defaultLocale, getIntlLocale, type Locale } from "./i18n.ts";
 
 export const propertyTypes = [
   "apartment",
@@ -11,14 +11,53 @@ export const propertyTypes = [
   "development_land",
   "commercial",
   "office",
+  "shop",
+  "warehouse",
+  "hotel",
+  "business",
+  "development_project",
+  "parking",
+  "storage",
+  "project_unit",
 ] as const;
 
-export const standardPropertyStatuses = [
+export const propertyTransactionTypes = ["sale", "rent", "rent_to_own"] as const;
+
+export const rentPeriods = ["daily", "weekly", "monthly", "yearly", "seasonal"] as const;
+
+export const furnishedStates = [
+  "furnished",
+  "partially_furnished",
+  "unfurnished",
+  "unknown",
+] as const;
+
+export const salePropertyStatuses = [
   "draft",
   "published",
+  "negotiation",
   "reserved",
   "sold",
+  "landowner_contacted",
+  "documents_pending",
+  "documents_verified",
+  "feasibility_review",
+  "archived",
+] as const;
+
+export const standardPropertyStatuses = salePropertyStatuses;
+
+export const rentalPropertyStatuses = [
+  "draft",
+  "published",
+  "available",
+  "viewing",
+  "negotiation",
+  "reserved",
+  "contract_drafting",
   "rented",
+  "contract_active",
+  "contract_expiring",
   "archived",
 ] as const;
 
@@ -46,9 +85,13 @@ export const developmentLandStatuses = [
 export const propertyStatuses = [
   "draft",
   "published",
+  "available",
+  "viewing",
   "reserved",
   "sold",
   "rented",
+  "contract_active",
+  "contract_expiring",
   "archived",
   "landowner_contacted",
   "documents_pending",
@@ -88,11 +131,22 @@ export const propertySchema = z
     title: z.string().trim().min(3, "Title is required"),
     description: z.string().trim().optional(),
     type: z.enum(propertyTypes),
+    transaction_type: z.enum(propertyTransactionTypes).default("sale"),
     status: z.enum(propertyStatuses),
     city: z.string().trim().min(2, "City is required"),
     neighborhood: z.string().trim().optional(),
     address: z.string().trim().optional(),
     price_eur: optionalNumber,
+    price_on_request: z.preprocess((value) => value === "on" || value === true, z.boolean()),
+    rent_period: z.enum(rentPeriods).optional(),
+    available_from: z.string().trim().optional(),
+    deposit_eur: optionalNumber,
+    minimum_lease_months: optionalInteger,
+    maximum_lease_months: optionalInteger,
+    furnished_state: z.enum(furnishedStates).optional(),
+    utilities_included: z.preprocess((value) => value === "on" || value === true, z.boolean()),
+    sublease_allowed: z.preprocess((value) => value === "on" || value === true, z.boolean()),
+    business_use_allowed: z.preprocess((value) => value === "on" || value === true, z.boolean()),
     bedrooms: optionalInteger,
     bathrooms: optionalInteger,
     area_m2: optionalNumber,
@@ -139,15 +193,62 @@ export const propertySchema = z
     visibility: z.string().trim().optional(),
   })
   .superRefine((value, context) => {
-    if (value.type !== "development_land" && value.price_eur == null) {
+    const isRentalWorkflow =
+      value.transaction_type === "rent" || value.transaction_type === "rent_to_own";
+    const allowedStatuses = isRentalWorkflow
+      ? rentalPropertyStatuses
+      : value.type === "development_land"
+        ? developmentLandStatuses
+        : salePropertyStatuses;
+
+    if (!(allowedStatuses as readonly string[]).includes(value.status)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Price is required for standard sale properties",
+        message: isRentalWorkflow
+          ? "Rental status is not valid for this listing"
+          : "Sale status is not valid for this listing",
+        path: ["status"],
+      });
+    }
+
+    const developmentExchangeWorkflow =
+      value.type === "development_land" && !isRentalWorkflow;
+
+    if (
+      !developmentExchangeWorkflow &&
+      !value.price_on_request &&
+      value.price_eur == null
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: isRentalWorkflow
+          ? "Rent amount is required for rental listings"
+          : "Sale price is required for sale listings",
         path: ["price_eur"],
       });
     }
 
-    if (value.type === "development_land" && value.status !== "draft") {
+    if (isRentalWorkflow && !value.rent_period) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Rent period is required for rental listings",
+        path: ["rent_period"],
+      });
+    }
+
+    if (
+      value.minimum_lease_months != null &&
+      value.maximum_lease_months != null &&
+      value.maximum_lease_months < value.minimum_lease_months
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Maximum lease duration cannot be lower than minimum lease duration",
+        path: ["maximum_lease_months"],
+      });
+    }
+
+    if (developmentExchangeWorkflow && value.status !== "draft") {
       if (value.plot_size_m2 == null) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
@@ -158,7 +259,7 @@ export const propertySchema = z
     }
 
     if (
-      value.type === "development_land" &&
+      developmentExchangeWorkflow &&
       value.status === "ready_for_developers" &&
       value.landowner_requested_percentage == null
     ) {
@@ -186,6 +287,35 @@ export type PropertyFormInput = z.infer<typeof propertySchema>;
 export type PropertyStatus = (typeof propertyStatuses)[number];
 export type StandardPropertyStatus = (typeof standardPropertyStatuses)[number];
 export type PropertyType = (typeof propertyTypes)[number];
+export type PropertyTransactionType = (typeof propertyTransactionTypes)[number];
+export type PropertyModule = "sales" | "rentals";
+export type RentPeriod = (typeof rentPeriods)[number];
+export type FurnishedState = (typeof furnishedStates)[number];
+
+export type AssetDuplicateCandidate = {
+  address: string | null;
+  area_m2: number | null;
+  asset_id: string | null;
+  city: string;
+  id: string;
+  linked_rental_property_id: string | null;
+  linked_sale_property_id: string | null;
+  neighborhood: string | null;
+  plot_size_m2: number | null;
+  status: PropertyStatus;
+  title: string;
+  transaction_type: PropertyTransactionType;
+  type: PropertyType;
+};
+
+export type AssetDuplicateInput = {
+  address?: string | null;
+  area_m2?: number | null;
+  city?: string | null;
+  neighborhood?: string | null;
+  plot_size_m2?: number | null;
+  type?: PropertyType | null;
+};
 
 export type PropertyMedia = {
   id: string;
@@ -200,11 +330,25 @@ export type PropertyRecord = {
   slug: string;
   description: string | null;
   type: PropertyType;
+  transaction_type: PropertyTransactionType;
   status: PropertyStatus;
   city: string;
   neighborhood: string | null;
   address: string | null;
   price_eur: number | null;
+  price_on_request: boolean | null;
+  rent_period: RentPeriod | null;
+  available_from: string | null;
+  deposit_eur: number | null;
+  minimum_lease_months: number | null;
+  maximum_lease_months: number | null;
+  furnished_state: FurnishedState | null;
+  utilities_included: boolean | null;
+  sublease_allowed: boolean | null;
+  business_use_allowed: boolean | null;
+  asset_id: string | null;
+  linked_sale_property_id: string | null;
+  linked_rental_property_id: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
   area_m2: number | null;
@@ -256,11 +400,22 @@ export function formDataToPropertyInput(formData: FormData) {
     title: formData.get("title"),
     description: formData.get("description") || undefined,
     type: formData.get("type"),
+    transaction_type: formData.get("transaction_type") || "sale",
     status: formData.get("status"),
     city: formData.get("city"),
     neighborhood: formData.get("neighborhood") || undefined,
     address: formData.get("address") || undefined,
     price_eur: formData.get("price_eur"),
+    price_on_request: formData.get("price_on_request"),
+    rent_period: formData.get("rent_period") || undefined,
+    available_from: formData.get("available_from") || undefined,
+    deposit_eur: formData.get("deposit_eur") || "",
+    minimum_lease_months: formData.get("minimum_lease_months") || "",
+    maximum_lease_months: formData.get("maximum_lease_months") || "",
+    furnished_state: formData.get("furnished_state") || undefined,
+    utilities_included: formData.get("utilities_included"),
+    sublease_allowed: formData.get("sublease_allowed"),
+    business_use_allowed: formData.get("business_use_allowed"),
     bedrooms: formData.get("bedrooms") || "",
     bathrooms: formData.get("bathrooms") || "",
     area_m2: formData.get("area_m2") || "",
@@ -342,6 +497,283 @@ export function formatEuro(value: number, locale: Locale = defaultLocale) {
   }).format(value);
 }
 
+export function getPropertyModulePath(transactionType: PropertyTransactionType) {
+  return transactionType === "sale" ? "/sales" : "/rentals";
+}
+
+export function countPhysicalAssets(
+  properties: Array<Pick<PropertyRecord, "asset_id" | "id">>,
+) {
+  return new Set(properties.map((property) => property.asset_id || property.id)).size;
+}
+
+export function getOppositeListingTransactionType(
+  transactionType: PropertyTransactionType,
+): PropertyTransactionType {
+  return isRentalTransaction(transactionType) ? "sale" : "rent";
+}
+
+export function getTransactionTypeForModule(module: PropertyModule): PropertyTransactionType {
+  return module === "rentals" ? "rent" : "sale";
+}
+
+export function isRentalTransaction(transactionType: PropertyTransactionType | null | undefined) {
+  return transactionType === "rent" || transactionType === "rent_to_own";
+}
+
+export function isSameTransactionWorkflow(
+  first: PropertyTransactionType | null | undefined,
+  second: PropertyTransactionType | null | undefined,
+) {
+  if (isRentalTransaction(first) || isRentalTransaction(second)) {
+    return isRentalTransaction(first) && isRentalTransaction(second);
+  }
+
+  return first === second;
+}
+
+function normalizeAssetMatchValue(value: string | null | undefined) {
+  return (value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getAddressTokenOverlap(first: string, second: string) {
+  const firstTokens = new Set(first.split(" ").filter((token) => token.length > 2));
+  const secondTokens = new Set(second.split(" ").filter((token) => token.length > 2));
+
+  if (firstTokens.size === 0 || secondTokens.size === 0) {
+    return 0;
+  }
+
+  return [...firstTokens].filter((token) => secondTokens.has(token)).length;
+}
+
+function getAreaMatchScore(first?: number | null, second?: number | null) {
+  if (!first || !second) {
+    return 0;
+  }
+
+  const difference = Math.abs(first - second);
+  const largest = Math.max(first, second);
+  const ratio = difference / largest;
+
+  if (ratio <= 0.1) return 2;
+  if (ratio <= 0.2) return 1;
+
+  return 0;
+}
+
+export function getDuplicateAssetScore(
+  input: AssetDuplicateInput,
+  candidate: AssetDuplicateCandidate,
+) {
+  let score = 0;
+  const inputCity = normalizeAssetMatchValue(input.city);
+  const candidateCity = normalizeAssetMatchValue(candidate.city);
+  const inputNeighborhood = normalizeAssetMatchValue(input.neighborhood);
+  const candidateNeighborhood = normalizeAssetMatchValue(candidate.neighborhood);
+  const inputAddress = normalizeAssetMatchValue(input.address);
+  const candidateAddress = normalizeAssetMatchValue(candidate.address);
+
+  if (input.type && candidate.type === input.type) {
+    score += 3;
+  }
+
+  if (inputCity && candidateCity && inputCity === candidateCity) {
+    score += 3;
+  }
+
+  if (
+    inputNeighborhood &&
+    candidateNeighborhood &&
+    inputNeighborhood === candidateNeighborhood
+  ) {
+    score += 2;
+  }
+
+  if (inputAddress && candidateAddress) {
+    const overlap = getAddressTokenOverlap(inputAddress, candidateAddress);
+    if (
+      overlap >= 2 ||
+      inputAddress.includes(candidateAddress) ||
+      candidateAddress.includes(inputAddress)
+    ) {
+      score += 2;
+    }
+  }
+
+  score += getAreaMatchScore(
+    input.area_m2 ?? input.plot_size_m2,
+    candidate.area_m2 ?? candidate.plot_size_m2,
+  );
+
+  return score;
+}
+
+export function findDuplicateAssetCandidates(
+  input: AssetDuplicateInput,
+  candidates: AssetDuplicateCandidate[],
+  limit = 3,
+) {
+  if (!input.city || normalizeAssetMatchValue(input.city).length < 2) {
+    return [];
+  }
+
+  return candidates
+    .map((candidate) => ({
+      candidate,
+      score: getDuplicateAssetScore(input, candidate),
+    }))
+    .filter((match) => match.score >= 5)
+    .sort((first, second) => second.score - first.score)
+    .slice(0, limit);
+}
+
+export function getPropertyWorkflowStatuses(
+  transactionType: PropertyTransactionType,
+  propertyType?: PropertyType,
+) {
+  if (isRentalTransaction(transactionType)) {
+    return rentalPropertyStatuses;
+  }
+
+  return propertyType === "development_land"
+    ? developmentLandStatuses
+    : salePropertyStatuses;
+}
+
+export function formatRentPeriodLabel(
+  period: RentPeriod | string | null | undefined,
+  locale: Locale = defaultLocale,
+) {
+  const labels: Record<Locale, Record<string, string>> = {
+    sq: {
+      daily: "ditë",
+      weekly: "javë",
+      monthly: "muaj",
+      yearly: "vit",
+      seasonal: "sezonale",
+    },
+    en: {
+      daily: "day",
+      weekly: "week",
+      monthly: "month",
+      yearly: "year",
+      seasonal: "season",
+    },
+  };
+
+  return labels[locale][period || "monthly"] || labels[locale].monthly;
+}
+
+export function formatTransactionBadge(
+  transactionType: PropertyTransactionType | null | undefined,
+  locale: Locale = defaultLocale,
+) {
+  if (transactionType === "rent_to_own") {
+    return locale === "sq" ? "ME QIRA + OPSION BLERJE" : "RENT + BUY OPTION";
+  }
+
+  if (isRentalTransaction(transactionType)) {
+    return locale === "sq" ? "ME QIRA" : "FOR RENT";
+  }
+
+  return locale === "sq" ? "PËR SHITJE" : "FOR SALE";
+}
+
+export function getLinkedListingId(
+  property: Pick<
+    PropertyRecord,
+    "linked_rental_property_id" | "linked_sale_property_id" | "transaction_type"
+  >,
+) {
+  return isRentalTransaction(property.transaction_type)
+    ? property.linked_sale_property_id
+    : property.linked_rental_property_id;
+}
+
+export function getLinkedListingNotice(
+  property: Pick<
+    PropertyRecord,
+    "linked_rental_property_id" | "linked_sale_property_id" | "transaction_type"
+  >,
+  locale: Locale = defaultLocale,
+) {
+  const linkedId = getLinkedListingId(property);
+  const targetTransactionType = getOppositeListingTransactionType(property.transaction_type);
+
+  if (linkedId) {
+    return isRentalTransaction(property.transaction_type)
+      ? {
+          href: `/properties/${linkedId}/edit`,
+          label:
+            locale === "sq"
+              ? "Kjo pronë ka edhe një listim për shitje."
+              : "This property also has a sale listing.",
+          linkLabel: locale === "sq" ? "Hap listimin e shitjes" : "Open sale listing",
+        }
+      : {
+          href: `/properties/${linkedId}/edit`,
+          label:
+            locale === "sq"
+              ? "Kjo pronë ka edhe një listim me qira."
+              : "This property also has a rental listing.",
+          linkLabel: locale === "sq" ? "Hap listimin me qira" : "Open rental listing",
+        };
+  }
+
+  return isRentalTransaction(targetTransactionType)
+    ? {
+        href: null,
+        label:
+          locale === "sq"
+            ? "Mund të krijosh një listim të ndarë me qira për të njëjtin aset."
+            : "You can create a separate rental listing for the same asset.",
+        linkLabel: locale === "sq" ? "Krijo listim me qira" : "Create rental listing",
+      }
+    : {
+        href: null,
+        label:
+          locale === "sq"
+            ? "Mund të krijosh një listim të ndarë për shitje për të njëjtin aset."
+            : "You can create a separate sale listing for the same asset.",
+        linkLabel: locale === "sq" ? "Krijo listim për shitje" : "Create sale listing",
+      };
+}
+
+export function formatPropertyPrice(
+  property: Pick<
+    PropertyRecord,
+    "price_eur" | "price_on_request" | "rent_period" | "transaction_type" | "type"
+  >,
+  locale: Locale = defaultLocale,
+) {
+  if (property.type === "development_land" && property.price_eur == null) {
+    return locale === "sq" ? "Marrëveshje me përqindje" : "Percentage agreement";
+  }
+
+  if (property.price_on_request || property.price_eur == null) {
+    return isRentalTransaction(property.transaction_type)
+      ? locale === "sq"
+        ? "Qiraja sipas kërkesës"
+        : "Rent on request"
+      : locale === "sq"
+        ? "Çmimi sipas kërkesës"
+        : "Price on request";
+  }
+
+  const formatted = formatEuro(property.price_eur, locale);
+  if (!isRentalTransaction(property.transaction_type)) {
+    return formatted;
+  }
+
+  return `${formatted}/${formatRentPeriodLabel(property.rent_period, locale)}`;
+}
+
 export function isDevelopmentLand(property: PropertyRecord | PropertyType) {
   return typeof property === "string"
     ? property === "development_land"
@@ -358,7 +790,15 @@ export function formatPropertyType(type: PropertyType, locale: Locale = defaultL
   const labels: Record<Locale, Record<PropertyType, string>> = {
     sq: {
       apartment: "Apartament",
+      business: "Biznes",
       commercial: "Komerciale",
+      development_project: "Projekt zhvillimi",
+      hotel: "Hotel",
+      parking: "Garazh / parking",
+      project_unit: "Njesi projekti",
+      shop: "Dyqan",
+      storage: "Depo",
+      warehouse: "Magazina",
       development_land: "Tokë Zhvillimi",
       house: "Shtëpi",
       land: "Tokë",
@@ -367,12 +807,20 @@ export function formatPropertyType(type: PropertyType, locale: Locale = defaultL
     },
     en: {
       apartment: "Apartment",
+      business: "Business",
       commercial: "Commercial",
+      development_project: "Development Project",
       development_land: "Development Land",
       house: "House",
+      hotel: "Hotel",
       land: "Land",
       office: "Office",
+      parking: "Garage / parking",
+      project_unit: "Project unit",
+      shop: "Shop",
+      storage: "Storage",
       villa: "Villa",
+      warehouse: "Warehouse",
     },
   };
 
@@ -385,8 +833,11 @@ export function formatStatusLabel(status: PropertyStatus, locale: Locale = defau
       agreement_in_principle: "Marrëveshje Parimore",
       agreement_signed: "Marrëveshje e Nënshkruar",
       archived: "Arkivuar",
+      available: "I disponueshem",
       completed: "Përfunduar",
+      contract_active: "Kontrate aktive",
       contract_drafting: "Draft Kontrate",
+      contract_expiring: "Kontrate ne skadim",
       developer_interested: "Zhvillues i Interesuar",
       documents_pending: "Dokumente në Pritje",
       documents_verified: "Dokumente të Verifikuara",
@@ -403,6 +854,7 @@ export function formatStatusLabel(status: PropertyStatus, locale: Locale = defau
       rented: "Dhënë me Qira",
       reserved: "Rezervuar",
       sold: "Shitur",
+      viewing: "Ne vizite",
       withdrawn: "Tërhequr",
     },
     en: {},

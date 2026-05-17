@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
+import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "./i18n.ts";
+import type { PropertyTransactionType } from "./properties.ts";
 
 export const appointmentTypes = [
   "viewing",
@@ -84,6 +85,7 @@ export type AppointmentPropertySummary = {
   city: string;
   neighborhood: string | null;
   address: string | null;
+  transaction_type: PropertyTransactionType | null;
 };
 
 export type AppointmentAgentSummary = {
@@ -211,4 +213,35 @@ export function getAppointmentLocation(
     appointment.property.address ||
     [appointment.property.neighborhood, appointment.property.city].filter(Boolean).join(", ")
   );
+}
+
+export function getAppointmentWorkflowType(
+  property: Pick<AppointmentPropertySummary, "transaction_type"> | null | undefined,
+) {
+  if (property?.transaction_type === "rent" || property?.transaction_type === "rent_to_own") {
+    return "rentals";
+  }
+
+  if (property?.transaction_type === "sale") {
+    return "sales";
+  }
+
+  return null;
+}
+
+export function getAppointmentWorkflowBadge(
+  property: Pick<AppointmentPropertySummary, "transaction_type"> | null | undefined,
+  locale: Locale = defaultLocale,
+) {
+  const workflow = getAppointmentWorkflowType(property);
+
+  if (workflow === "rentals") {
+    return locale === "sq" ? "Qira" : "Rental";
+  }
+
+  if (workflow === "sales") {
+    return locale === "sq" ? "Shitje" : "Sale";
+  }
+
+  return locale === "sq" ? "Pa modul" : "No module";
 }

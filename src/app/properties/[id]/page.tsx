@@ -1,4 +1,5 @@
 import { MapPin } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BrandLockup } from "@/components/BrandLogo";
@@ -8,9 +9,11 @@ import { hasSupabaseEnv } from "@/lib/env";
 import type { PropertyRecord } from "@/lib/properties";
 import {
   formatDevelopmentAgreement,
-  formatEuro,
+  formatPropertyPrice,
   formatPropertyType,
+  formatTransactionBadge,
   isDevelopmentLand,
+  isRentalTransaction,
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 import { createClient } from "@/lib/supabase/server";
@@ -20,6 +23,11 @@ type PublicPropertyPageProps = {
     id: string;
   }>;
 };
+
+type LinkedPublicListing = Pick<
+  PropertyRecord,
+  "id" | "status" | "title" | "transaction_type"
+>;
 
 function DetailItem({ label, value }: { label: string; value: string | number }) {
   return (
@@ -33,7 +41,8 @@ function DetailItem({ label, value }: { label: string; value: string | number })
 }
 
 const propertySelect =
-  "id,title,slug,description,type,status,city,neighborhood,address,price_eur,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,created_at,property_media(id,public_url,alt_text,sort_order)";
+  "id,title,slug,description,type,transaction_type,status,city,neighborhood,address,price_eur,price_on_request,rent_period,available_from,deposit_eur,minimum_lease_months,maximum_lease_months,furnished_state,utilities_included,sublease_allowed,business_use_allowed,asset_id,linked_sale_property_id,linked_rental_property_id,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,created_at,property_media(id,public_url,alt_text,sort_order)";
+const linkedPublicSelect = "id,title,transaction_type,status";
 
 export default async function PublicPropertyPage({ params }: PublicPropertyPageProps) {
   if (!hasSupabaseEnv()) {
@@ -54,6 +63,35 @@ export default async function PublicPropertyPage({ params }: PublicPropertyPageP
   }
 
   const typedProperty = property as PropertyRecord;
+  const directLinkedId = isRentalTransaction(typedProperty.transaction_type)
+    ? typedProperty.linked_sale_property_id
+    : typedProperty.linked_rental_property_id;
+  let linkedPublicListing: LinkedPublicListing | null = null;
+
+  if (directLinkedId) {
+    const { data } = await supabase
+      .from("properties")
+      .select(linkedPublicSelect)
+      .eq("id", directLinkedId)
+      .eq("status", "published")
+      .maybeSingle();
+    linkedPublicListing = data as LinkedPublicListing | null;
+  } else if (typedProperty.asset_id) {
+    let linkedQuery = supabase
+      .from("properties")
+      .select(linkedPublicSelect)
+      .eq("asset_id", typedProperty.asset_id)
+      .eq("status", "published")
+      .neq("id", typedProperty.id)
+      .limit(1);
+
+    linkedQuery = isRentalTransaction(typedProperty.transaction_type)
+      ? linkedQuery.eq("transaction_type", "sale")
+      : linkedQuery.in("transaction_type", ["rent", "rent_to_own"]);
+
+    const { data } = await linkedQuery.maybeSingle();
+    linkedPublicListing = data as LinkedPublicListing | null;
+  }
   const developmentLand = isDevelopmentLand(typedProperty);
   const media = [...(typedProperty.property_media || [])].sort(
     (a, b) => a.sort_order - b.sort_order,
@@ -98,6 +136,28 @@ export default async function PublicPropertyPage({ params }: PublicPropertyPageP
               <p className="mt-3 text-base capitalize text-slate-600">
                 {formatPropertyType(typedProperty.type)}
               </p>
+              <p className="mt-3 inline-flex rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
+                {formatTransactionBadge(typedProperty.transaction_type)}
+              </p>
+
+              {linkedPublicListing ? (
+                <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                  <p className="text-sm font-semibold text-slate-950">
+                    {isRentalTransaction(typedProperty.transaction_type)
+                      ? "This property also has a sale listing."
+                      : "This property also has a rental listing."}
+                  </p>
+                  <Link
+                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 sm:w-auto"
+                    href={`/properties/${linkedPublicListing.id}`}
+                    prefetch={false}
+                  >
+                    {isRentalTransaction(typedProperty.transaction_type)
+                      ? "Open sale listing"
+                      : "Open rental listing"}
+                  </Link>
+                </div>
+              ) : null}
 
               {typedProperty.address ? (
                 <div className="mt-5 flex items-start gap-2 text-sm text-slate-600">
@@ -123,7 +183,7 @@ export default async function PublicPropertyPage({ params }: PublicPropertyPageP
               <p className="mt-1 break-words text-2xl font-semibold text-slate-950 sm:text-3xl">
                 {developmentLand
                   ? formatDevelopmentAgreement(typedProperty)
-                  : formatEuro(typedProperty.price_eur || 0)}
+                  : formatPropertyPrice(typedProperty)}
               </p>
               {developmentLand ? (
                 <div className="mt-5 grid grid-cols-2 gap-3">

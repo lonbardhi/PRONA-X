@@ -9,16 +9,26 @@ import {
   type ReactNode,
 } from "react";
 
-import type { PropertyRecord, PropertyStatus, PropertyType } from "@/lib/properties";
+import type {
+  AssetDuplicateCandidate,
+  PropertyRecord,
+  PropertyStatus,
+  PropertyTransactionType,
+  PropertyType,
+} from "@/lib/properties";
 import {
   calculateGrossBuildableArea,
-  developmentLandStatuses,
+  findDuplicateAssetCandidates,
+  formatRentPeriodLabel,
   formatPropertyType,
   formatStatusLabel,
+  getPropertyWorkflowStatuses,
+  isSameTransactionWorkflow,
+  isRentalTransaction,
   isDevelopmentLand,
   isLandPropertyType,
+  rentPeriods,
   propertyTypes,
-  standardPropertyStatuses,
 } from "@/lib/properties";
 import {
   createInitialUploadQueue,
@@ -42,9 +52,12 @@ import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyFormProps = {
   action: string | ((formData: FormData) => void | Promise<void>);
+  assetCandidates?: AssetDuplicateCandidate[];
+  defaultType?: PropertyType;
   locale?: Locale;
   property?: PropertyRecord;
   submitLabel: string;
+  transactionType?: PropertyTransactionType;
 };
 
 type FieldProps = {
@@ -113,7 +126,7 @@ function getQueueStatusLabel(
     case "uploading":
       return isSq ? "Po ngarkohet" : "Uploading";
     case "saving":
-      return isSq ? "Po lidhet me pronen" : "Saving to property";
+      return isSq ? "Po lidhet me pronën" : "Saving to property";
     case "done":
       return isSq ? "U ruajt" : "Saved";
     case "error":
@@ -125,17 +138,25 @@ function getQueueStatusLabel(
 
 export function PropertyForm({
   action,
+  assetCandidates = [],
+  defaultType,
   locale = defaultLocale,
   property,
   submitLabel,
+  transactionType,
 }: PropertyFormProps) {
-  const initialType = property?.type || "apartment";
+  const activeTransactionType =
+    transactionType || property?.transaction_type || "sale";
+  const rentalWorkflow = isRentalTransaction(activeTransactionType);
+  const initialType = property?.type || defaultType || "apartment";
   const [selectedType, setSelectedType] = useState<PropertyType>(initialType);
   const developmentLand = isDevelopmentLand(selectedType);
+  const developmentExchangeWorkflow = developmentLand && !rentalWorkflow;
   const landProperty = isLandPropertyType(selectedType);
-  const statusOptions = developmentLand
-    ? developmentLandStatuses
-    : standardPropertyStatuses;
+  const statusOptions = getPropertyWorkflowStatuses(
+    activeTransactionType,
+    selectedType,
+  );
   const initialStatus =
     property?.status && (statusOptions as readonly string[]).includes(property.status)
       ? property.status
@@ -145,8 +166,17 @@ export function PropertyForm({
   const [plotSize, setPlotSize] = useState(
     String(property?.plot_size_m2 ?? property?.area_m2 ?? ""),
   );
+  const [areaSize, setAreaSize] = useState(String(property?.area_m2 ?? ""));
+  const [cityValue, setCityValue] = useState(property?.city || "");
+  const [neighborhoodValue, setNeighborhoodValue] = useState(
+    property?.neighborhood || "",
+  );
+  const [addressValue, setAddressValue] = useState(property?.address || "");
   const [coefficient, setCoefficient] = useState(
     String(property?.building_coefficient ?? ""),
+  );
+  const [priceOnRequest, setPriceOnRequest] = useState(
+    Boolean(property?.price_on_request),
   );
   const [uploadQueue, setUploadQueue] = useState<PropertyUploadQueueItem[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -172,10 +202,37 @@ export function PropertyForm({
   const grossBuildableArea = useMemo(() => {
     return calculateGrossBuildableArea(toNumber(plotSize), toNumber(coefficient));
   }, [coefficient, plotSize]);
+  const duplicateAssetMatches = useMemo(() => {
+    if (property || assetCandidates.length === 0) {
+      return [];
+    }
+
+    return findDuplicateAssetCandidates(
+      {
+        address: addressValue,
+        area_m2: toNumber(areaSize),
+        city: cityValue,
+        neighborhood: neighborhoodValue,
+        plot_size_m2: toNumber(plotSize),
+        type: selectedType,
+      },
+      assetCandidates,
+    );
+  }, [
+    addressValue,
+    areaSize,
+    assetCandidates,
+    cityValue,
+    neighborhoodValue,
+    plotSize,
+    property,
+    selectedType,
+  ]);
 
   function changeType(type: PropertyType) {
     if (
       type === "development_land" &&
+      !rentalWorkflow &&
       property?.type &&
       property.type !== "development_land" &&
       property.price_eur != null
@@ -192,8 +249,7 @@ export function PropertyForm({
     }
 
     setSelectedType(type);
-    const nextStatuses =
-      type === "development_land" ? developmentLandStatuses : standardPropertyStatuses;
+    const nextStatuses = getPropertyWorkflowStatuses(activeTransactionType, type);
 
     if (!(nextStatuses as readonly string[]).includes(selectedStatus)) {
       setSelectedStatus("draft");
@@ -242,7 +298,7 @@ export function PropertyForm({
     if (rejectedCount > 0) {
       setUploadError(
         isSq
-          ? `${rejectedCount} skedare nuk u shtuan sepse maksimumi eshte ${propertyMediaMaxFiles}.`
+          ? `${rejectedCount} skedarë nuk u shtuan sepse maksimumi është ${propertyMediaMaxFiles}.`
           : `${rejectedCount} files were not added because the maximum is ${propertyMediaMaxFiles}.`,
       );
     }
@@ -278,7 +334,7 @@ export function PropertyForm({
       if (uploadQueue.some((item) => item.status === "validating")) {
         setUploadError(
           isSq
-            ? "Prit derisa validimi i medias te perfundoje."
+            ? "Prit derisa validimi i medias të përfundojë."
             : "Wait until media validation finishes.",
         );
         return;
@@ -288,7 +344,7 @@ export function PropertyForm({
       if (invalidItems.length > 0) {
         setUploadError(
           isSq
-            ? "Hiq ose rregullo skedaret me gabim para se te ruash pronen."
+            ? "Hiq ose rregullo skedarët me gabim para se të ruash pronën."
             : "Remove or fix files with errors before saving the property.",
         );
         return;
@@ -347,7 +403,7 @@ export function PropertyForm({
 
       setUploadQueue([]);
       setSavedMediaProperty(null);
-      window.location.assign(result.redirectPath || "/sales");
+      window.location.assign(result.redirectPath || (rentalWorkflow ? "/rentals" : "/sales"));
     } catch (error) {
       setUploadError(
         error instanceof Error
@@ -437,7 +493,9 @@ export function PropertyForm({
 
       setUploadQueue([]);
       setSavedMediaProperty(null);
-      window.location.assign(savedMediaProperty.redirectPath || "/sales");
+      window.location.assign(
+        savedMediaProperty.redirectPath || (rentalWorkflow ? "/rentals" : "/sales"),
+      );
     } finally {
       mediaUploadLockRef.current = false;
       setIsUploadingMedia(false);
@@ -456,7 +514,8 @@ export function PropertyForm({
       }}
       method={typeof action === "string" ? "post" : undefined}
     >
-      {!developmentLand ? (
+      <input name="transaction_type" type="hidden" value={activeTransactionType} />
+      {!developmentExchangeWorkflow ? (
         <input
           name="visibility"
           type="hidden"
@@ -466,22 +525,30 @@ export function PropertyForm({
 
       <Section
         description={
-          developmentLand
+          developmentExchangeWorkflow
             ? locale === "sq"
               ? "Toka për zhvillim ndiqet si mundësi me përqindje midis pronarit të tokës dhe zhvilluesit. Nuk përdoret çmim fiks."
               : "Development Land is tracked as a percentage-based landowner-to-developer opportunity. No fixed asking price is used."
-            : locale === "sq"
-              ? "Krijo një listim standard shitjeje me çmim, sipërfaqe, dhoma, media dhe status publikimi."
-              : "Create a standard sales listing with price, size, rooms, media, and publishing status."
+            : rentalWorkflow
+              ? locale === "sq"
+                ? "Krijo një listim qiraje me qira, periudhë, disponueshmëri, media dhe status qiraje."
+                : "Create a rental listing with rent, period, availability, media, and rental status."
+              : locale === "sq"
+                ? "Krijo një listim standard shitjeje me çmim, sipërfaqe, dhoma, media dhe status publikimi."
+                : "Create a standard sales listing with price, size, rooms, media, and publishing status."
         }
         title={
-          developmentLand
+          developmentExchangeWorkflow
             ? locale === "sq"
               ? "Detajet bazë të tokës"
               : "Basic Land Details"
-            : locale === "sq"
-              ? "Detajet e pronës"
-              : "Property details"
+            : rentalWorkflow
+              ? locale === "sq"
+                ? "Detajet e pronës me qira"
+                : "Rental property details"
+              : locale === "sq"
+                ? "Detajet e pronës"
+                : "Property details"
         }
       >
         <Field
@@ -493,7 +560,7 @@ export function PropertyForm({
             defaultValue={property?.title}
             name="title"
             placeholder={
-              developmentLand
+              developmentExchangeWorkflow
                 ? isSq
                   ? "Tokë zhvillimi në Kodra Priftit"
                   : "Development land in Kodra Priftit"
@@ -542,6 +609,7 @@ export function PropertyForm({
             className={inputClass}
             defaultValue={property?.city}
             name="city"
+            onChange={(event) => setCityValue(event.target.value)}
             placeholder="Tirana"
             required
           />
@@ -549,7 +617,7 @@ export function PropertyForm({
 
         <Field
           label={
-            developmentLand
+            developmentExchangeWorkflow
               ? locale === "sq"
                 ? "Zona / lagjja"
                 : "Zone / neighborhood"
@@ -562,6 +630,7 @@ export function PropertyForm({
             className={inputClass}
             defaultValue={property?.neighborhood || ""}
             name="neighborhood"
+            onChange={(event) => setNeighborhoodValue(event.target.value)}
             placeholder="Farka, Blloku, Kodra Priftit"
           />
         </Field>
@@ -578,6 +647,7 @@ export function PropertyForm({
             className={inputClass}
             defaultValue={property?.address || ""}
             name="address"
+            onChange={(event) => setAddressValue(event.target.value)}
             placeholder={
               isSq
                 ? "Rruga, kufijtë ose detajet e aksesit në parcelë"
@@ -587,7 +657,7 @@ export function PropertyForm({
         </Field>
       </Section>
 
-      {developmentLand ? (
+      {developmentExchangeWorkflow ? (
         <>
           <Section
             description={
@@ -1006,21 +1076,54 @@ export function PropertyForm({
       ) : (
         <Section
           title={
-            locale === "sq" ? "Informacioni i listimit për shitje" : "Sales Listing Information"
+            rentalWorkflow
+              ? locale === "sq"
+                ? "Informacioni i listimit me qira"
+                : "Rental Listing Information"
+              : locale === "sq"
+                ? "Informacioni i listimit për shitje"
+                : "Sales Listing Information"
           }
         >
-          <Field label={locale === "sq" ? "Çmimi EUR" : "Price EUR"}>
+          <Field
+            label={
+              rentalWorkflow
+                ? locale === "sq"
+                  ? "Qiraja"
+                  : "Rent"
+                : locale === "sq"
+                  ? "Çmimi i shitjes"
+                  : "Sale price"
+            }
+          >
             <input
               className={inputClass}
               defaultValue={numberValue(property?.price_eur)}
               min="0"
               name="price_eur"
-              placeholder="245000"
-              required
+              placeholder={rentalWorkflow ? "850" : "245000"}
+              required={!priceOnRequest}
               step="100"
               type="number"
             />
           </Field>
+
+          <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-700">
+            <input
+              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              checked={priceOnRequest}
+              name="price_on_request"
+              onChange={(event) => setPriceOnRequest(event.target.checked)}
+              type="checkbox"
+            />
+            {rentalWorkflow
+              ? locale === "sq"
+                ? "Qiraja sipas kërkesës"
+                : "Rent on request"
+              : locale === "sq"
+                ? "Çmimi sipas kërkesës"
+                : "Price on request"}
+          </label>
 
           <Field label={locale === "sq" ? "Sipërfaqe m2" : "Area m2"}>
             <input
@@ -1028,11 +1131,117 @@ export function PropertyForm({
               defaultValue={numberValue(property?.area_m2)}
               min="0"
               name="area_m2"
+              onChange={(event) => setAreaSize(event.target.value)}
               placeholder="118"
               step="1"
               type="number"
             />
           </Field>
+
+          {rentalWorkflow ? (
+            <>
+              <Field label={locale === "sq" ? "Periudha e qirasë" : "Rent period"}>
+                <select
+                  className={inputClass}
+                  defaultValue={property?.rent_period || "monthly"}
+                  name="rent_period"
+                  required
+                >
+                  {rentPeriods.map((period) => (
+                    <option key={period} value={period}>
+                      {formatRentPeriodLabel(period, locale)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label={locale === "sq" ? "Depozita EUR" : "Deposit EUR"}>
+                <input
+                  className={inputClass}
+                  defaultValue={numberValue(property?.deposit_eur)}
+                  min="0"
+                  name="deposit_eur"
+                  placeholder="850"
+                  step="100"
+                  type="number"
+                />
+              </Field>
+
+              <Field label={locale === "sq" ? "E disponueshme nga" : "Available from"}>
+                <input
+                  className={inputClass}
+                  defaultValue={property?.available_from || ""}
+                  name="available_from"
+                  type="date"
+                />
+              </Field>
+
+              <Field label={locale === "sq" ? "Mobiluar / Pamobiluar" : "Furnished state"}>
+                <select
+                  className={inputClass}
+                  defaultValue={property?.furnished_state || "unknown"}
+                  name="furnished_state"
+                >
+                  <option value="unknown">{locale === "sq" ? "E pacaktuar" : "Unknown"}</option>
+                  <option value="furnished">{locale === "sq" ? "Mobiluar" : "Furnished"}</option>
+                  <option value="partially_furnished">
+                    {locale === "sq" ? "Pjesërisht mobiluar" : "Partially furnished"}
+                  </option>
+                  <option value="unfurnished">{locale === "sq" ? "Pamobiluar" : "Unfurnished"}</option>
+                </select>
+              </Field>
+
+              <Field label={locale === "sq" ? "Kohëzgjatja minimale (muaj)" : "Minimum lease (months)"}>
+                <input
+                  className={inputClass}
+                  defaultValue={numberValue(property?.minimum_lease_months)}
+                  min="0"
+                  name="minimum_lease_months"
+                  type="number"
+                />
+              </Field>
+
+              <Field label={locale === "sq" ? "Kohëzgjatja maksimale (muaj)" : "Maximum lease (months)"}>
+                <input
+                  className={inputClass}
+                  defaultValue={numberValue(property?.maximum_lease_months)}
+                  min="0"
+                  name="maximum_lease_months"
+                  type="number"
+                />
+              </Field>
+
+              <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-700">
+                <input
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  defaultChecked={Boolean(property?.utilities_included)}
+                  name="utilities_included"
+                  type="checkbox"
+                />
+                {locale === "sq" ? "Shpenzime të përfshira" : "Utilities included"}
+              </label>
+
+              <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-700">
+                <input
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  defaultChecked={Boolean(property?.sublease_allowed)}
+                  name="sublease_allowed"
+                  type="checkbox"
+                />
+                {locale === "sq" ? "Lejohet nënqira?" : "Sublease allowed?"}
+              </label>
+
+              <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-700">
+                <input
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  defaultChecked={Boolean(property?.business_use_allowed)}
+                  name="business_use_allowed"
+                  type="checkbox"
+                />
+                {locale === "sq" ? "Lejohet biznes?" : "Business use allowed?"}
+              </label>
+            </>
+          ) : null}
 
           {!landProperty ? (
             <>
@@ -1071,9 +1280,131 @@ export function PropertyForm({
         </Section>
       )}
 
+      {duplicateAssetMatches.length > 0 ? (
+        <Section
+          description={
+            isSq
+              ? "Zgjidh njÃ« aset ekzistues vetÃ«m nÃ«se Ã«shtÃ« e njÃ«jta pronÃ« fizike. Listimi i ri do tÃ« ruajÃ« ciklin e vet tÃ« shitjes ose qirasÃ«."
+              : "Choose an existing asset only when this is the same physical property. The new listing keeps its own sale or rental lifecycle."
+          }
+          title={isSq ? "Aset i mundshÃ«m ekzistues" : "Possible existing asset"}
+        >
+          <div className="md:col-span-2 grid gap-3">
+            <label className="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">
+              <input
+                className="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                defaultChecked
+                name="link_asset_property_id"
+                type="radio"
+                value=""
+              />
+              <span>
+                {isSq
+                  ? "Krijo si aset i ri fizik"
+                  : "Create as a new physical asset"}
+              </span>
+            </label>
+
+            {duplicateAssetMatches.map(({ candidate, score }) => {
+              const sameWorkflow = isSameTransactionWorkflow(
+                activeTransactionType,
+                candidate.transaction_type,
+              );
+              const candidateWorkflowLabel = formatStatusLabel(candidate.status, locale);
+
+              return (
+                <div
+                  className={
+                    sameWorkflow
+                      ? "rounded-xl border border-amber-200 bg-amber-50 p-3"
+                      : "rounded-xl border border-emerald-200 bg-white p-3"
+                  }
+                  key={candidate.id}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <label className="flex min-w-0 flex-1 items-start gap-3 text-sm">
+                      {!sameWorkflow ? (
+                        <input
+                          className="mt-1 h-4 w-4 shrink-0 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                          name="link_asset_property_id"
+                          type="radio"
+                          value={candidate.id}
+                        />
+                      ) : (
+                        <span className="mt-0.5 inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-amber-800">
+                          {isSq ? "Duplikat i mundshëm" : "Possible duplicate"}
+                        </span>
+                      )}
+                      <span className="min-w-0">
+                        <span className="block break-words font-semibold text-slate-950">
+                          {candidate.title}
+                        </span>
+                        <span className="mt-1 block text-xs leading-5 text-slate-500">
+                          {formatPropertyType(candidate.type, locale)} ·{" "}
+                          {formatStatusLabel(candidate.status, locale)} ·{" "}
+                          {candidate.neighborhood
+                            ? `${candidate.neighborhood}, ${candidate.city}`
+                            : candidate.city}
+                        </span>
+                        <span
+                          className={
+                            sameWorkflow
+                              ? "mt-1 block text-xs font-semibold text-amber-800"
+                              : "mt-1 block text-xs text-emerald-700"
+                          }
+                        >
+                          {sameWorkflow
+                            ? isSq
+                              ? "Ky duket si listim i tÃ« njÃ«jtit proces. Hape ekzistuesin nÃ« vend qÃ« ta dublosh."
+                              : "This appears to be the same workflow. Open the existing listing instead of duplicating it."
+                            : isSq
+                              ? "Lidhe me kÃ«tÃ« aset dhe krijo listim tÃ« ndarÃ«."
+                              : "Link to this asset and create a separate listing."}
+                        </span>
+                      </span>
+                    </label>
+                    {sameWorkflow ? (
+                      <div className="rounded-lg border border-amber-200 bg-white/80 px-3 py-2 text-sm font-semibold leading-6 text-amber-900 sm:hidden">
+                        {isSq
+                          ? "Hape listimin ekzistues. Krijo aset të ri vetëm nëse është pronë fizike tjetër."
+                          : "Open the existing listing. Create a new asset only if this is a different physical property."}
+                      </div>
+                    ) : null}
+                    <a
+                      aria-label={
+                        sameWorkflow
+                          ? `${isSq ? "Hap listimin ekzistues" : "Open existing listing"} ${candidate.title} ${candidateWorkflowLabel}`
+                          : `${isSq ? "Hap" : "Open"} ${candidate.title} ${candidateWorkflowLabel}`
+                      }
+                      className={
+                        sameWorkflow
+                          ? "crm-button crm-button-accent min-h-10 w-full px-3 text-xs sm:w-auto"
+                          : "crm-button crm-button-secondary h-9 min-h-9 w-full px-3 text-xs sm:w-auto"
+                      }
+                      href={`/properties/${candidate.id}/edit`}
+                    >
+                      {sameWorkflow
+                        ? isSq
+                          ? "Hap listimin ekzistues"
+                          : "Open existing listing"
+                        : isSq
+                          ? "Hap"
+                          : "Open"}
+                    </a>
+                  </div>
+                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                    {isSq ? "PÃ«rputhje" : "Match"} {score}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      ) : null}
+
       <Section
         title={
-          developmentLand
+          developmentExchangeWorkflow
             ? locale === "sq"
               ? "Dokumente / Media / Harta"
               : "Documents / Media / Maps"
@@ -1084,7 +1415,7 @@ export function PropertyForm({
       >
         <Field
           label={
-            developmentLand
+            developmentExchangeWorkflow
               ? locale === "sq"
                 ? "Media dhe dokumente të tokës"
                 : "Land media and documents"
@@ -1108,7 +1439,7 @@ export function PropertyForm({
             id="property-media-help"
           >
             {isSq
-              ? `Ngarko deri ne ${propertyMediaMaxFiles} skedare njekohesisht. Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri ne ${propertyVideoMaxDurationSeconds} sekonda dhe ${propertyVideoMaxSizeMb} MB. Dokumente: PDF.`
+              ? `Ngarko deri në ${propertyMediaMaxFiles} skedarë njëkohësisht. Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri në ${propertyVideoMaxDurationSeconds} sekonda dhe ${propertyVideoMaxSizeMb} MB. Dokumente: PDF.`
               : propertyMediaHelpText}
           </span>
           {uploadError ? (
@@ -1148,7 +1479,7 @@ export function PropertyForm({
                 </p>
                 <p className="text-xs text-slate-500">
                   {isSq
-                    ? "Video: maksimumi 1 minute dhe 25 MB."
+                    ? "Video: maksimumi 1 minutë dhe 25 MB."
                     : "Video: maximum 1 minute and 25 MB."}
                 </p>
               </div>
@@ -1228,7 +1559,7 @@ export function PropertyForm({
             defaultValue={property?.description || ""}
             name="description"
             placeholder={
-              developmentLand
+              developmentExchangeWorkflow
                 ? locale === "sq"
                   ? "Përmbledhje e mundësisë së tokës, shënime pronësie, kontekst planifikimi dhe hapi i radhës."
                   : "Land opportunity summary, ownership notes, planning context, and next action."

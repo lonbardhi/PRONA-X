@@ -9,15 +9,18 @@ type PropertyIntakePanelProps = {
   children: ReactNode;
   defaultOpen?: boolean;
   locale?: Locale;
+  mode?: "sales" | "rentals";
 };
 
 export function PropertyIntakePanel({
   children,
   defaultOpen = false,
   locale = defaultLocale,
+  mode = "sales",
 }: PropertyIntakePanelProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const contentId = useId();
+  const isRental = mode === "rentals";
 
   useEffect(() => {
     function openFromHash() {
@@ -66,10 +69,22 @@ export function PropertyIntakePanel({
           </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700">
-              {locale === "sq" ? "Regjistrim shitjeje" : "Sales intake"}
+              {isRental
+                ? locale === "sq"
+                  ? "Regjistrim qiraje"
+                  : "Rental intake"
+                : locale === "sq"
+                  ? "Regjistrim shitjeje"
+                  : "Sales intake"}
             </p>
             <h2 className="mt-1 text-xl font-semibold text-slate-950">
-              {locale === "sq" ? "Shto pronë" : "Add property"}
+              {isRental
+                ? locale === "sq"
+                  ? "Shto pronë me qira"
+                  : "Add rental property"
+                : locale === "sq"
+                  ? "Shto pronë për shitje"
+                  : "Add property for sale"}
             </h2>
           </div>
         </div>
@@ -100,9 +115,13 @@ export function PropertyIntakePanel({
         <div className="overflow-hidden">
           <div className="border-t border-slate-200 p-4 sm:p-5">
             <div className="mb-5 max-w-3xl text-sm leading-6 text-slate-500">
-              {locale === "sq"
-                ? "Regjistrimet e reja futen në të njëjtin inventar të kërkueshëm dhe mund të filtrohen, shpërndahen, përditësohen ose arkivohen ndërsa portofoli rritet."
-                : "New records enter the same searchable inventory and can be filtered, shared, updated, or archived as the portfolio grows."}
+              {isRental
+                ? locale === "sq"
+                  ? "Listimet me qira ruhen në inventarin e qirave dhe nuk përzihen me shitjet."
+                  : "Rental listings enter the rental inventory and stay separate from sales."
+                : locale === "sq"
+                  ? "Listimet për shitje ruhen në inventarin e shitjeve dhe nuk përzihen me qiratë."
+                  : "Sale listings enter the sales inventory and stay separate from rentals."}
             </div>
             {children}
           </div>

@@ -42,9 +42,19 @@ export function QuickActionsGrid({ locale, role }: QuickActionsGridProps) {
           label: locale === "sq" ? "Lead i ri" : "Add lead",
         },
         {
+          href: "/requests#add-request",
+          icon: ListChecks,
+          label: locale === "sq" ? "Kërkesë e re" : "Add request",
+        },
+        {
           href: "/sales#add-property",
           icon: Plus,
-          label: locale === "sq" ? "Prone e re" : "Add property",
+          label: locale === "sq" ? "Shto shitje" : "Add sale",
+        },
+        {
+          href: "/rentals#add-property",
+          icon: Plus,
+          label: locale === "sq" ? "Shto qira" : "Add rental",
         },
         {
           href: "/messages",
@@ -77,6 +87,11 @@ export function QuickActionsGrid({ locale, role }: QuickActionsGridProps) {
           href: "/rentals",
           icon: Building2,
           label: locale === "sq" ? "Qira" : "Rentals",
+        },
+        {
+          href: "/requests",
+          icon: ListChecks,
+          label: locale === "sq" ? "Kërkesa" : "Requests",
         },
         {
           href: "/sales?type=development_land",

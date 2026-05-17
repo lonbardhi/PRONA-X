@@ -37,6 +37,7 @@ import {
   formatConfidentialityLevel,
   formatBytes,
   formatContractType,
+  formatContractTransactionMismatch,
   formatContractStatus,
   formatDate,
   formatDocumentCategory,
@@ -51,6 +52,7 @@ import {
 import { hasSupabaseEnv } from "@/lib/env";
 import type { Locale } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
+import type { PropertyTransactionType } from "@/lib/properties";
 import { requireApprovedUser } from "@/lib/supabase/server";
 
 type DocumentsPageProps = {
@@ -73,6 +75,7 @@ type PropertyOption = {
   city: string | null;
   neighborhood: string | null;
   plot_size_m2?: number | null;
+  transaction_type: PropertyTransactionType | null;
 };
 
 type DocumentRow = {
@@ -426,7 +429,34 @@ function getPropertyLabel(property: PropertyOption | undefined, locale: Locale =
     return locale === "sq" ? "Pa pronë" : "No property";
   }
 
-  return [property.title, property.city, property.neighborhood].filter(Boolean).join(" - ");
+  const workflow = getPropertyWorkflowLabel(property, locale);
+  const title = [workflow, property.title].filter(Boolean).join(" / ");
+
+  return [title, property.city, property.neighborhood].filter(Boolean).join(" - ");
+}
+
+function getPropertyWorkflowLabel(property: PropertyOption | undefined, locale: Locale = "sq") {
+  if (!property?.transaction_type) {
+    return locale === "sq" ? "Pa modul" : "No module";
+  }
+
+  if (property.transaction_type === "rent_to_own") {
+    return locale === "sq" ? "Qira + blerje" : "Rent + buy";
+  }
+
+  if (property.transaction_type === "rent") {
+    return locale === "sq" ? "Qira" : "Rental";
+  }
+
+  return locale === "sq" ? "Shitje" : "Sale";
+}
+
+function getPropertyWorkflowTone(property: PropertyOption | undefined) {
+  if (property?.transaction_type === "rent" || property?.transaction_type === "rent_to_own") {
+    return "border-sky-200 bg-sky-50 text-sky-700";
+  }
+
+  return "border-emerald-200 bg-emerald-50 text-emerald-700";
 }
 
 function formatMoney(value: number | null | undefined, locale: Locale) {
@@ -567,7 +597,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
         .limit(80),
       supabase
         .from("properties")
-        .select("id,title,type,status,city,neighborhood,plot_size_m2")
+        .select("id,title,type,status,city,neighborhood,plot_size_m2,transaction_type")
         .order("created_at", { ascending: false })
         .limit(250),
       supabase
@@ -885,6 +915,13 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                     ? `${formatEntityType(documentLinks[0].entity_type, locale)}: ${documentLinks[0].entity_id}`
                                     : (copy.noLink as string)}
                               </p>
+                              {linkedProperty ? (
+                                <span
+                                  className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getPropertyWorkflowTone(linkedProperty)}`}
+                                >
+                                  {getPropertyWorkflowLabel(linkedProperty, locale)}
+                                </span>
+                              ) : null}
                               <div className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
                                 <span>{copy.version as string}: {version?.version_number || "-"}</span>
                                 <span>{copy.file as string}: {version?.original_file_name || "-"}</span>
@@ -999,6 +1036,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                   <div className="grid gap-3 md:grid-cols-2">
                     {visibleOffers.map((offer) => {
                       const latestVersion = offerVersionsByOfferId[offer.id]?.[0];
+                      const linkedProperty = propertyById.get(offer.property_id);
                       return (
                         <article className="crm-card-interactive p-4" key={offer.id}>
                           <div className="flex flex-wrap items-center gap-2">
@@ -1006,10 +1044,15 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                             <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                               v{latestVersion?.version_number || 1}
                             </span>
+                            <span
+                              className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${getPropertyWorkflowTone(linkedProperty)}`}
+                            >
+                              {getPropertyWorkflowLabel(linkedProperty, locale)}
+                            </span>
                           </div>
                           <h3 className="mt-3 text-base font-semibold text-slate-950">{offer.title}</h3>
                           <p className="mt-1 text-sm text-slate-500">
-                            {getPropertyLabel(propertyById.get(offer.property_id), locale)}
+                            {getPropertyLabel(linkedProperty, locale)}
                           </p>
                           <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
                             <div className="rounded-lg bg-slate-50 p-3">
@@ -1090,6 +1133,14 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                   <div className="grid gap-3">
                     {visibleContracts.map((contract) => {
                       const contractParties = partiesByContractId[contract.id] || [];
+                      const linkedProperty = contract.property_id
+                        ? propertyById.get(contract.property_id)
+                        : undefined;
+                      const transactionMismatch = formatContractTransactionMismatch(
+                        contract.contract_type,
+                        linkedProperty?.transaction_type,
+                        locale,
+                      );
                       return (
                         <article className="crm-card-interactive p-4" key={contract.id}>
                           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -1102,16 +1153,28 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
                                 <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                                   {formatContractType(contract.contract_type, locale)}
                                 </span>
+                                {linkedProperty ? (
+                                  <span
+                                    className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${getPropertyWorkflowTone(linkedProperty)}`}
+                                  >
+                                    {getPropertyWorkflowLabel(linkedProperty, locale)}
+                                  </span>
+                                ) : null}
                               </div>
                               <h3 className="mt-3 text-base font-semibold text-slate-950">
                                 {contract.title}
                               </h3>
                               <p className="mt-1 text-sm text-slate-500">
                                 {contract.contract_number} ·{" "}
-                                {contract.property_id
-                                  ? getPropertyLabel(propertyById.get(contract.property_id), locale)
+                                {linkedProperty
+                                  ? getPropertyLabel(linkedProperty, locale)
                                   : (copy.noProperty as string)}
                               </p>
+                              {transactionMismatch ? (
+                                <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                                  {transactionMismatch}
+                                </p>
+                              ) : null}
                               <p className="mt-2 text-sm text-slate-600">
                                 {contractParties
                                   .map((party) => party.display_name)

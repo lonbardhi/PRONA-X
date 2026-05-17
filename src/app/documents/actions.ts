@@ -11,6 +11,7 @@ import {
   createContractNumber,
   documentMetadataSchema,
   documentStorageBucket,
+  formatContractTransactionMismatch,
   formatContractType,
   getDocumentMimeType,
   getFileExtension,
@@ -873,7 +874,7 @@ export async function createContractAction(formData: FormData) {
   if (input.property_id) {
     const { data: property } = await supabase
       .from("properties")
-      .select("id,status")
+      .select("id,status,transaction_type")
       .eq("id", input.property_id)
       .single();
 
@@ -883,6 +884,16 @@ export async function createContractAction(formData: FormData) {
 
     if (input.contract_type === "buying_contract" && property.status === "sold") {
       redirectWithMessage("/documents?tab=contracts", actionMessage(locale, "soldPropertyContract"));
+    }
+
+    const mismatchMessage = formatContractTransactionMismatch(
+      input.contract_type,
+      property.transaction_type,
+      locale,
+    );
+
+    if (mismatchMessage) {
+      redirectWithMessage("/documents?tab=contracts", mismatchMessage);
     }
   }
 

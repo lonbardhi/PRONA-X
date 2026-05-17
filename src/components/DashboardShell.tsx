@@ -1,10 +1,12 @@
 import Link from "next/link";
 import {
   Bell,
+  ClipboardList,
   Landmark,
 } from "lucide-react";
 
 import { signOutAction } from "@/app/login/actions";
+import { AddListingMenu } from "@/components/AddListingMenu";
 import { AddPropertyIcon } from "@/components/AddPropertyIcon";
 import { BrandLockup } from "@/components/BrandLogo";
 import { CalendarIcon } from "@/components/CalendarIcon";
@@ -52,12 +54,14 @@ export async function DashboardShell({
     : 0;
   const isViewer = userRole === "viewer";
   const isSupportOnly = userRole === "support";
+  const showMobileQuickActions = !isViewer && !isSupportOnly;
   const navItems = isSupportOnly
     ? [{ label: t(locale, "nav.support"), href: "/support", icon: SupportIcon }]
     : isViewer
     ? [
         { label: t(locale, "nav.sales"), href: "/sales", icon: SalesIcon },
-        { label: t(locale, "nav.rentals"), href: "/sales?status=rented", icon: RentalsIcon },
+        { label: t(locale, "nav.rentals"), href: "/rentals", icon: RentalsIcon },
+        { label: t(locale, "nav.requests"), href: "/requests", icon: ClipboardList },
         { label: t(locale, "nav.land"), href: "/sales?type=development_land", icon: Landmark },
         { label: t(locale, "nav.support"), href: "/support", icon: SupportIcon },
       ]
@@ -65,11 +69,11 @@ export async function DashboardShell({
         { label: t(locale, "nav.dashboard"), href: "/dashboard", icon: DashboardIcon },
         { label: t(locale, "nav.sales"), href: "/sales", icon: SalesIcon },
         { label: t(locale, "nav.rentals"), href: "/rentals", icon: RentalsIcon },
+        { label: t(locale, "nav.requests"), href: "/requests", icon: ClipboardList },
         { label: t(locale, "nav.calendar"), href: "/appointments", icon: CalendarIcon },
         { label: t(locale, "nav.documents"), href: "/documents", icon: DocumentIcon },
         { label: t(locale, "nav.messages"), href: "/messages", icon: null },
         { label: t(locale, "nav.sellerLeads"), href: "/seller-leads", icon: LeadsIcon },
-        { label: t(locale, "nav.addProperty"), href: "/sales#add-property", icon: AddPropertyIcon },
         { label: t(locale, "nav.support"), href: "/support", icon: SupportIcon },
         ...(userRole === "admin"
           ? [{ label: t(locale, "nav.adminUsers"), href: "/admin/users", icon: UsersIcon }]
@@ -114,6 +118,11 @@ export async function DashboardShell({
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
+            {!isViewer && !isSupportOnly ? (
+              <div className="hidden md:block">
+                <AddListingMenu locale={locale} />
+              </div>
+            ) : null}
             <Link
               aria-label={t(locale, "notifications")}
               className="crm-icon-button hidden md:flex"
@@ -144,6 +153,37 @@ export async function DashboardShell({
         </div>
       </header>
       <SessionTimeout />
+      {showMobileQuickActions ? (
+        <nav
+          aria-label={locale === "sq" ? "Veprime te shpejta" : "Quick actions"}
+          className="crm-scroll-area flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden"
+        >
+          <Link
+            className="crm-button crm-button-primary h-9 min-h-9 shrink-0 px-3 text-xs"
+            href="/sales#add-property"
+            prefetch={false}
+          >
+            <AddPropertyIcon className="h-4 w-4" />
+            {locale === "sq" ? "Shto shitje" : "Add sale"}
+          </Link>
+          <Link
+            className="crm-button crm-button-success h-9 min-h-9 shrink-0 px-3 text-xs"
+            href="/rentals#add-property"
+            prefetch={false}
+          >
+            <RentalsIcon className="h-4 w-4" />
+            {locale === "sq" ? "Shto qira" : "Add rental"}
+          </Link>
+          <Link
+            className="crm-button crm-button-secondary h-9 min-h-9 shrink-0 px-3 text-xs"
+            href="/requests#add-request"
+            prefetch={false}
+          >
+            <ClipboardList className="h-4 w-4" />
+            {locale === "sq" ? "Kërkesë" : "Request"}
+          </Link>
+        </nav>
+      ) : null}
       {children}
     </main>
   );

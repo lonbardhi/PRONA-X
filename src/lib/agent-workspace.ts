@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
 import type { AppRole } from "@/lib/supabase/server";
+import type { PropertyTransactionType } from "./properties.ts";
 
 export const availabilityStatuses = [
   "available",
@@ -119,6 +120,7 @@ export type TodayAgendaItem = {
     id: string;
     neighborhood: string | null;
     title: string;
+    transaction_type: PropertyTransactionType | null;
   } | null;
   starts_at: string;
   status: string;

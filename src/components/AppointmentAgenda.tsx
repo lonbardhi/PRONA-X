@@ -18,6 +18,8 @@ import {
   formatAppointmentDateTime,
   formatAppointmentTimeRange,
   getAppointmentStatusLabels,
+  getAppointmentWorkflowBadge,
+  getAppointmentWorkflowType,
   getAppointmentLocation,
   getAppointmentTypeLabels,
   type AppointmentRecord,
@@ -40,6 +42,12 @@ const statusTone: Record<AppointmentRecord["status"], string> = {
   cancelled: "bg-rose-50 text-rose-700",
   no_show: "bg-amber-50 text-amber-700",
 };
+
+function getWorkflowTone(appointment: AppointmentRecord) {
+  return getAppointmentWorkflowType(appointment.property) === "rentals"
+    ? "border-sky-200 bg-sky-50 text-sky-700"
+    : "border-emerald-200 bg-emerald-50 text-emerald-700";
+}
 
 function AppointmentStatusSelect({
   appointment,
@@ -155,12 +163,21 @@ export function AppointmentAgenda({
             key={appointment.id}
           >
             <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-              <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
-                <Clock3 className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">
-                  {typeLabels[appointment.appointment_type]}
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                  <Clock3 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">
+                    {typeLabels[appointment.appointment_type]}
+                  </span>
                 </span>
-              </span>
+                {showProperty && appointment.property ? (
+                  <span
+                    className={`inline-flex rounded-full border px-2 py-1 text-xs font-semibold ${getWorkflowTone(appointment)}`}
+                  >
+                    {getAppointmentWorkflowBadge(appointment.property, locale)}
+                  </span>
+                ) : null}
+              </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 <MeetingDiscussionButton appointment={appointment} compact locale={locale} />
                 <AppointmentStatusSelect
@@ -226,6 +243,13 @@ export function AppointmentAgenda({
                   <Clock3 className="h-3.5 w-3.5" />
                   {typeLabels[appointment.appointment_type]}
                 </span>
+                {showProperty && appointment.property ? (
+                  <span
+                    className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getWorkflowTone(appointment)}`}
+                  >
+                    {getAppointmentWorkflowBadge(appointment.property, locale)}
+                  </span>
+                ) : null}
                 <span
                   className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone[appointment.status]}`}
                 >

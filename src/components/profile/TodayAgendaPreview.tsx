@@ -5,6 +5,10 @@ import { CheckCircle2, ExternalLink, Phone, MapPin } from "lucide-react";
 
 import { updateAppointmentStatusAction } from "@/app/appointments/actions";
 import {
+  getAppointmentWorkflowBadge,
+  getAppointmentWorkflowType,
+} from "@/lib/appointments";
+import {
   formatWorkspaceTime,
   type TodayAgendaItem,
   type UserProfile,
@@ -20,6 +24,12 @@ type TodayAgendaPreviewProps = {
 
 function canManageAppointments(role: string) {
   return ["admin", "manager", "agent"].includes(role);
+}
+
+function getWorkflowTone(item: TodayAgendaItem) {
+  return getAppointmentWorkflowType(item.property) === "rentals"
+    ? "bg-sky-50 text-sky-700"
+    : "bg-emerald-50 text-emerald-700";
 }
 
 export function TodayAgendaPreview({
@@ -72,6 +82,11 @@ export function TodayAgendaPreview({
               >
                 <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{item.property.title}</span>
+                <span
+                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${getWorkflowTone(item)}`}
+                >
+                  {getAppointmentWorkflowBadge(item.property, locale)}
+                </span>
               </Link>
             ) : null}
             <span className="inline-flex min-w-0 items-center gap-1.5">

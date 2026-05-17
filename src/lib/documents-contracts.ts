@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { getIntlLocale, type Locale } from "@/lib/i18n";
+import { getIntlLocale, type Locale } from "./i18n.ts";
+import type { PropertyTransactionType } from "./properties.ts";
 
 export const documentStorageBucket = "crm-documents";
 export const documentMaxBytes = 50 * 1024 * 1024;
@@ -606,6 +607,59 @@ export function formatContractType(type: string, locale: Locale = "sq") {
   };
 
   return labels[type]?.[locale] || type;
+}
+
+export function getContractTransactionScope(contractType: ContractType | string) {
+  if (["rent_contract", "tenant_brokerage_contract"].includes(contractType)) {
+    return "rental";
+  }
+
+  if (["buying_contract", "buyer_brokerage_contract"].includes(contractType)) {
+    return "sale";
+  }
+
+  return "neutral";
+}
+
+export function isContractCompatibleWithTransaction(
+  contractType: ContractType | string,
+  transactionType: PropertyTransactionType | null | undefined,
+) {
+  const scope = getContractTransactionScope(contractType);
+
+  if (!transactionType || scope === "neutral") {
+    return true;
+  }
+
+  if (scope === "rental") {
+    return transactionType === "rent" || transactionType === "rent_to_own";
+  }
+
+  return transactionType === "sale";
+}
+
+export function formatContractTransactionMismatch(
+  contractType: ContractType | string,
+  transactionType: PropertyTransactionType | null | undefined,
+  locale: Locale = "sq",
+) {
+  if (isContractCompatibleWithTransaction(contractType, transactionType)) {
+    return null;
+  }
+
+  const contractLabel = formatContractType(contractType, locale);
+  const listingLabel =
+    transactionType === "rent" || transactionType === "rent_to_own"
+      ? locale === "sq"
+        ? "listim me qira"
+        : "rental listing"
+      : locale === "sq"
+        ? "listim per shitje"
+        : "sale listing";
+
+  return locale === "sq"
+    ? `${contractLabel} nuk perputhet me kete ${listingLabel}. Zgjidh kontraten e duhur ose krijo listim te lidhur.`
+    : `${contractLabel} does not match this ${listingLabel}. Choose the correct contract or create a linked listing.`;
 }
 
 export function formatDate(value: string | null | undefined, locale: Locale) {

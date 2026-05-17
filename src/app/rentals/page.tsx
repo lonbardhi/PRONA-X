@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import { PropertyModulePage } from "@/app/properties/page";
+import type { PropertySearchParams } from "@/lib/property-filters";
 
-export default function RentalsRedirectPage() {
-  redirect("/sales?status=rented");
+type RentalsPageProps = {
+  searchParams: Promise<PropertySearchParams>;
+};
+
+export default function RentalsPage(props: RentalsPageProps) {
+  return <PropertyModulePage {...props} module="rentals" />;
 }

@@ -21,10 +21,12 @@ import { PropertyQuickViewDialog } from "@/components/PropertyQuickViewDialog";
 import type { PropertyRecord } from "@/lib/properties";
 import {
   formatDevelopmentAgreement,
-  formatEuro,
+  formatPropertyPrice,
   formatPropertyType,
   formatStatusLabel,
+  formatTransactionBadge,
   isDevelopmentLand,
+  isRentalTransaction,
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 import { SharePropertyButton } from "@/components/SharePropertyButton";
@@ -39,6 +41,8 @@ type PropertyGridProps = {
 function getStatusTone(status: PropertyRecord["status"]) {
   if (
     status === "published" ||
+    status === "available" ||
+    status === "contract_active" ||
     status === "ready_for_developers" ||
     status === "documents_verified" ||
     status === "agreement_signed" ||
@@ -49,6 +53,8 @@ function getStatusTone(status: PropertyRecord["status"]) {
 
   if (
     status === "reserved" ||
+    status === "viewing" ||
+    status === "contract_expiring" ||
     status === "offer_received" ||
     status === "negotiation" ||
     status === "agreement_in_principle" ||
@@ -116,6 +122,7 @@ export function PropertyGrid({
         {properties.map((property, index) => {
           const cover = pickPrimaryPropertyMedia(property.property_media || []);
           const developmentLand = isDevelopmentLand(property);
+          const rentalListing = isRentalTransaction(property.transaction_type);
 
           function openProperty() {
             setSelectedProperty(property);
@@ -136,7 +143,7 @@ export function PropertyGrid({
 
           return (
             <article
-              aria-label={`${locale === "sq" ? "Hap detajet për" : "Open details for"} ${property.title}`}
+              aria-label={`${locale === "sq" ? "Hap detajet per" : "Open details for"} ${formatTransactionBadge(property.transaction_type, locale)} ${property.title}`}
               className="crm-card-interactive min-w-0 cursor-pointer overflow-hidden"
               key={property.id}
               onClick={(event) => {
@@ -169,6 +176,9 @@ export function PropertyGrid({
               <div className="absolute right-3 top-3">
                 <FavoritePropertyButton propertyId={property.id} title={property.title} />
               </div>
+              <div className="absolute bottom-3 left-3 rounded-full bg-slate-950/90 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+                {formatTransactionBadge(property.transaction_type, locale)}
+              </div>
             </div>
 
             <div className="grid min-w-0 gap-4 p-4">
@@ -199,13 +209,24 @@ export function PropertyGrid({
                 <p className="min-w-0 break-words text-lg font-semibold text-slate-950">
                   {developmentLand
                     ? formatDevelopmentAgreement(property, locale)
-                    : formatEuro(property.price_eur || 0, locale)}
+                    : formatPropertyPrice(property, locale)}
                 </p>
                 <div className="flex shrink-0 items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
                   <Images className="h-3.5 w-3.5 text-slate-400" />
                   {property.property_media?.length || 0}
                 </div>
               </div>
+
+              {rentalListing && property.available_from ? (
+                <div className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                  {locale === "sq" ? "E disponueshme nga" : "Available from"}{" "}
+                  {new Intl.DateTimeFormat(locale === "sq" ? "sq-AL" : "en-US", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  }).format(new Date(property.available_from))}
+                </div>
+              ) : null}
 
               {developmentLand ? (
                 <div className="grid grid-cols-3 gap-2 text-xs text-slate-600 max-[380px]:grid-cols-1">

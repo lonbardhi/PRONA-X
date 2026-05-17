@@ -131,6 +131,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
     { href: "/appointments", icon: CalendarDays, label: locale === "sq" ? "Takimet e mia" : "My Meetings" },
     { href: "/messages", icon: MessageSquareText, label: locale === "sq" ? "Mesazhet" : "Messages" },
     { href: "/seller-leads", icon: BriefcaseBusiness, label: locale === "sq" ? "Lead-et e mia" : "My Leads" },
+    { href: "/requests", icon: ListChecks, label: locale === "sq" ? "Kërkesat e mia" : "My Requests" },
     { href: "/sales", icon: BriefcaseBusiness, label: locale === "sq" ? "Pronat e mia" : "My Properties" },
     { href: "/profile?section=tasks", icon: ListChecks, label: locale === "sq" ? "Detyrat e mia" : "My Tasks" },
     { href: "/profile?section=commissions", icon: BarChart3, label: locale === "sq" ? "Komisionet" : "My Commissions" },
@@ -139,6 +140,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
   const viewerLinks = [
     { href: "/sales", icon: BriefcaseBusiness, label: locale === "sq" ? "Shitje" : "Sales" },
     { href: "/rentals", icon: BriefcaseBusiness, label: locale === "sq" ? "Qira" : "Rentals" },
+    { href: "/requests", icon: ListChecks, label: locale === "sq" ? "Kërkesa" : "Requests" },
     { href: "/sales?type=development_land", icon: BriefcaseBusiness, label: locale === "sq" ? "Toke" : "Land" },
   ];
   const supportLinks = [

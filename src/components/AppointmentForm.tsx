@@ -6,6 +6,7 @@ import {
   getDefaultAppointmentStart,
   getAppointmentStatusLabels,
   getAppointmentTypeLabels,
+  getAppointmentWorkflowBadge,
 } from "@/lib/appointments";
 import type { AppointmentPropertySummary } from "@/lib/appointments";
 import { defaultLocale, type Locale } from "@/lib/i18n";
@@ -25,10 +26,12 @@ type AppointmentFormProps = {
   returnTo?: string;
 };
 
-function getPropertyLabel(property: AppointmentPropertySummary) {
+function getPropertyLabel(property: AppointmentPropertySummary, locale: Locale) {
   const location = [property.neighborhood, property.city].filter(Boolean).join(", ");
+  const workflow = getAppointmentWorkflowBadge(property, locale);
+  const title = `${workflow} / ${property.title}`;
 
-  return location ? `${property.title} - ${location}` : property.title;
+  return location ? `${title} - ${location}` : title;
 }
 
 export function AppointmentForm({
@@ -119,7 +122,7 @@ export function AppointmentForm({
             </option>
             {properties.map((property) => (
               <option key={property.id} value={property.id}>
-                {getPropertyLabel(property)}
+                {getPropertyLabel(property, locale)}
               </option>
             ))}
           </select>

@@ -5,14 +5,17 @@ import { FileText, Gavel, Sheet } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { EntityDiscussionPanel } from "@/components/messaging/EntityDiscussionPanel";
 import { PropertyForm } from "@/components/PropertyForm";
+import { PropertyLinkedListingPanel } from "@/components/PropertyLinkedListingPanel";
 import { SetupNotice } from "@/components/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getCurrentLocale } from "@/lib/i18n-server";
-import type { PropertyRecord } from "@/lib/properties";
+import { isRentalTransaction, type PropertyRecord } from "@/lib/properties";
 import { requireOperatorUser } from "@/lib/supabase/server";
 
 const propertySelect =
-  "id,title,slug,description,type,status,city,neighborhood,address,price_eur,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,created_at,property_media(id,public_url,alt_text,sort_order)";
+  "id,title,slug,description,type,transaction_type,status,city,neighborhood,address,price_eur,price_on_request,rent_period,available_from,deposit_eur,minimum_lease_months,maximum_lease_months,furnished_state,utilities_included,sublease_allowed,business_use_allowed,asset_id,linked_sale_property_id,linked_rental_property_id,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,created_at,property_media(id,public_url,alt_text,sort_order)";
+
+const linkedListingSelect = "id,title,transaction_type,status";
 
 type EditPropertyPageProps = {
   params: Promise<{
@@ -22,6 +25,11 @@ type EditPropertyPageProps = {
     message?: string;
   }>;
 };
+
+type LinkedListingSummary = Pick<
+  PropertyRecord,
+  "id" | "status" | "title" | "transaction_type"
+>;
 
 export default async function EditPropertyPage({
   params,
@@ -47,6 +55,33 @@ export default async function EditPropertyPage({
 
   const typedProperty = property as PropertyRecord;
   const query = await searchParams;
+  const directLinkedId = isRentalTransaction(typedProperty.transaction_type)
+    ? typedProperty.linked_sale_property_id
+    : typedProperty.linked_rental_property_id;
+  let linkedListing: LinkedListingSummary | null = null;
+
+  if (directLinkedId) {
+    const { data } = await supabase
+      .from("properties")
+      .select(linkedListingSelect)
+      .eq("id", directLinkedId)
+      .maybeSingle();
+    linkedListing = data as LinkedListingSummary | null;
+  } else if (typedProperty.asset_id) {
+    let linkedQuery = supabase
+      .from("properties")
+      .select(linkedListingSelect)
+      .eq("asset_id", typedProperty.asset_id)
+      .neq("id", typedProperty.id)
+      .limit(1);
+
+    linkedQuery = isRentalTransaction(typedProperty.transaction_type)
+      ? linkedQuery.eq("transaction_type", "sale")
+      : linkedQuery.in("transaction_type", ["rent", "rent_to_own"]);
+
+    const { data } = await linkedQuery.maybeSingle();
+    linkedListing = data as LinkedListingSummary | null;
+  }
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
@@ -76,9 +111,17 @@ export default async function EditPropertyPage({
               locale={locale}
               property={typedProperty}
               submitLabel={locale === "sq" ? "Ruaj ndryshimet" : "Save changes"}
+              transactionType={typedProperty.transaction_type}
             />
           </div>
         </div>
+
+        <PropertyLinkedListingPanel
+          canManage
+          linkedListing={linkedListing}
+          locale={locale}
+          property={typedProperty}
+        />
 
         <EntityDiscussionPanel
           conversationType="property_thread"

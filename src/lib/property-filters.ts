@@ -1,10 +1,13 @@
+import type { Locale } from "./i18n.ts";
 import {
-  propertyStatuses,
+  getPropertyWorkflowStatuses,
   propertyTypes,
+  rentPeriods,
+  type PropertyModule,
   type PropertyStatus,
   type PropertyType,
-} from "@/lib/properties";
-import type { Locale } from "@/lib/i18n";
+  type RentPeriod,
+} from "./properties.ts";
 
 export const propertySortOptions = [
   { value: "newest", label: "Newest" },
@@ -16,14 +19,29 @@ export const propertySortOptions = [
 
 export type PropertySort = (typeof propertySortOptions)[number]["value"];
 
-export function getPropertySortOptions(locale: Locale) {
+export function getPropertySortOptions(
+  locale: Locale,
+  module: PropertyModule = "sales",
+) {
   if (locale === "sq") {
+    const priceLabel = module === "rentals" ? "Qiraja" : "Çmimi";
+
     return [
       { value: "newest", label: "Më të rejat" },
-      { value: "price_asc", label: "Çmimi nga i ulëti" },
-      { value: "price_desc", label: "Çmimi nga i larti" },
+      { value: "price_asc", label: `${priceLabel} nga i ulëti` },
+      { value: "price_desc", label: `${priceLabel} nga i larti` },
       { value: "area_desc", label: "Sipërfaqja më e madhe" },
       { value: "status", label: "Statusi" },
+    ] as const;
+  }
+
+  if (module === "rentals") {
+    return [
+      { value: "newest", label: "Newest" },
+      { value: "price_asc", label: "Rent low to high" },
+      { value: "price_desc", label: "Rent high to low" },
+      { value: "area_desc", label: "Largest area" },
+      { value: "status", label: "Status" },
     ] as const;
   }
 
@@ -38,6 +56,7 @@ export type PropertyFilters = {
   minPrice: string;
   maxPrice: string;
   minBedrooms: string;
+  rentPeriod: "" | RentPeriod;
   sort: PropertySort;
 };
 
@@ -60,11 +79,18 @@ function isPropertyType(value: string): value is PropertyType {
 }
 
 function isPropertyStatus(value: string): value is PropertyStatus {
-  return propertyStatuses.includes(value as PropertyStatus);
+  return (
+    getPropertyWorkflowStatuses("sale").includes(value as never) ||
+    getPropertyWorkflowStatuses("rent").includes(value as never)
+  );
 }
 
 function isPropertySort(value: string): value is PropertySort {
   return propertySortOptions.some((option) => option.value === value);
+}
+
+function isRentPeriod(value: string): value is RentPeriod {
+  return rentPeriods.includes(value as RentPeriod);
 }
 
 function cleanNumberParam(value: string) {
@@ -73,6 +99,7 @@ function cleanNumberParam(value: string) {
 
 export function parsePropertyFilters(params: PropertySearchParams): PropertyFilters {
   const sort = getFirstParam(params.sort);
+  const rentPeriod = getFirstParam(params.rentPeriod);
 
   return {
     q: getFirstParam(params.q).trim().slice(0, 96),
@@ -82,6 +109,7 @@ export function parsePropertyFilters(params: PropertySearchParams): PropertyFilt
     minPrice: cleanNumberParam(getFirstParam(params.minPrice)),
     maxPrice: cleanNumberParam(getFirstParam(params.maxPrice)),
     minBedrooms: cleanNumberParam(getFirstParam(params.minBedrooms)),
+    rentPeriod: isRentPeriod(rentPeriod) ? rentPeriod : "",
     sort: isPropertySort(sort) ? sort : "newest",
   };
 }
@@ -95,6 +123,7 @@ export function getActivePropertyFilterCount(filters: PropertyFilters) {
     filters.minPrice,
     filters.maxPrice,
     filters.minBedrooms,
+    filters.rentPeriod,
   ].filter(Boolean).length;
 }
 

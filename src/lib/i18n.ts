@@ -68,12 +68,15 @@ type TranslationKey =
   | "language.label"
   | "language.albanian"
   | "nav.addProperty"
+  | "nav.addRental"
+  | "nav.addSale"
   | "nav.adminUsers"
   | "nav.calendar"
   | "nav.dashboard"
   | "nav.documents"
   | "nav.land"
   | "nav.messages"
+  | "nav.requests"
   | "nav.rentals"
   | "nav.sales"
   | "nav.sellerLeads"
@@ -239,12 +242,15 @@ const messages: Record<Locale, LocaleMessages> = {
     "language.label": "Gjuha",
     "language.albanian": "Shqip",
     "nav.addProperty": "Shto Pronë",
+    "nav.addRental": "Shto pronë me qira",
+    "nav.addSale": "Shto pronë për shitje",
     "nav.adminUsers": "Përdoruesit",
     "nav.calendar": "Kalendari",
     "nav.dashboard": "Paneli",
     "nav.documents": "Dokumente & Kontrata",
     "nav.land": "Tokë",
     "nav.messages": "Mesazhe",
+    "nav.requests": "Kërkesa",
     "nav.rentals": "Qira",
     "nav.sales": "Shitje",
     "nav.sellerLeads": "Leads Shitësish",
@@ -413,12 +419,15 @@ const messages: Record<Locale, LocaleMessages> = {
     "language.label": "Language",
     "language.albanian": "Albanian",
     "nav.addProperty": "Add Property",
+    "nav.addRental": "Add rental property",
+    "nav.addSale": "Add property for sale",
     "nav.adminUsers": "Admin Users",
     "nav.calendar": "Calendar",
     "nav.dashboard": "Dashboard",
     "nav.documents": "Documents & Contracts",
     "nav.land": "Land",
     "nav.messages": "Messages",
+    "nav.requests": "Requests",
     "nav.rentals": "Rentals",
     "nav.sales": "Sales",
     "nav.sellerLeads": "Seller Leads",

@@ -227,7 +227,7 @@ async function getTodayAgenda(
   const { data, error } = await supabase
     .from("appointments")
     .select(
-      "id,title,status,client_name,client_phone,client_email,starts_at,ends_at,location,property:properties(id,title,city,neighborhood,address)",
+      "id,title,status,client_name,client_phone,client_email,starts_at,ends_at,location,property:properties(id,title,city,neighborhood,address,transaction_type)",
     )
     .gte("starts_at", startOfToday().toISOString())
     .lt("starts_at", startOfTomorrow().toISOString())

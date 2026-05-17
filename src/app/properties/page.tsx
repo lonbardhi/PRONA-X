@@ -29,15 +29,24 @@ import {
 import { normalizeAppointments } from "@/lib/appointments";
 import { t } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
-import type { PropertyRecord } from "@/lib/properties";
+import {
+  type AssetDuplicateCandidate,
+  getTransactionTypeForModule,
+  type PropertyModule,
+  type PropertyRecord,
+} from "@/lib/properties";
 import { isOperatorRole, requireApprovedUser } from "@/lib/supabase/server";
 
 type PropertiesPageProps = {
+  module?: PropertyModule;
   searchParams: Promise<PropertySearchParams>;
 };
 
 export const propertySelect =
-  "id,title,slug,description,type,status,city,neighborhood,address,price_eur,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,created_at,property_media(id,public_url,alt_text,sort_order)";
+  "id,title,slug,description,type,transaction_type,status,city,neighborhood,address,price_eur,price_on_request,rent_period,available_from,deposit_eur,minimum_lease_months,maximum_lease_months,furnished_state,utilities_included,sublease_allowed,business_use_allowed,asset_id,linked_sale_property_id,linked_rental_property_id,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,created_at,property_media(id,public_url,alt_text,sort_order)";
+
+const assetCandidateSelect =
+  "id,title,type,transaction_type,status,city,neighborhood,address,area_m2,plot_size_m2,asset_id,linked_sale_property_id,linked_rental_property_id";
 
 const appointmentSelect = `
   id,
@@ -55,7 +64,7 @@ const appointmentSelect = `
   location,
   notes,
   created_at,
-  property:properties(id,title,city,neighborhood,address),
+  property:properties(id,title,city,neighborhood,address,transaction_type),
   agent:profiles!appointments_assigned_agent_id_fkey(id,full_name)
 `;
 
@@ -97,20 +106,38 @@ function FilterStateFields({
       {!excluded.has("minBedrooms") && filters.minBedrooms ? (
         <input name="minBedrooms" type="hidden" value={filters.minBedrooms} />
       ) : null}
+      {!excluded.has("rentPeriod") && filters.rentPeriod ? (
+        <input name="rentPeriod" type="hidden" value={filters.rentPeriod} />
+      ) : null}
     </>
   );
 }
 
-function formatResultCount(count: number) {
-  return `${count} ${count === 1 ? "sales property" : "sales properties"} found`;
+function formatResultCount(count: number, module: PropertyModule) {
+  const noun =
+    module === "rentals"
+      ? count === 1
+        ? "rental property"
+        : "rental properties"
+      : count === 1
+        ? "sales property"
+        : "sales properties";
+
+  return `${count} ${noun} found`;
 }
 
-function formatLocalizedResultCount(count: number, locale: "sq" | "en") {
+function formatLocalizedResultCount(
+  count: number,
+  locale: "sq" | "en",
+  module: PropertyModule,
+) {
   if (locale === "sq") {
-    return `${count} ${count === 1 ? "pronë shitjeje u gjet" : "prona shitjeje u gjetën"}`;
+    return module === "rentals"
+      ? `${count} ${count === 1 ? "prone me qira u gjet" : "prona me qira u gjeten"}`
+      : `${count} ${count === 1 ? "prone shitjeje u gjet" : "prona shitjeje u gjeten"}`;
   }
 
-  return formatResultCount(count);
+  return formatResultCount(count, module);
 }
 
 function applySort<
@@ -150,11 +177,17 @@ function applySort<
   return query.order("created_at", { ascending: false });
 }
 
-export default async function PropertiesPage({ searchParams }: PropertiesPageProps) {
+export async function PropertyModulePage({
+  module = "sales",
+  searchParams,
+}: PropertiesPageProps) {
   if (!hasSupabaseEnv()) {
     return <SetupNotice />;
   }
 
+  const isRentalModule = module === "rentals";
+  const modulePath = isRentalModule ? "/rentals" : "/sales";
+  const transactionType = getTransactionTypeForModule(module);
   const params = await searchParams;
   const locale = await getCurrentLocale();
   const filters = parsePropertyFilters(params);
@@ -164,6 +197,10 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   let propertiesQuery = supabase
     .from("properties")
     .select(propertySelect, { count: "exact" });
+
+  propertiesQuery = isRentalModule
+    ? propertiesQuery.in("transaction_type", ["rent", "rent_to_own"])
+    : propertiesQuery.eq("transaction_type", "sale");
 
   const searchTerm = getIlikeSearchTerm(filters.q);
   if (searchTerm) {
@@ -207,11 +244,23 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     propertiesQuery = propertiesQuery.gte("bedrooms", Number(filters.minBedrooms));
   }
 
+  if (isRentalModule && filters.rentPeriod) {
+    propertiesQuery = propertiesQuery.eq("rent_period", filters.rentPeriod);
+  }
+
   propertiesQuery = applySort(propertiesQuery, filters.sort);
 
-  const [propertyResult, cityResult, appointmentResult] = await Promise.all([
+  let cityQuery = supabase
+    .from("properties")
+    .select("city")
+    .order("city", { ascending: true });
+  cityQuery = isRentalModule
+    ? cityQuery.in("transaction_type", ["rent", "rent_to_own"])
+    : cityQuery.eq("transaction_type", "sale");
+
+  const [propertyResult, cityResult, appointmentResult, assetCandidateResult] = await Promise.all([
     propertiesQuery,
-    supabase.from("properties").select("city").order("city", { ascending: true }),
+    cityQuery,
     canManage
       ? supabase
           .from("appointments")
@@ -219,6 +268,13 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
           .order("starts_at", { ascending: true })
           .limit(75)
       : Promise.resolve({ data: [], error: null }),
+    canManage
+      ? supabase
+          .from("properties")
+          .select(assetCandidateSelect)
+          .order("created_at", { ascending: false })
+          .limit(100)
+      : Promise.resolve({ data: [] as AssetDuplicateCandidate[], error: null }),
   ]);
 
   const { data: properties, error, count } = propertyResult;
@@ -246,6 +302,8 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
       (appointment) => appointment.property_id === property.id,
     ),
   }));
+  const assetCandidates = ((assetCandidateResult.data || []) as AssetDuplicateCandidate[])
+    .filter((candidate) => Boolean(candidate.id));
   const resultCount = count ?? typedProperties.length;
   const publishedCount = typedProperties.filter(
     (item) => item.status === "published",
@@ -256,7 +314,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
   const developmentLandCount = typedProperties.filter(
     (item) => item.type === "development_land",
   ).length;
-  const localizedSortOptions = getPropertySortOptions(locale);
+  const localizedSortOptions = getPropertySortOptions(locale, module);
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
@@ -268,9 +326,13 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white">
                   <Building2 className="h-3.5 w-3.5" />
                   {canManage
-                    ? locale === "sq"
-                      ? "PRONA X Shitje"
-                      : "PRONA X Sales"
+                    ? isRentalModule
+                      ? locale === "sq"
+                        ? "PRONA X Qira"
+                        : "PRONA X Rentals"
+                      : locale === "sq"
+                        ? "PRONA X Shitje"
+                        : "PRONA X Sales"
                     : t(locale, "property.viewer")}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
@@ -280,18 +342,26 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
               </div>
               <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
                 {canManage
-                  ? locale === "sq"
-                    ? "Inventari i Shitjeve"
-                    : "Sales Inventory"
+                  ? isRentalModule
+                    ? locale === "sq"
+                      ? "Prona me Qira"
+                      : "Properties for Rent"
+                    : locale === "sq"
+                      ? "Prona për Shitje"
+                      : "Properties for Sale"
                   : locale === "sq"
                     ? "Prona të Disponueshme"
                     : "Available Properties"}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 {canManage
-                  ? locale === "sq"
-                    ? "Menaxho pronat për shitje, vizitat, interesin e blerësve, ofertat dhe progresin e marrëveshjeve nga një hapësirë e brendshme."
-                    : "Manage PRONA X properties for sale, viewings, buyer interest, offers, and deal progress from one internal workspace."
+                  ? isRentalModule
+                    ? locale === "sq"
+                      ? "Menaxho pronat, bizneset, tokat dhe projektet që ofrohen me qira ose lease, pa i përzier me listimet për shitje."
+                      : "Manage properties, businesses, land, and projects offered for rent or lease without mixing them into sales."
+                    : locale === "sq"
+                      ? "Menaxho pronat, bizneset, tokat dhe projektet që ofrohen për shitje, me oferta, vizita dhe progres marrëveshjesh të ndara nga qiratë."
+                      : "Manage properties, businesses, land, and projects offered for sale with offers, viewings, and deal progress separate from rentals."
                   : locale === "sq"
                     ? "Shiko mundësitë e miratuara për shitje, qira dhe tokë zhvillimi të ndara nga ekipi PRONA X."
                     : "Review approved sales, rental, and development land opportunities shared by the PRONA X team."}
@@ -301,7 +371,11 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
             <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[420px]">
               <div className="crm-card bg-slate-50 p-2.5 sm:p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 sm:tracking-[0.12em]">
-                  {t(locale, "property.salesProperties")}
+                  {isRentalModule
+                    ? locale === "sq"
+                      ? "Prona me qira"
+                      : "Rental properties"
+                    : t(locale, "property.salesProperties")}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">
                   {resultCount}
@@ -372,17 +446,22 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
               emptyLabel={locale === "sq" ? "Ende nuk ka takime të ardhshme." : "No upcoming appointments yet."}
               layout="grid"
               locale={locale}
-              returnTo="/sales"
+              returnTo={modulePath}
             />
           </section>
         ) : null}
 
         <div className="grid items-start gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
-          <PropertyFilters cities={cities} filters={filters} locale={locale} />
+          <PropertyFilters
+            cities={cities}
+            filters={filters}
+            locale={locale}
+            module={module}
+          />
 
           <section className="grid min-w-0 content-start gap-4">
             <div className="crm-card p-3">
-              <form action="/sales" className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px_auto]">
+              <form action={modulePath} className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px_auto]">
                 <FilterStateFields
                   exclude={["q", "sort"]}
                   filters={filters}
@@ -425,7 +504,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-slate-950">
-                  {formatLocalizedResultCount(resultCount, locale)}
+                  {formatLocalizedResultCount(resultCount, locale, module)}
                 </p>
                 <p className="text-xs text-slate-500">
                   {locale === "sq" ? "Renditur sipas" : "Sorted by"}{" "}
@@ -441,7 +520,13 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
                   href="#add-property"
                 >
                   <Plus className="h-4 w-4" />
-                  {t(locale, "property.add")}
+                  {isRentalModule
+                    ? locale === "sq"
+                      ? "Shto pronë me qira"
+                      : "Add rental property"
+                    : locale === "sq"
+                      ? "Shto pronë për shitje"
+                      : "Add property for sale"}
                 </a>
               ) : null}
             </div>
@@ -451,15 +536,34 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
         </div>
 
         {canManage ? (
-          <PropertyIntakePanel defaultOpen={Boolean(params.message)} locale={locale}>
+          <PropertyIntakePanel
+            defaultOpen={Boolean(params.message)}
+            locale={locale}
+            mode={module}
+          >
             <PropertyForm
               action="/properties/create"
+              assetCandidates={assetCandidates}
+              defaultType={filters.types.length === 1 ? filters.types[0] : undefined}
               locale={locale}
-              submitLabel={locale === "sq" ? "Krijo pronën" : "Create property"}
+              submitLabel={
+                isRentalModule
+                  ? locale === "sq"
+                    ? "Krijo listim qiraje"
+                    : "Create rental listing"
+                  : locale === "sq"
+                    ? "Krijo listim shitjeje"
+                    : "Create sale listing"
+              }
+              transactionType={transactionType}
             />
           </PropertyIntakePanel>
         ) : null}
       </section>
     </DashboardShell>
   );
+}
+
+export default async function PropertiesPage(props: PropertiesPageProps) {
+  return <PropertyModulePage {...props} module="sales" />;
 }

@@ -55,7 +55,7 @@ const appointmentSelect = `
   location,
   notes,
   created_at,
-  property:properties(id,title,city,neighborhood,address),
+  property:properties(id,title,city,neighborhood,address,transaction_type),
   agent:profiles!appointments_assigned_agent_id_fkey(id,full_name)
 `;
 
@@ -172,7 +172,7 @@ export default async function AppointmentsPage({
   const [propertyResult, profileResult, appointmentResult] = await Promise.all([
     supabase
       .from("properties")
-      .select("id,title,city,neighborhood,address")
+      .select("id,title,city,neighborhood,address,transaction_type")
       .order("title", { ascending: true }),
     supabase
       .from("profiles")

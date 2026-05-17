@@ -32,10 +32,14 @@ import { SharePropertyButton } from "@/components/SharePropertyButton";
 import type { PropertyMedia, PropertyRecord } from "@/lib/properties";
 import {
   formatDevelopmentAgreement,
-  formatEuro,
+  formatPropertyPrice,
   formatPropertyType,
   formatStatusLabel,
+  formatTransactionBadge,
+  getLinkedListingId,
+  getLinkedListingNotice,
   isDevelopmentLand,
+  isRentalTransaction,
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 import { appTimeZone, defaultLocale, type Locale } from "@/lib/i18n";
@@ -50,6 +54,8 @@ type PropertyQuickViewDialogProps = {
 function getStatusTone(status: PropertyRecord["status"]) {
   if (
     status === "published" ||
+    status === "available" ||
+    status === "contract_active" ||
     status === "ready_for_developers" ||
     status === "documents_verified" ||
     status === "agreement_signed" ||
@@ -60,6 +66,8 @@ function getStatusTone(status: PropertyRecord["status"]) {
 
   if (
     status === "reserved" ||
+    status === "viewing" ||
+    status === "contract_expiring" ||
     status === "offer_received" ||
     status === "negotiation" ||
     status === "agreement_in_principle" ||
@@ -203,6 +211,10 @@ export function PropertyQuickViewDialog({
   const media = getOrderedMedia(property.property_media || []);
   const cover = media[0];
   const developmentLand = isDevelopmentLand(property);
+  const rentalListing = isRentalTransaction(property.transaction_type);
+  const modulePath = rentalListing ? "/rentals" : "/sales";
+  const linkedListingId = getLinkedListingId(property);
+  const linkedListingNotice = getLinkedListingNotice(property, locale);
   const appointments = [...(property.appointments || [])].sort(
     (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
   );
@@ -238,6 +250,9 @@ export function PropertyQuickViewDialog({
                   className={`max-w-full rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusTone(property.status)}`}
                 >
                   {formatStatusLabel(property.status, locale)}
+                </span>
+                <span className="max-w-full rounded-full bg-slate-950 px-2.5 py-1 text-xs font-semibold text-white">
+                  {formatTransactionBadge(property.transaction_type, locale)}
                 </span>
               </div>
               <h2 className="mt-2 break-words text-xl font-semibold leading-tight text-slate-950 sm:text-2xl">
@@ -305,14 +320,18 @@ export function PropertyQuickViewDialog({
                         ? locale === "sq"
                           ? "Marrëveshje zhvillimi"
                           : "Development exchange"
-                        : locale === "sq"
-                          ? "Çmimi i kërkuar"
-                          : "Asking price"}
+                        : rentalListing
+                          ? locale === "sq"
+                            ? "Qiraja"
+                            : "Rent"
+                          : locale === "sq"
+                            ? "Çmimi i kërkuar"
+                            : "Asking price"}
                     </p>
                     <p className="mt-1 max-w-full break-words text-xl font-semibold leading-tight text-slate-950 [overflow-wrap:anywhere] sm:text-3xl">
                       {developmentLand
                         ? formatDevelopmentAgreement(property, locale)
-                        : formatEuro(property.price_eur || 0, locale)}
+                        : formatPropertyPrice(property, locale)}
                     </p>
                   </div>
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -494,6 +513,24 @@ export function PropertyQuickViewDialog({
                 </p>
               </div>
 
+              {linkedListingId && linkedListingNotice.href ? (
+                <div className="min-w-0 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                  <h3 className="text-base font-semibold text-slate-950">
+                    {locale === "sq" ? "Listim i lidhur" : "Linked listing"}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {linkedListingNotice.label}
+                  </p>
+                  <Link
+                    className="crm-button crm-button-secondary mt-3 w-full"
+                    href={linkedListingNotice.href}
+                    prefetch={false}
+                  >
+                    {linkedListingNotice.linkLabel}
+                  </Link>
+                </div>
+              ) : null}
+
               {developmentLand ? (
                 <>
                   <div className="min-w-0 rounded-lg border border-slate-200 p-4">
@@ -613,7 +650,7 @@ export function PropertyQuickViewDialog({
                       }
                       layout="stack"
                       locale={locale}
-                      returnTo="/sales"
+                      returnTo={modulePath}
                       showProperty={false}
                     />
                   </div>
