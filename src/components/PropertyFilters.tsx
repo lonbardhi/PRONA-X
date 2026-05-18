@@ -24,6 +24,7 @@ import {
   getActivePropertyFilterCount,
   type PropertyFilters as PropertyFilterState,
 } from "@/lib/property-filters";
+import { getCanonicalAlbaniaLocation } from "@/lib/albania-locations";
 
 type PropertyFiltersProps = {
   cities: string[];
@@ -89,6 +90,7 @@ function FilterControls({
 }: PropertyFiltersProps) {
   const isRental = module === "rentals";
   const statuses = getPropertyWorkflowStatuses(isRental ? "rent" : "sale");
+  const selectedCity = getCanonicalAlbaniaLocation(filters.city);
 
   return (
     <>
@@ -182,7 +184,7 @@ function FilterControls({
         </div>
         <select
           className="crm-input h-10 min-h-10 text-sm"
-          defaultValue={filters.city}
+          defaultValue={selectedCity}
           name="city"
         >
           <option value="">{locale === "sq" ? "Të gjitha lokacionet" : "All locations"}</option>

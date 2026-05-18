@@ -18,6 +18,10 @@ import { PropertyFilters } from "@/components/PropertyFilters";
 import { PropertyForm } from "@/components/PropertyForm";
 import { PropertyGrid } from "@/components/PropertyGrid";
 import { SetupNotice } from "@/components/SetupNotice";
+import {
+  getAlbaniaLocationFilterValues,
+  getAlbaniaLocationOptions,
+} from "@/lib/albania-locations";
 import { hasSupabaseEnv } from "@/lib/env";
 import {
   getPropertySortOptions,
@@ -223,7 +227,12 @@ export async function PropertyModulePage({
   }
 
   if (filters.city) {
-    propertiesQuery = propertiesQuery.eq("city", filters.city);
+    const locationFilterValues = getAlbaniaLocationFilterValues(filters.city);
+
+    propertiesQuery =
+      locationFilterValues.length > 1
+        ? propertiesQuery.in("city", locationFilterValues)
+        : propertiesQuery.eq("city", filters.city);
   }
 
   if (filters.minPrice && filters.maxPrice) {
@@ -289,12 +298,10 @@ export async function PropertyModulePage({
     )
     .slice(0, 3);
   const cityRows = cityResult.data || [];
-  const cities = Array.from(
-    new Set(
-      cityRows
-        .map((item) => item.city)
-        .filter((city): city is string => Boolean(city)),
-    ),
+  const cities = getAlbaniaLocationOptions(
+    cityRows
+      .map((item) => item.city)
+      .filter((city): city is string => Boolean(city)),
   );
   const typedProperties = ((properties || []) as PropertyRecord[]).map((property) => ({
     ...property,
