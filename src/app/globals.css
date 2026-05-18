@@ -10,11 +10,11 @@
   --crm-motion-slow: 260ms;
   --crm-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --crm-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --crm-ring: 0 0 0 4px rgb(16 185 129 / 0.14);
-  --crm-shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
+  --crm-ring: 0 0 0 4px color-mix(in oklch, var(--ring) 22%, transparent);
+  --crm-shadow-card: 0 1px 2px color-mix(in oklch, var(--foreground) 7%, transparent);
   --crm-shadow-card-hover:
-    0 12px 30px rgb(15 23 42 / 0.08),
-    0 3px 8px rgb(15 23 42 / 0.04);
+    0 12px 30px color-mix(in oklch, var(--foreground) 9%, transparent),
+    0 3px 8px color-mix(in oklch, var(--foreground) 5%, transparent);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -113,9 +113,10 @@ svg {
 
 @layer components {
   .crm-card {
-    border: 1px solid rgb(226 232 240);
-    border-radius: 0.875rem;
-    background: rgb(255 255 255);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    color: var(--card-foreground);
     box-shadow: var(--crm-shadow-card);
     transition:
       border-color var(--crm-motion-normal) var(--crm-ease-out),
@@ -125,9 +126,10 @@ svg {
   }
 
   .crm-card-interactive {
-    border: 1px solid rgb(226 232 240);
-    border-radius: 0.875rem;
-    background: rgb(255 255 255);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    color: var(--card-foreground);
     box-shadow: var(--crm-shadow-card);
     touch-action: manipulation;
     transition:
@@ -138,7 +140,7 @@ svg {
   }
 
   .crm-card-interactive:hover {
-    border-color: rgb(167 243 208);
+    border-color: color-mix(in oklch, var(--ring) 45%, var(--border));
     box-shadow: var(--crm-shadow-card-hover);
     transform: translateY(-1px);
   }
@@ -159,7 +161,7 @@ svg {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 0.625rem;
+    border-radius: var(--radius-lg);
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     font-weight: 700;
@@ -196,14 +198,14 @@ svg {
   }
 
   .crm-button-primary {
-    border: 1px solid rgb(2 6 23);
-    background: rgb(2 6 23);
-    color: rgb(255 255 255);
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 1px 2px color-mix(in oklch, var(--foreground) 12%, transparent);
   }
 
   .crm-button-primary:hover {
-    background: rgb(15 23 42);
+    background: color-mix(in oklch, var(--primary) 90%, var(--foreground));
   }
 
   .crm-button-accent {
@@ -229,15 +231,15 @@ svg {
   }
 
   .crm-button-secondary {
-    border: 1px solid rgb(226 232 240);
-    background: rgb(255 255 255);
-    color: rgb(51 65 85);
+    border: 1px solid var(--border);
+    background: var(--secondary);
+    color: var(--secondary-foreground);
   }
 
   .crm-button-secondary:hover {
-    border-color: rgb(187 247 208);
-    background: rgb(240 253 244);
-    color: rgb(4 120 87);
+    border-color: color-mix(in oklch, var(--ring) 42%, var(--border));
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
 
   .crm-button-danger {
@@ -256,10 +258,10 @@ svg {
     width: 2.5rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgb(226 232 240);
+    border: 1px solid var(--border);
     border-radius: 999px;
-    background: rgb(255 255 255);
-    color: rgb(71 85 105);
+    background: var(--background);
+    color: var(--muted-foreground);
     touch-action: manipulation;
     transition:
       background-color var(--crm-motion-fast) var(--crm-ease-out),
@@ -268,7 +270,8 @@ svg {
   }
 
   .crm-icon-button:hover {
-    background: rgb(248 250 252);
+    background: var(--accent);
+    color: var(--accent-foreground);
     box-shadow: var(--crm-shadow-card);
     transform: translateY(-1px);
   }
@@ -285,7 +288,7 @@ svg {
     gap: 0.5rem;
     border-radius: 999px;
     padding: 0.5rem 0.75rem;
-    color: rgb(71 85 105);
+    color: var(--muted-foreground);
     font-size: 0.875rem;
     font-weight: 600;
     touch-action: manipulation;
@@ -298,9 +301,9 @@ svg {
   }
 
   .crm-nav-link:hover {
-    background: rgb(255 255 255);
-    color: rgb(2 6 23);
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: var(--crm-shadow-card);
     transform: translateY(-1px);
   }
 
@@ -313,10 +316,10 @@ svg {
   .crm-textarea {
     width: 100%;
     min-width: 0;
-    border: 1px solid rgb(226 232 240);
-    border-radius: 0.625rem;
-    background: rgb(255 255 255);
-    color: rgb(15 23 42);
+    border: 1px solid var(--input);
+    border-radius: var(--radius-lg);
+    background: var(--background);
+    color: var(--foreground);
     outline: none;
     transition:
       border-color var(--crm-motion-fast) var(--crm-ease-out),
@@ -335,28 +338,29 @@ svg {
 
   .crm-input:focus,
   .crm-textarea:focus {
-    border-color: rgb(16 185 129);
+    border-color: var(--ring);
     box-shadow: var(--crm-ring);
   }
 
   .crm-input::placeholder,
   .crm-textarea::placeholder {
-    color: rgb(148 163 184);
+    color: var(--muted-foreground);
   }
 
   .crm-section {
     display: grid;
     gap: 1rem;
-    border: 1px solid rgb(226 232 240);
-    border-radius: 0.875rem;
-    background: rgb(248 250 252 / 0.66);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: color-mix(in oklch, var(--muted) 66%, transparent);
     padding: 1rem;
   }
 
   .crm-empty-state {
-    border: 1px dashed rgb(203 213 225);
-    border-radius: 0.875rem;
-    background: rgb(255 255 255);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    color: var(--card-foreground);
     padding: 1.5rem;
     text-align: center;
     box-shadow: var(--crm-shadow-card);

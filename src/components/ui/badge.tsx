@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 type BadgeVariant = "default" | "secondary" | "outline" | "destructive" | "success" | "warning";
 
 const badgeVariants: Record<BadgeVariant, string> = {
-  default: "border-transparent bg-slate-950 text-white",
-  destructive: "border-transparent bg-rose-600 text-white",
-  outline: "border-slate-200 bg-white text-slate-700",
-  secondary: "border-transparent bg-slate-100 text-slate-700",
+  default: "border-transparent bg-primary text-primary-foreground",
+  destructive: "border-transparent bg-destructive text-white",
+  outline: "border-border bg-background text-foreground",
+  secondary: "border-transparent bg-secondary text-secondary-foreground",
   success: "border-transparent bg-emerald-100 text-emerald-800",
   warning: "border-transparent bg-amber-100 text-amber-800",
 };

@@ -1,5 +1,10 @@
 import { CalendarPlus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   appointmentStatuses,
   appointmentTypes,
@@ -33,6 +38,8 @@ function getPropertyLabel(property: AppointmentPropertySummary, locale: Locale) 
 
   return location ? `${title} - ${location}` : title;
 }
+
+const fieldLabelClassName = "grid min-w-0 gap-2 text-sm font-medium text-foreground";
 
 export function AppointmentForm({
   action,
@@ -99,20 +106,20 @@ export function AppointmentForm({
       <input name="return_to" type="hidden" value={returnTo} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700 lg:col-span-2">
+        <Label className={`${fieldLabelClassName} lg:col-span-2`}>
           {labels.title}
-          <input
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Input
+            className="h-11"
             name="title"
             placeholder={labels.titlePlaceholder}
             required
           />
-        </label>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700 lg:col-span-2">
+        <Label className={`${fieldLabelClassName} lg:col-span-2`}>
           {labels.property}
-          <select
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Select
+            className="h-11"
             defaultValue={defaultPropertyId}
             name="property_id"
             required
@@ -125,13 +132,13 @@ export function AppointmentForm({
                 {getPropertyLabel(property, locale)}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.type}
-          <select
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Select
+            className="h-11"
             defaultValue="viewing"
             name="appointment_type"
             required
@@ -141,13 +148,13 @@ export function AppointmentForm({
                 {typeLabels[type]}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.status}
-          <select
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Select
+            className="h-11"
             defaultValue="scheduled"
             name="status"
             required
@@ -157,13 +164,13 @@ export function AppointmentForm({
                 {statusLabels[status]}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.agent}
-          <select
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Select
+            className="h-11"
             name="assigned_agent_id"
           >
             <option value="">{labels.assignToMe}</option>
@@ -172,54 +179,54 @@ export function AppointmentForm({
                 {agent.label}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.clientName}
-          <input
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Input
+            className="h-11"
             name="client_name"
             placeholder={labels.clientNamePlaceholder}
             required
           />
-        </label>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.clientPhone}
-          <input
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Input
+            className="h-11"
             name="client_phone"
             placeholder="+355..."
             type="tel"
           />
-        </label>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.clientEmail}
-          <input
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Input
+            className="h-11"
             name="client_email"
             placeholder="client@example.com"
             type="email"
           />
-        </label>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.start}
-          <input
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Input
+            className="h-11"
             defaultValue={getDefaultAppointmentStart(defaultDate)}
             name="starts_at"
             required
             type="datetime-local"
           />
-        </label>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700">
+        <Label className={fieldLabelClassName}>
           {labels.duration}
-          <select
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Select
+            className="h-11"
             defaultValue="60"
             name="duration_minutes"
           >
@@ -234,33 +241,33 @@ export function AppointmentForm({
               {locale === "sq" ? "1 orë 30 minuta" : "1 hour 30 minutes"}
             </option>
             <option value="120">{locale === "sq" ? "2 orë" : "2 hours"}</option>
-          </select>
-        </label>
+          </Select>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700 lg:col-span-2">
+        <Label className={`${fieldLabelClassName} lg:col-span-2`}>
           {labels.location}
-          <input
-            className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Input
+            className="h-11"
             name="location"
             placeholder={labels.locationPlaceholder}
           />
-        </label>
+        </Label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-700 lg:col-span-2">
+        <Label className={`${fieldLabelClassName} lg:col-span-2`}>
           {labels.notes}
-          <textarea
-            className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          <Textarea
+            className="min-h-28"
             name="notes"
             placeholder={labels.notesPlaceholder}
             rows={4}
           />
-        </label>
+        </Label>
       </div>
 
-      <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:w-fit">
+      <Button className="h-11 w-full px-5 sm:w-fit" type="submit" variant="success">
         <CalendarPlus className="h-4 w-4" />
         {labels.submit}
-      </button>
+      </Button>
     </form>
   );
 }

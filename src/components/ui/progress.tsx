@@ -13,7 +13,7 @@ function Progress({
 
   return (
     <div
-      className={cn("relative h-2 w-full overflow-hidden rounded-full bg-slate-100", className)}
+      className={cn("relative h-2 w-full overflow-hidden rounded-full bg-secondary", className)}
       role="progressbar"
       aria-valuemax={100}
       aria-valuemin={0}
@@ -21,7 +21,7 @@ function Progress({
       {...props}
     >
       <div
-        className="h-full rounded-full bg-emerald-600 transition-all"
+        className="h-full rounded-full bg-primary transition-all"
         style={{ width: `${normalizedValue}%` }}
       />
     </div>
