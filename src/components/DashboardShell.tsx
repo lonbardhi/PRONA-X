@@ -85,9 +85,11 @@ export async function DashboardShell({
     <main className="min-h-screen overflow-x-hidden bg-slate-50">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6">
-          <BrandLockup subtitle={t(locale, "brand.subtitle")} />
+          <div className="min-w-0 flex-1 sm:flex-none">
+            <BrandLockup subtitle={t(locale, "brand.subtitle")} />
+          </div>
 
-          <nav className="crm-scroll-area order-3 flex w-full gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 lg:order-none lg:w-auto">
+          <nav className="crm-scroll-area order-3 flex w-full min-w-0 gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 lg:order-none lg:w-auto">
             {navItems.map((item) => {
               if (item.href === "/messages") {
                 return (
@@ -118,7 +120,7 @@ export async function DashboardShell({
             ) : null}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {!isViewer && !isSupportOnly ? (
               <div className="hidden md:block">
                 <AddListingMenu locale={locale} />
@@ -159,7 +161,7 @@ export async function DashboardShell({
       {showMobileQuickActions ? (
         <nav
           aria-label={locale === "sq" ? "Veprime te shpejta" : "Quick actions"}
-          className="crm-scroll-area flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden"
+          className="crm-scroll-area flex min-w-0 gap-2 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden"
         >
           <Link
             className={buttonVariants({

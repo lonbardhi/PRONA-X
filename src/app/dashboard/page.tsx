@@ -513,7 +513,7 @@ function SignalTile({
   const content = (
     <div
       className={cn(
-        "group flex h-full min-h-[112px] items-start justify-between gap-3 rounded-md border bg-white p-3 transition-colors",
+        "group flex h-full min-h-[104px] min-w-0 items-start justify-between gap-3 rounded-md border bg-white p-3 transition-colors sm:min-h-[112px]",
         href ? "hover:border-slate-300 hover:bg-slate-50" : "",
         accentClasses.border,
         className,
@@ -523,7 +523,7 @@ function SignalTile({
         <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
           {label}
         </p>
-        <p className={cn("mt-2 text-3xl font-semibold leading-none", accentClasses.text)}>
+        <p className={cn("mt-2 text-2xl font-semibold leading-none sm:text-3xl", accentClasses.text)}>
           {value}
         </p>
         <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500">{sublabel}</p>
@@ -544,7 +544,7 @@ function SignalTile({
   }
 
   return (
-    <Link className="block h-full" href={href}>
+    <Link className="block h-full min-w-0" href={href}>
       {content}
     </Link>
   );
@@ -564,13 +564,13 @@ function CommandFocusCard({
 
   return (
     <Card className="overflow-hidden border-slate-950 bg-slate-950 text-white">
-      <CardHeader className="border-b border-white/10 pb-4">
+      <CardHeader className="border-b border-white/10 p-4 pb-4 sm:p-5 sm:pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-300">
               {locale === "sq" ? "Fokusi tani" : "Focus now"}
             </p>
-            <CardTitle className="mt-3 text-xl leading-6 text-white">
+            <CardTitle className="mt-3 break-words text-xl leading-6 text-white">
               {action.title}
             </CardTitle>
           </div>
@@ -583,7 +583,7 @@ function CommandFocusCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 p-4">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2 min-[380px]:grid-cols-2">
           <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
             <p className="text-xs font-medium text-slate-400">
               {locale === "sq" ? "Numër" : "Count"}
@@ -617,7 +617,7 @@ function CommandFocusCard({
           </Badge>
           <Link
             className={buttonVariants({
-              className: "border-white/20 bg-white text-slate-950 hover:bg-slate-100",
+              className: "w-full border-white/20 bg-white text-slate-950 hover:bg-slate-100 sm:w-auto",
               variant: "outline",
             })}
             href={action.href}
@@ -642,8 +642,8 @@ function PipelineStage({
 }) {
   return (
     <div className="grid gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-slate-700">{label}</span>
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <span className="min-w-0 truncate text-sm font-medium text-slate-700">{label}</span>
         <span className="text-sm font-semibold text-slate-950">{value}</span>
       </div>
       <Progress value={getStagePercent(value, total)} />
@@ -660,9 +660,9 @@ function ActionQueue({
 }) {
   return (
     <Card className="lg:col-span-2">
-      <CardHeader className="pb-3">
+      <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+          <div className="min-w-0">
             <CardTitle>{locale === "sq" ? "Radha operative" : "Operational queue"}</CardTitle>
             <CardDescription>
               {locale === "sq"
@@ -675,60 +675,102 @@ function ActionQueue({
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{locale === "sq" ? "Prioriteti" : "Priority"}</TableHead>
-              <TableHead>{locale === "sq" ? "Puna" : "Work"}</TableHead>
-              <TableHead className="text-right">{locale === "sq" ? "Numër" : "Count"}</TableHead>
-              <TableHead className="w-[104px]" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {actions.map((action) => {
-              const Icon = action.icon;
+      <CardContent className="grid gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
+        <div className="grid gap-3 md:hidden">
+          {actions.map((action) => {
+            const Icon = action.icon;
 
-              return (
-                <TableRow key={action.id}>
-                  <TableCell>
-                    <Badge variant={getPriorityVariant(action.priority)}>
-                      {getPriorityLabel(action.priority, locale)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex min-w-[220px] items-start gap-3">
-                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="font-semibold text-slate-950">{action.title}</p>
-                        <p className="mt-1 max-w-xl text-sm leading-5 text-slate-500">
-                          {action.description}
-                        </p>
-                      </div>
+            return (
+              <Link
+                className="rounded-md border border-slate-200 p-3 transition-colors hover:border-emerald-200 hover:bg-emerald-50/40"
+                href={action.href}
+                key={action.id}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold leading-5 text-slate-950">{action.title}</p>
+                      <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-500">
+                        {action.description}
+                      </p>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right text-lg font-semibold text-slate-950">
+                  </div>
+                  <span className="shrink-0 text-lg font-semibold leading-none text-slate-950">
                     {action.meta}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      className={buttonVariants({
-                        className: "h-8 w-full px-2",
-                        size: "sm",
-                        variant: "outline",
-                      })}
-                      href={action.href}
-                    >
-                      {locale === "sq" ? "Hap" : "Open"}
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <Badge variant={getPriorityVariant(action.priority)}>
+                    {getPriorityLabel(action.priority, locale)}
+                  </Badge>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700">
+                    {locale === "sq" ? "Hap" : "Open"}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="hidden min-w-0 md:block">
+          <Table className="min-w-[720px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>{locale === "sq" ? "Prioriteti" : "Priority"}</TableHead>
+                <TableHead>{locale === "sq" ? "Puna" : "Work"}</TableHead>
+                <TableHead className="text-right">{locale === "sq" ? "Numër" : "Count"}</TableHead>
+                <TableHead className="w-[104px]" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {actions.map((action) => {
+                const Icon = action.icon;
+
+                return (
+                  <TableRow key={action.id}>
+                    <TableCell>
+                      <Badge variant={getPriorityVariant(action.priority)}>
+                        {getPriorityLabel(action.priority, locale)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex min-w-[220px] items-start gap-3">
+                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <div>
+                          <p className="font-semibold text-slate-950">{action.title}</p>
+                          <p className="mt-1 max-w-xl text-sm leading-5 text-slate-500">
+                            {action.description}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-lg font-semibold text-slate-950">
+                      {action.meta}
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        className={buttonVariants({
+                          className: "h-8 w-full px-2",
+                          size: "sm",
+                          variant: "outline",
+                        })}
+                        href={action.href}
+                      >
+                        {locale === "sq" ? "Hap" : "Open"}
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
@@ -755,7 +797,7 @@ function CompactList({
         <div className="grid gap-2">
           {items.map((item) => (
             <Link
-              className="rounded-md border border-slate-200 p-3 transition-colors hover:border-emerald-200 hover:bg-emerald-50/40"
+              className="min-w-0 rounded-md border border-slate-200 p-3 transition-colors hover:border-emerald-200 hover:bg-emerald-50/40"
               href={item.href}
               key={`${item.title}-${item.description}`}
             >
@@ -767,7 +809,7 @@ function CompactList({
                   </p>
                 </div>
                 {item.badge ? (
-                  <Badge className="shrink-0" variant="secondary">
+                  <Badge className="max-w-[45%] shrink-0 truncate" variant="secondary">
                     {item.badge}
                   </Badge>
                 ) : null}
@@ -1023,17 +1065,19 @@ export default async function DashboardPage() {
       value: notifications.length,
     },
   ];
+  const hotDemandRows = (hotRequests.length > 0 ? hotRequests : dueRequests).slice(0, 5);
+  const upcomingAppointments = appointments.slice(0, 6);
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
-      <section className="mx-auto grid max-w-[1500px] gap-5 px-3 py-5 sm:px-6 sm:py-6">
+      <section className="mx-auto grid w-full min-w-0 max-w-[1500px] gap-4 px-3 py-4 sm:gap-5 sm:px-6 sm:py-6">
         <Card className="overflow-hidden">
-          <CardContent className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center">
+          <CardContent className="grid gap-5 p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="min-w-0">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 sm:text-sm sm:tracking-[0.14em]">
                 PRONA X CRM
               </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
+              <h1 className="mt-2 break-words text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
                 {locale === "sq" ? "Paneli i komandës" : "Command dashboard"}
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
@@ -1042,16 +1086,16 @@ export default async function DashboardPage() {
                   : "Daily focus: requests, meetings, listings, media, documents, and decisions that need movement."}
               </p>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[420px]">
+            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-[420px]">
               <Link
-                className={buttonVariants({ className: "w-full", variant: "default" })}
+                className={buttonVariants({ className: "w-full min-w-0", variant: "default" })}
                 href="/sales#add-property"
               >
                 <Plus className="h-4 w-4" />
                 {locale === "sq" ? "Shto shitje" : "Add sale"}
               </Link>
               <Link
-                className={buttonVariants({ className: "w-full", variant: "success" })}
+                className={buttonVariants({ className: "w-full min-w-0", variant: "success" })}
                 href="/rentals#add-property"
               >
                 <Plus className="h-4 w-4" />
@@ -1061,7 +1105,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <section className="grid gap-3 xl:grid-cols-[minmax(320px,0.95fr)_minmax(0,2fr)]">
+        <section className="grid min-w-0 gap-3 xl:grid-cols-[minmax(280px,0.95fr)_minmax(0,2fr)]">
           <CommandFocusCard
             action={actionQueue[0]}
             locale={locale}
@@ -1069,9 +1113,9 @@ export default async function DashboardPage() {
           />
 
           <Card className="overflow-hidden">
-            <CardHeader className="border-b border-slate-100 pb-4">
+            <CardHeader className="border-b border-slate-100 p-4 pb-4 sm:p-5 sm:pb-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
+                <div className="min-w-0">
                   <CardTitle>
                     {locale === "sq" ? "Sinjalet operative" : "Operational signals"}
                   </CardTitle>
@@ -1092,7 +1136,7 @@ export default async function DashboardPage() {
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
+            <CardContent className="grid gap-2 p-3 min-[440px]:grid-cols-2 xl:grid-cols-3">
               {signalMetrics.map((metric) => (
                 <SignalTile
                   accent={metric.accent}
@@ -1109,11 +1153,11 @@ export default async function DashboardPage() {
           </Card>
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-3">
+        <section className="grid min-w-0 gap-4 sm:gap-5 xl:grid-cols-3">
           <ActionQueue actions={actionQueue} locale={locale} />
 
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <CardTitle>{locale === "sq" ? "Terreni sot" : "Field work today"}</CardTitle>
               <CardDescription>
                 {locale === "sq"
@@ -1121,7 +1165,7 @@ export default async function DashboardPage() {
                   : "Meetings, viewings, and calls closest to now."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 pt-0">
+            <CardContent className="grid gap-4 p-4 pt-0 sm:p-5 sm:pt-0">
               <CompactList
                 empty={locale === "sq" ? "Nuk ka takime për sot." : "No meetings today."}
                 items={todayAppointments.slice(0, 4).map((appointment) => {
@@ -1163,11 +1207,11 @@ export default async function DashboardPage() {
           </Card>
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-2">
+        <section className="grid min-w-0 gap-4 sm:gap-5 xl:grid-cols-2">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <CardTitle>{locale === "sq" ? "Pipeline shitjeje" : "Sales pipeline"}</CardTitle>
                   <CardDescription>
                     {locale === "sq"
@@ -1178,8 +1222,8 @@ export default async function DashboardPage() {
                 <Badge variant="outline">{sales.length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="grid gap-4 pt-0">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <CardContent className="grid gap-4 p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="grid gap-3 min-[440px]:grid-cols-2">
                 <SignalTile
                   accent="blue"
                   icon={Home}
@@ -1216,9 +1260,9 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <CardTitle>{locale === "sq" ? "Pipeline qiraje" : "Rental pipeline"}</CardTitle>
                   <CardDescription>
                     {locale === "sq"
@@ -1229,8 +1273,8 @@ export default async function DashboardPage() {
                 <Badge variant="outline">{rentals.length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="grid gap-4 pt-0">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <CardContent className="grid gap-4 p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="grid gap-3 min-[440px]:grid-cols-2">
                 <SignalTile
                   accent="emerald"
                   icon={KeyRound}
@@ -1267,9 +1311,9 @@ export default async function DashboardPage() {
           </Card>
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-3">
+        <section className="grid min-w-0 gap-4 sm:gap-5 xl:grid-cols-3">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <CardTitle>{locale === "sq" ? "Kërkesa & përputhje" : "Demand & matching"}</CardTitle>
               <CardDescription>
                 {locale === "sq"
@@ -1277,8 +1321,8 @@ export default async function DashboardPage() {
                   : "Requests stay separate from listings for clean reporting."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 pt-0">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <CardContent className="grid gap-4 p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="grid gap-3 min-[520px]:grid-cols-2">
                 <PipelineStage
                   label={locale === "sq" ? "Blerës" : "Buyers"}
                   total={Math.max(1, requests.length)}
@@ -1326,7 +1370,7 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <CardTitle>{locale === "sq" ? "Shëndeti i listimeve" : "Listing health"}</CardTitle>
               <CardDescription>
                 {locale === "sq"
@@ -1334,7 +1378,7 @@ export default async function DashboardPage() {
                   : "Inventory quality before it gets published or shared."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 pt-0">
+            <CardContent className="grid gap-4 p-4 pt-0 sm:p-5 sm:pt-0">
               <div className="grid gap-3">
                 <PipelineStage
                   label={locale === "sq" ? "Asete fizike" : "Physical assets"}
@@ -1377,7 +1421,7 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <CardTitle>{locale === "sq" ? "Dokumente & kontrata" : "Documents & contracts"}</CardTitle>
               <CardDescription>
                 {locale === "sq"
@@ -1385,8 +1429,8 @@ export default async function DashboardPage() {
                   : "Risks that can block reservations, sales, or rentals."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 pt-0">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <CardContent className="grid gap-4 p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="grid gap-3 min-[440px]:grid-cols-2">
                 <SignalTile
                   accent={checklistItems.length > 0 ? "amber" : "emerald"}
                   icon={ClipboardList}
@@ -1426,9 +1470,9 @@ export default async function DashboardPage() {
           </Card>
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-2">
+        <section className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-2">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <CardTitle>{locale === "sq" ? "Kërkesa të nxehta" : "Hot demand"}</CardTitle>
               <CardDescription>
                 {locale === "sq"
@@ -1436,19 +1480,61 @@ export default async function DashboardPage() {
                   : "Clients that need a response or a match."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{locale === "sq" ? "Klienti" : "Client"}</TableHead>
-                    <TableHead>{locale === "sq" ? "Tipi" : "Type"}</TableHead>
-                    <TableHead>{locale === "sq" ? "Vendndodhja" : "Location"}</TableHead>
-                    <TableHead>{locale === "sq" ? "Ndjekje" : "Follow-up"}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(hotRequests.length > 0 ? hotRequests : dueRequests).slice(0, 5).map(
-                    (request) => (
+            <CardContent className="grid gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="grid gap-3 md:hidden">
+                {hotDemandRows.map((request) => (
+                  <Link
+                    className="rounded-md border border-slate-200 p-3 transition-colors hover:border-emerald-200 hover:bg-emerald-50/40"
+                    href="/requests"
+                    key={request.id}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-slate-950">
+                          {request.customer_name}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {request.city || (locale === "sq" ? "Pa qytet" : "No city")}
+                        </p>
+                      </div>
+                      <Badge
+                        className="shrink-0"
+                        variant={request.urgency === "hot" ? "destructive" : "secondary"}
+                      >
+                        {request.request_type}
+                      </Badge>
+                    </div>
+                    <p className="mt-3 text-xs font-medium text-slate-500">
+                      {locale === "sq" ? "Ndjekje: " : "Follow-up: "}
+                      {request.next_follow_up_at
+                        ? formatShortDateTime(request.next_follow_up_at, locale)
+                        : locale === "sq"
+                          ? "Pa datë"
+                          : "No date"}
+                    </p>
+                  </Link>
+                ))}
+                {hotDemandRows.length === 0 ? (
+                  <div className="rounded-md border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+                    {locale === "sq"
+                      ? "Nuk ka kërkesa të nxehta ose me ndjekje sot."
+                      : "No hot or due requests today."}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="hidden min-w-0 md:block">
+                <Table className="min-w-[640px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{locale === "sq" ? "Klienti" : "Client"}</TableHead>
+                      <TableHead>{locale === "sq" ? "Tipi" : "Type"}</TableHead>
+                      <TableHead>{locale === "sq" ? "Vendndodhja" : "Location"}</TableHead>
+                      <TableHead>{locale === "sq" ? "Ndjekje" : "Follow-up"}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {hotDemandRows.map((request) => (
                       <TableRow key={request.id}>
                         <TableCell className="font-semibold text-slate-950">
                           {request.customer_name}
@@ -1469,24 +1555,24 @@ export default async function DashboardPage() {
                               : "No date"}
                         </TableCell>
                       </TableRow>
-                    ),
-                  )}
-                  {hotRequests.length === 0 && dueRequests.length === 0 ? (
-                    <TableRow>
-                      <TableCell className="text-slate-500" colSpan={4}>
-                        {locale === "sq"
-                          ? "Nuk ka kërkesa të nxehta ose me ndjekje sot."
-                          : "No hot or due requests today."}
-                      </TableCell>
-                    </TableRow>
-                  ) : null}
-                </TableBody>
-              </Table>
+                    ))}
+                    {hotDemandRows.length === 0 ? (
+                      <TableRow>
+                        <TableCell className="text-slate-500" colSpan={4}>
+                          {locale === "sq"
+                            ? "Nuk ka kërkesa të nxehta ose me ndjekje sot."
+                            : "No hot or due requests today."}
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
               <CardTitle>{locale === "sq" ? "Lëvizjet e ardhshme" : "Upcoming movement"}</CardTitle>
               <CardDescription>
                 {locale === "sq"
@@ -1494,59 +1580,110 @@ export default async function DashboardPage() {
                   : "This week’s appointments and listings with recent movement."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{locale === "sq" ? "Koha" : "Time"}</TableHead>
-                    <TableHead>{locale === "sq" ? "Takimi" : "Meeting"}</TableHead>
-                    <TableHead>{locale === "sq" ? "Pronë" : "Property"}</TableHead>
-                    <TableHead>{locale === "sq" ? "Fluksi" : "Flow"}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {appointments.slice(0, 6).map((appointment) => {
-                    const property = firstRelation(appointment.property);
+            <CardContent className="grid gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="grid gap-3 md:hidden">
+                {upcomingAppointments.map((appointment) => {
+                  const property = firstRelation(appointment.property);
 
-                    return (
-                      <TableRow key={appointment.id}>
-                        <TableCell className="whitespace-nowrap text-slate-600">
-                          {formatShortDateTime(appointment.starts_at, locale)}
-                        </TableCell>
-                        <TableCell>
-                          <p className="font-semibold text-slate-950">{appointment.title}</p>
-                          <p className="text-xs text-slate-500">{appointment.client_name}</p>
-                        </TableCell>
-                        <TableCell className="text-slate-600">
-                          {property?.title || (locale === "sq" ? "Pa pronë" : "No property")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {property?.transaction_type
-                              ? isRentalTransaction(property.transaction_type)
-                                ? locale === "sq"
-                                  ? "Qira"
-                                  : "Rental"
-                                : locale === "sq"
-                                  ? "Shitje"
-                                  : "Sale"
-                              : "-"}
-                          </Badge>
+                  return (
+                    <Link
+                      className="rounded-md border border-slate-200 p-3 transition-colors hover:border-emerald-200 hover:bg-emerald-50/40"
+                      href="/appointments"
+                      key={appointment.id}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-slate-500">
+                            {formatShortDateTime(appointment.starts_at, locale)}
+                          </p>
+                          <p className="mt-1 truncate font-semibold text-slate-950">
+                            {appointment.title}
+                          </p>
+                          <p className="mt-1 truncate text-xs text-slate-500">
+                            {appointment.client_name}
+                          </p>
+                        </div>
+                        <Badge className="shrink-0" variant="outline">
+                          {property?.transaction_type
+                            ? isRentalTransaction(property.transaction_type)
+                              ? locale === "sq"
+                                ? "Qira"
+                                : "Rental"
+                              : locale === "sq"
+                                ? "Shitje"
+                                : "Sale"
+                            : "-"}
+                        </Badge>
+                      </div>
+                      <p className="mt-3 line-clamp-2 text-sm text-slate-600">
+                        {property?.title || (locale === "sq" ? "Pa pronë" : "No property")}
+                      </p>
+                    </Link>
+                  );
+                })}
+                {upcomingAppointments.length === 0 ? (
+                  <div className="rounded-md border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+                    {locale === "sq"
+                      ? "Nuk ka takime të ardhshme në kalendar."
+                      : "No upcoming appointments in the calendar."}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="hidden min-w-0 md:block">
+                <Table className="min-w-[680px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{locale === "sq" ? "Koha" : "Time"}</TableHead>
+                      <TableHead>{locale === "sq" ? "Takimi" : "Meeting"}</TableHead>
+                      <TableHead>{locale === "sq" ? "Pronë" : "Property"}</TableHead>
+                      <TableHead>{locale === "sq" ? "Fluksi" : "Flow"}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {upcomingAppointments.map((appointment) => {
+                      const property = firstRelation(appointment.property);
+
+                      return (
+                        <TableRow key={appointment.id}>
+                          <TableCell className="whitespace-nowrap text-slate-600">
+                            {formatShortDateTime(appointment.starts_at, locale)}
+                          </TableCell>
+                          <TableCell>
+                            <p className="font-semibold text-slate-950">{appointment.title}</p>
+                            <p className="text-xs text-slate-500">{appointment.client_name}</p>
+                          </TableCell>
+                          <TableCell className="text-slate-600">
+                            {property?.title || (locale === "sq" ? "Pa pronë" : "No property")}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {property?.transaction_type
+                                ? isRentalTransaction(property.transaction_type)
+                                  ? locale === "sq"
+                                    ? "Qira"
+                                    : "Rental"
+                                  : locale === "sq"
+                                    ? "Shitje"
+                                    : "Sale"
+                                : "-"}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {upcomingAppointments.length === 0 ? (
+                      <TableRow>
+                        <TableCell className="text-slate-500" colSpan={4}>
+                          {locale === "sq"
+                            ? "Nuk ka takime të ardhshme në kalendar."
+                            : "No upcoming appointments in the calendar."}
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
-                  {appointments.length === 0 ? (
-                    <TableRow>
-                      <TableCell className="text-slate-500" colSpan={4}>
-                        {locale === "sq"
-                          ? "Nuk ka takime të ardhshme në kalendar."
-                          : "No upcoming appointments in the calendar."}
-                      </TableCell>
-                    </TableRow>
-                  ) : null}
-                </TableBody>
-              </Table>
+                    ) : null}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </section>
