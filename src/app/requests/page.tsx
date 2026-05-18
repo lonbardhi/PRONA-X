@@ -6,6 +6,7 @@ import {
   Euro,
   Home,
   MessageCircle,
+  Pencil,
   Phone,
   Plus,
   Search,
@@ -17,6 +18,7 @@ import {
   createListingFromCrmRequestAction,
   createCrmRequestAction,
   createCrmRequestMatchAction,
+  updateCrmRequestAction,
   updateCrmRequestMatchStatusAction,
   updateCrmRequestStatusAction,
 } from "@/app/requests/actions";
@@ -113,6 +115,16 @@ function formatDate(value: string | null, locale: Locale) {
   }).format(new Date(value));
 }
 
+function formatDateTimeLocalValue(value: string | null) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return localDate.toISOString().slice(0, 16);
+}
+
 function getRequestTone(type: CrmRequestType) {
   if (type === "tenant") {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
@@ -178,13 +190,17 @@ function Field({
 }
 
 function TextField({
+  defaultValue,
   label,
+  min,
   name,
   placeholder,
   required = false,
   type = "text",
 }: {
+  defaultValue?: string | number | null;
   label: string;
+  min?: string | number;
   name: string;
   placeholder?: string;
   required?: boolean;
@@ -193,6 +209,8 @@ function TextField({
   return (
     <Field label={label}>
       <Input
+        defaultValue={defaultValue ?? undefined}
+        min={min}
         name={name}
         placeholder={placeholder}
         required={required}
@@ -367,6 +385,209 @@ function RequestForm({
   );
 }
 
+function RequestEditPanel({
+  agents,
+  currentUserName,
+  locale,
+  request,
+}: {
+  agents: AgentOption[];
+  currentUserName: string;
+  locale: Locale;
+  request: CrmRequestRecord;
+}) {
+  const isSq = locale === "sq";
+  const assignedAgentMissing =
+    request.assigned_agent_id &&
+    !agents.some((agent) => agent.id === request.assigned_agent_id);
+
+  return (
+    <details className="rounded-xl border border-slate-200 bg-slate-50">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-semibold text-slate-800 transition hover:bg-white [&::-webkit-details-marker]:hidden">
+        <span className="inline-flex items-center gap-2">
+          <Pencil className="h-4 w-4 text-slate-500" />
+          {isSq ? "Ndrysho kërkesën" : "Edit request"}
+        </span>
+        <span className="text-xs text-slate-500">
+          {isSq ? "Hap / mbyll" : "Open / close"}
+        </span>
+      </summary>
+
+      <form action={updateCrmRequestAction} className="grid gap-4 border-t border-slate-200 p-3">
+        <input name="request_id" type="hidden" value={request.id} />
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label={isSq ? "Lloji i kërkesës" : "Request type"}>
+            <Select defaultValue={request.request_type} name="request_type" required>
+              {crmRequestTypes.map((type) => (
+                <option key={type} value={type}>
+                  {formatCrmRequestType(type, locale)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={isSq ? "Statusi" : "Status"}>
+            <Select defaultValue={request.status} name="status" required>
+              {crmRequestStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {formatCrmRequestStatus(status, locale)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={isSq ? "Urgjenca" : "Urgency"}>
+            <Select name="urgency" defaultValue={request.urgency || "warm"}>
+              <option value="hot">{isSq ? "E nxehtë" : "Hot"}</option>
+              <option value="warm">{isSq ? "Mesatare" : "Warm"}</option>
+              <option value="cold">{isSq ? "E ftohtë" : "Cold"}</option>
+            </Select>
+          </Field>
+          <Field label={isSq ? "Cakto agjent" : "Assign agent"}>
+            <Select name="assigned_agent_id" defaultValue={request.assigned_agent_id || ""}>
+              <option value="">{currentUserName}</option>
+              {assignedAgentMissing ? (
+                <option value={request.assigned_agent_id || ""}>
+                  {request.assigned_agent_name || (isSq ? "Agjenti aktual" : "Current agent")}
+                </option>
+              ) : null}
+              {agents.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.full_name || agent.role}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <TextField
+            defaultValue={request.customer_name}
+            label={isSq ? "Emri i klientit" : "Client name"}
+            name="customer_name"
+            required
+          />
+          <TextField
+            defaultValue={request.phone}
+            label={isSq ? "Telefoni" : "Phone"}
+            name="phone"
+            required
+          />
+          <TextField
+            defaultValue={request.email}
+            label="Email"
+            name="email"
+            type="email"
+          />
+          <Field label={isSq ? "Kontakti i preferuar" : "Preferred contact"}>
+            <Select
+              name="preferred_contact_method"
+              defaultValue={request.preferred_contact_method || "phone"}
+            >
+              <option value="phone">{isSq ? "Telefon" : "Phone"}</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">Email</option>
+              <option value="in_person">{isSq ? "Takim fizik" : "In person"}</option>
+            </Select>
+          </Field>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label={isSq ? "Tipi i pronës" : "Property type"}>
+            <Select name="property_type" defaultValue={request.property_type || ""}>
+              <option value="">{isSq ? "Çdo tip prone" : "Any property type"}</option>
+              {propertyTypes.map((type) => (
+                <option key={type} value={type}>
+                  {formatPropertyType(type, locale)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <TextField
+            defaultValue={request.city}
+            label={isSq ? "Qyteti" : "City"}
+            name="city"
+          />
+          <TextField
+            defaultValue={request.area}
+            label={isSq ? "Zona / lagjja" : "Area / neighborhood"}
+            name="area"
+          />
+          <Field label={isSq ? "Periudha e qirasë" : "Rent period"}>
+            <Select name="rent_period" defaultValue={request.rent_period || ""}>
+              <option value="">{isSq ? "Vetëm për qira" : "Only for rentals"}</option>
+              {rentPeriods.map((period) => (
+                <option key={period} value={period}>
+                  {formatRentPeriodLabel(period, locale)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <TextField
+            defaultValue={request.min_budget_eur}
+            label={isSq ? "Buxheti minimum EUR" : "Min budget EUR"}
+            min={0}
+            name="min_budget_eur"
+            type="number"
+          />
+          <TextField
+            defaultValue={request.max_budget_eur}
+            label={isSq ? "Buxheti maksimum EUR" : "Max budget EUR"}
+            min={0}
+            name="max_budget_eur"
+            type="number"
+          />
+          <TextField
+            defaultValue={request.bedrooms_min}
+            label={isSq ? "Dhoma minimum" : "Minimum bedrooms"}
+            min={0}
+            name="bedrooms_min"
+            type="number"
+          />
+          <TextField
+            defaultValue={request.area_min_m2}
+            label={isSq ? "Sipërfaqe minimum m²" : "Minimum area m²"}
+            min={0}
+            name="area_min_m2"
+            type="number"
+          />
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label={isSq ? "Burimi" : "Source"}>
+            <Select name="source" defaultValue={request.source} required>
+              {crmRequestSources.map((source) => (
+                <option key={source} value={source}>
+                  {formatCrmRequestSource(source, locale)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <TextField
+            defaultValue={formatDateTimeLocalValue(request.next_follow_up_at)}
+            label={isSq ? "Ndjekja tjetër" : "Next follow-up"}
+            name="next_follow_up_at"
+            type="datetime-local"
+          />
+          <TextField
+            defaultValue={request.source_details}
+            label={isSq ? "Detaje burimi" : "Source details"}
+            name="source_details"
+          />
+          <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
+            {isSq ? "Shënime" : "Notes"}
+            <Textarea defaultValue={request.notes || ""} name="notes" rows={4} />
+          </label>
+        </div>
+
+        <Button className="min-h-11 w-full sm:w-fit">
+          <Pencil className="h-4 w-4" />
+          {isSq ? "Ruaj ndryshimet" : "Save changes"}
+        </Button>
+      </form>
+    </details>
+  );
+}
+
 function StatusAction({
   requestId,
   status,
@@ -449,14 +670,18 @@ function ListingConversionAction({
 }
 
 function RequestCard({
+  agents,
   canManage,
+  currentUserName,
   locale,
   matches,
   matchesTableReady,
   request,
   savedMatches,
 }: {
+  agents: AgentOption[];
   canManage: boolean;
+  currentUserName: string;
   locale: Locale;
   matches: MatchCandidate[];
   matchesTableReady: boolean;
@@ -539,6 +764,15 @@ function RequestCard({
         <p className="rounded-lg bg-white text-sm leading-6 text-slate-600">
           {request.notes}
         </p>
+      ) : null}
+
+      {canManage ? (
+        <RequestEditPanel
+          agents={agents}
+          currentUserName={currentUserName}
+          locale={locale}
+          request={request}
+        />
       ) : null}
 
       {canRequestCreateListing(request.request_type) ? (
@@ -768,6 +1002,8 @@ export default async function RequestsPage({ searchParams }: RequestsPageProps) 
   const tenantCount = requests.filter((item) => item.request_type === "tenant").length;
   const ownerCount = requests.filter((item) => item.request_type === "owner").length;
   const investorCount = requests.filter((item) => item.request_type === "investor").length;
+  const currentUserName =
+    profile.full_name || user.email || (isSq ? "Cakto tek une" : "Assign to me");
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
@@ -890,7 +1126,9 @@ export default async function RequestsPage({ searchParams }: RequestsPageProps) 
         <div className="grid gap-4 lg:grid-cols-2">
           {requests.map((request) => (
             <RequestCard
+              agents={agents}
               canManage={canManage}
+              currentUserName={currentUserName}
               key={request.id}
               locale={locale}
               matches={findMatches(request, matchCandidates)}
@@ -907,7 +1145,7 @@ export default async function RequestsPage({ searchParams }: RequestsPageProps) 
           <RequestForm
             agents={agents}
             defaultRequestType={typeFilter || "buyer"}
-            currentUserName={profile.full_name || user.email || (isSq ? "Cakto tek unë" : "Assign to me")}
+            currentUserName={currentUserName}
             locale={locale}
           />
         ) : null}

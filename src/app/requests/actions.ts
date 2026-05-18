@@ -195,6 +195,95 @@ export async function createCrmRequestAction(formData: FormData) {
   redirect(getRequestsPath("Kërkesa u krijua me sukses."));
 }
 
+export async function updateCrmRequestAction(formData: FormData) {
+  const requestId = String(formData.get("request_id") || "");
+
+  if (!requestId) {
+    redirect(getRequestsPath("Zgjidh një kërkesë për përditësim."));
+  }
+
+  const { profile, supabase, user } = await loadCrmRequest(requestId);
+
+  let input;
+  try {
+    input = formDataToCrmRequestInput(formData);
+  } catch (error) {
+    redirect(getRequestsPath(getActionErrorMessage(error), `#request-${requestId}`));
+  }
+
+  const phoneNormalized = normalizeRequestPhone(input.phone);
+
+  if (input.status !== "lost" && input.status !== "archived") {
+    const { data: duplicate } = await supabase
+      .from("crm_requests")
+      .select("id,customer_name,status,request_type")
+      .eq("phone_normalized", phoneNormalized)
+      .eq("request_type", input.request_type)
+      .neq("id", requestId)
+      .not("status", "in", "(lost,archived)")
+      .limit(1)
+      .maybeSingle();
+
+    if (duplicate) {
+      redirect(
+        getRequestsPath(
+          `Ky klient ka tashmë një kërkesë aktive: "${duplicate.customer_name}".`,
+          `#request-${duplicate.id}`,
+        ),
+      );
+    }
+  }
+
+  const assignedAgentId = input.assigned_agent_id || user.id;
+  const assignedAgentName = await getAgentName(
+    supabase,
+    assignedAgentId,
+    profile.full_name || user.email || null,
+  );
+  const patch: Record<string, unknown> = {
+    area: cleanNullableText(input.area),
+    area_min_m2: input.area_min_m2 ?? null,
+    assigned_agent_id: assignedAgentId,
+    assigned_agent_name: assignedAgentName,
+    bedrooms_min: input.bedrooms_min ?? null,
+    city: cleanNullableText(input.city),
+    customer_name: input.customer_name,
+    email: cleanNullableText(input.email),
+    max_budget_eur: input.max_budget_eur ?? null,
+    min_budget_eur: input.min_budget_eur ?? null,
+    next_follow_up_at: toTimestamp(input.next_follow_up_at),
+    notes: cleanNullableText(input.notes),
+    phone: input.phone.trim(),
+    phone_normalized: phoneNormalized,
+    preferred_contact_method: input.preferred_contact_method,
+    property_type: input.property_type || null,
+    rent_period: input.request_type === "tenant" ? input.rent_period || "monthly" : null,
+    request_type: input.request_type,
+    source: input.source,
+    source_details: cleanNullableText(input.source_details),
+    status: input.status,
+    updated_by: user.id,
+    urgency: input.urgency,
+  };
+
+  if (input.status === "contacted") {
+    patch.last_contacted_at = new Date().toISOString();
+  }
+
+  const { error } = await supabase
+    .from("crm_requests")
+    .update(patch)
+    .eq("id", requestId);
+
+  if (error) {
+    redirect(getRequestsPath(error.message, `#request-${requestId}`));
+  }
+
+  revalidatePath("/requests");
+  revalidatePath("/dashboard");
+  redirect(getRequestsPath("Kërkesa u përditësua me sukses.", `#request-${requestId}`));
+}
+
 export async function updateCrmRequestStatusAction(formData: FormData) {
   const requestId = String(formData.get("request_id") || "");
   const status = String(formData.get("status") || "") as CrmRequestStatus;
