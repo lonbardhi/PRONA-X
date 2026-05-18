@@ -14,7 +14,12 @@ import {
   isSameTransactionWorkflow,
   propertySchema,
 } from "./properties.ts";
-import { parsePropertyFilters } from "./property-filters.ts";
+import {
+  defaultPropertyPageSize,
+  maxPropertyPageSize,
+  parsePropertyFilters,
+  parsePropertyPagination,
+} from "./property-filters.ts";
 
 const baseListing = {
   city: "Tirana",
@@ -122,6 +127,46 @@ test("module paths and rental filters stay scoped", () => {
 
   assert.equal(filters.rentPeriod, "monthly");
   assert.deepEqual(filters.statuses, ["rented", "sold"]);
+});
+
+test("property pagination parses and clamps URL query params", () => {
+  assert.deepEqual(parsePropertyPagination({}), {
+    page: 1,
+    pageSize: defaultPropertyPageSize,
+  });
+
+  assert.deepEqual(
+    parsePropertyPagination({
+      page: "3",
+      pageSize: "48",
+    }),
+    {
+      page: 3,
+      pageSize: 48,
+    },
+  );
+
+  assert.deepEqual(
+    parsePropertyPagination({
+      page: "0",
+      pageSize: "5000",
+    }),
+    {
+      page: 1,
+      pageSize: maxPropertyPageSize,
+    },
+  );
+
+  assert.deepEqual(
+    parsePropertyPagination({
+      page: "not-a-page",
+      pageSize: "wide",
+    }),
+    {
+      page: 1,
+      pageSize: defaultPropertyPageSize,
+    },
+  );
 });
 
 test("linked listing helpers keep sale and rental records separate", () => {

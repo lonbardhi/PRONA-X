@@ -60,6 +60,16 @@ export type PropertyFilters = {
   sort: PropertySort;
 };
 
+export const defaultPropertyPageSize = 24;
+export const propertyPageSizeOptions = [12, 24, 48] as const;
+export const propertyMobileLoadStep = 24;
+export const maxPropertyPageSize = 1000;
+
+export type PropertyPagination = {
+  page: number;
+  pageSize: number;
+};
+
 export type PropertySearchParams = Record<string, string | string[] | undefined>;
 
 function getFirstParam(value: string | string[] | undefined) {
@@ -97,6 +107,14 @@ function cleanNumberParam(value: string) {
   return /^\d+(\.\d+)?$/.test(value) ? value : "";
 }
 
+function cleanIntegerParam(value: string) {
+  return /^\d+$/.test(value) ? Number(value) : null;
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
 export function parsePropertyFilters(params: PropertySearchParams): PropertyFilters {
   const sort = getFirstParam(params.sort);
   const rentPeriod = getFirstParam(params.rentPeriod);
@@ -111,6 +129,20 @@ export function parsePropertyFilters(params: PropertySearchParams): PropertyFilt
     minBedrooms: cleanNumberParam(getFirstParam(params.minBedrooms)),
     rentPeriod: isRentPeriod(rentPeriod) ? rentPeriod : "",
     sort: isPropertySort(sort) ? sort : "newest",
+  };
+}
+
+export function parsePropertyPagination(
+  params: PropertySearchParams,
+): PropertyPagination {
+  const page = cleanIntegerParam(getFirstParam(params.page));
+  const pageSize = cleanIntegerParam(getFirstParam(params.pageSize));
+
+  return {
+    page: page ? clampNumber(page, 1, 9999) : 1,
+    pageSize: pageSize
+      ? clampNumber(pageSize, propertyPageSizeOptions[0], maxPropertyPageSize)
+      : defaultPropertyPageSize,
   };
 }
 

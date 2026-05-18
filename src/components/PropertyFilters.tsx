@@ -36,17 +36,28 @@ type PropertyFiltersProps = {
   filters: PropertyFilterState;
   locale?: Locale;
   module?: PropertyModule;
+  pageSize?: number;
 };
 
 function getModulePath(module: PropertyModule) {
   return module === "rentals" ? "/rentals" : "/sales";
 }
 
-function HiddenSearchFields({ filters }: { filters: PropertyFilterState }) {
+function HiddenSearchFields({
+  filters,
+  pageSize,
+}: {
+  filters: PropertyFilterState;
+  pageSize?: number;
+}) {
   return (
     <>
       {filters.q ? <input name="q" type="hidden" value={filters.q} /> : null}
       <input name="sort" type="hidden" value={filters.sort} />
+      <input name="page" type="hidden" value="1" />
+      {pageSize ? (
+        <input name="pageSize" type="hidden" value={pageSize} />
+      ) : null}
     </>
   );
 }
@@ -92,6 +103,7 @@ function FilterControls({
   filters,
   locale = defaultLocale,
   module = "sales",
+  pageSize,
 }: PropertyFiltersProps) {
   const isRental = module === "rentals";
   const statuses = getPropertyWorkflowStatuses(isRental ? "rent" : "sale");
@@ -99,7 +111,7 @@ function FilterControls({
 
   return (
     <>
-      <HiddenSearchFields filters={filters} />
+      <HiddenSearchFields filters={filters} pageSize={pageSize} />
 
       <div className="grid gap-3 border-b border-border p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
