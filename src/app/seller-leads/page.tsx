@@ -22,6 +22,12 @@ import {
 } from "@/app/seller-leads/actions";
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getIntlLocale } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
@@ -157,15 +163,14 @@ function SelectField({
   name: string;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-medium text-slate-700">
+    <label className="grid gap-2 text-sm font-medium text-foreground">
       {label}
-      <select
-        className="crm-input text-slate-950"
+      <Select
         defaultValue={defaultValue || ""}
         name={name}
       >
         {children}
-      </select>
+      </Select>
     </label>
   );
 }
@@ -186,10 +191,9 @@ function TextField({
   type?: string;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-medium text-slate-700">
+    <label className="grid gap-2 text-sm font-medium text-foreground">
       {label}
-      <input
-        className="crm-input text-slate-950"
+      <Input
         defaultValue={defaultValue ?? ""}
         name={name}
         placeholder={placeholder}
@@ -320,39 +324,39 @@ function SellerLeadForm({
           <TextField label="Ndjekja e radhës" name="next_follow_up_at" type="datetime-local" />
           <TextField label="Arsyeja e shitjes" name="asking_reason" placeholder="Zhvendosje, investim, trashëgimi..." />
 
-          <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700 md:col-span-2 sm:grid-cols-2 lg:grid-cols-4">
-            <label className="inline-flex items-center gap-2">
-              <input name="ownership_confirmed" type="checkbox" />
-              Pronësia u konfirmua
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input name="documents_collected" type="checkbox" />
-              Dokumentet janë gati
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input name="photos_collected" type="checkbox" />
-              Fotot janë gati
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input name="valuation_requested" type="checkbox" />
-              Kërkon vlerësim
-            </label>
+          <div className="grid gap-3 rounded-lg border border-border bg-card p-3 text-sm text-foreground md:col-span-2 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ["ownership_confirmed", "Pronësia u konfirmua"],
+              ["documents_collected", "Dokumentet janë gati"],
+              ["photos_collected", "Fotot janë gati"],
+              ["valuation_requested", "Kërkon vlerësim"],
+            ].map(([name, label]) => (
+              <div className="flex items-center gap-2" key={name}>
+                <Checkbox id={`seller-lead-${name}`} name={name} />
+                <Label
+                  className="cursor-pointer text-sm font-normal"
+                  htmlFor={`seller-lead-${name}`}
+                >
+                  {label}
+                </Label>
+              </div>
+            ))}
           </div>
 
-          <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2">
+          <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             Shënime
-            <textarea
-              className="crm-textarea min-h-28 text-slate-950"
+            <Textarea
+              className="min-h-28"
               name="seller_notes"
               placeholder="Çfarë tha pronari, pengesat, çmimi, dokumentet dhe hapi i radhës."
             />
           </label>
         </div>
 
-        <button className="crm-button crm-button-primary w-full sm:w-fit">
+        <Button className="w-full sm:w-fit">
           <UserPlus className="h-4 w-4" />
           Shto Lead
-        </button>
+        </Button>
       </form>
     </section>
   );
@@ -371,9 +375,9 @@ function LeadActionButton({
     <form action={updateSellerLeadStatusAction}>
       <input name="lead_id" type="hidden" value={leadId} />
       <input name="status" type="hidden" value={status} />
-      <button className="crm-button crm-button-secondary h-9 min-h-9 w-full px-3 sm:w-auto">
+      <Button className="h-9 min-h-9 w-full px-3 sm:w-auto" size="sm" variant="secondary">
         {children}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -489,9 +493,9 @@ function SellerLeadCard({
       <div className="flex flex-wrap gap-2">
         <form action={markSellerLeadContactedAction}>
           <input name="lead_id" type="hidden" value={lead.id} />
-          <button className="crm-button crm-button-secondary h-9 min-h-9 w-full px-3 sm:w-auto">
+          <Button className="h-9 min-h-9 w-full px-3 sm:w-auto" size="sm" variant="secondary">
             Kontaktuar
-          </button>
+          </Button>
         </form>
         {lead.status === "contacted" || lead.status === "new" ? (
           <LeadActionButton leadId={lead.id} status="qualified">
@@ -521,10 +525,10 @@ function SellerLeadCard({
         {canConvert ? (
           <form action={convertSellerLeadToPropertyAction}>
             <input name="lead_id" type="hidden" value={lead.id} />
-            <button className="crm-button crm-button-success h-9 min-h-9 w-full px-3 sm:w-auto">
+            <Button className="h-9 min-h-9 w-full px-3 sm:w-auto" size="sm" variant="success">
               <CheckCircle2 className="h-4 w-4" />
               Krijo Pronë nga Lead
-            </button>
+            </Button>
           </form>
         ) : null}
       </div>
@@ -740,15 +744,15 @@ export default async function SellerLeadsPage({
                 <label className="relative min-w-0">
                   <span className="sr-only">Kërko lead</span>
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    className="crm-input bg-slate-50 pl-9 pr-3 text-sm text-slate-950 focus:bg-white"
+                  <Input
+                    className="bg-muted/60 pl-9 pr-3 text-sm focus:bg-background"
                     defaultValue={q}
                     name="q"
                     placeholder="Kërko emër, telefon, qytet, adresë"
                   />
                 </label>
-                <select
-                  className="crm-input bg-slate-50 text-sm font-medium text-slate-700 focus:bg-white"
+                <Select
+                  className="bg-muted/60 text-sm font-medium"
                   defaultValue={statusFilter}
                   name="status"
                 >
@@ -758,9 +762,9 @@ export default async function SellerLeadsPage({
                       {formatSellerLeadStatus(status)}
                     </option>
                   ))}
-                </select>
-                <select
-                  className="crm-input bg-slate-50 text-sm font-medium text-slate-700 focus:bg-white"
+                </Select>
+                <Select
+                  className="bg-muted/60 text-sm font-medium"
                   defaultValue={sourceFilter}
                   name="source"
                 >
@@ -770,9 +774,9 @@ export default async function SellerLeadsPage({
                       {formatSellerLeadSource(source)}
                     </option>
                   ))}
-                </select>
-                <select
-                  className="crm-input bg-slate-50 text-sm font-medium text-slate-700 focus:bg-white"
+                </Select>
+                <Select
+                  className="bg-muted/60 text-sm font-medium"
                   defaultValue={params.sort || "newest"}
                   name="sort"
                 >
@@ -781,11 +785,11 @@ export default async function SellerLeadsPage({
                       {option.label}
                     </option>
                   ))}
-                </select>
-                <button className="crm-button crm-button-primary">
+                </Select>
+                <Button>
                   <SlidersHorizontal className="h-4 w-4" />
                   Filtro
-                </button>
+                </Button>
               </form>
             </section>
 
@@ -794,7 +798,10 @@ export default async function SellerLeadsPage({
               <StatCard label="Norma e konvertimit" tone="emerald" value={conversionRate} />
               <StatCard label="Totali në pamje" value={leadResult.count ?? leads.length} />
               <a
-                className="crm-button crm-button-success min-h-20 rounded-xl px-4"
+                className={buttonVariants({
+                  className: "h-auto min-h-20 rounded-xl px-4",
+                  variant: "success",
+                })}
                 href="#add-lead"
               >
                 <Plus className="h-4 w-4" />
@@ -818,14 +825,20 @@ export default async function SellerLeadsPage({
                   </p>
                   <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
                     <a
-                      className="crm-button crm-button-success h-10 min-h-10 px-4"
+                      className={buttonVariants({
+                        className: "h-10 min-h-10 px-4",
+                        variant: "success",
+                      })}
                       href="#add-lead"
                     >
                       Shto Lead
                       <ArrowRight className="h-4 w-4" />
                     </a>
                     <Link
-                      className="crm-button crm-button-secondary h-10 min-h-10 px-4"
+                      className={buttonVariants({
+                        className: "h-10 min-h-10 px-4",
+                        variant: "secondary",
+                      })}
                       href="/sales"
                       prefetch={false}
                     >

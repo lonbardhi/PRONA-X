@@ -22,6 +22,10 @@ import {
 } from "@/app/requests/actions";
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getIntlLocale, type Locale } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
@@ -166,7 +170,7 @@ function Field({
   label: string;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-medium text-slate-700">
+    <label className="grid gap-2 text-sm font-medium text-foreground">
       {label}
       {children}
     </label>
@@ -188,8 +192,7 @@ function TextField({
 }) {
   return (
     <Field label={label}>
-      <input
-        className="crm-input text-slate-950"
+      <Input
         name={name}
         placeholder={placeholder}
         required={required}
@@ -251,8 +254,7 @@ function RequestForm({
           </div>
 
           <Field label={isSq ? "Lloji i kërkesës" : "Request type"}>
-            <select
-              className="crm-input text-slate-950"
+            <Select
               defaultValue={defaultRequestType}
               name="request_type"
               required
@@ -262,25 +264,25 @@ function RequestForm({
                   {formatCrmRequestType(type, locale)}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label={isSq ? "Urgjenca" : "Urgency"}>
-            <select className="crm-input text-slate-950" name="urgency" defaultValue="warm">
+            <Select name="urgency" defaultValue="warm">
               <option value="hot">{isSq ? "E nxehtë" : "Hot"}</option>
               <option value="warm">{isSq ? "Mesatare" : "Warm"}</option>
               <option value="cold">{isSq ? "E ftohtë" : "Cold"}</option>
-            </select>
+            </Select>
           </Field>
           <TextField label={isSq ? "Emri i klientit" : "Client name"} name="customer_name" required />
           <TextField label={isSq ? "Telefoni" : "Phone"} name="phone" placeholder="+355..." required />
           <TextField label="Email" name="email" type="email" />
           <Field label={isSq ? "Kontakti i preferuar" : "Preferred contact"}>
-            <select className="crm-input text-slate-950" name="preferred_contact_method" defaultValue="phone">
+            <Select name="preferred_contact_method" defaultValue="phone">
               <option value="phone">{isSq ? "Telefon" : "Phone"}</option>
               <option value="whatsapp">WhatsApp</option>
               <option value="email">Email</option>
               <option value="in_person">{isSq ? "Takim fizik" : "In person"}</option>
-            </select>
+            </Select>
           </Field>
         </div>
 
@@ -296,26 +298,26 @@ function RequestForm({
             </p>
           </div>
           <Field label={isSq ? "Tipi i pronës" : "Property type"}>
-            <select className="crm-input text-slate-950" name="property_type">
+            <Select name="property_type">
               <option value="">{isSq ? "Çdo tip prone" : "Any property type"}</option>
               {propertyTypes.map((type) => (
                 <option key={type} value={type}>
                   {formatPropertyType(type, locale)}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <TextField label={isSq ? "Qyteti" : "City"} name="city" placeholder="Tirana" />
           <TextField label={isSq ? "Zona / lagjja" : "Area / neighborhood"} name="area" placeholder="Blloku, Farka..." />
           <Field label={isSq ? "Periudha e qirasë" : "Rent period"}>
-            <select className="crm-input text-slate-950" name="rent_period">
+            <Select name="rent_period">
               <option value="">{isSq ? "Vetëm për qira" : "Only for rentals"}</option>
               {rentPeriods.map((period) => (
                 <option key={period} value={period}>
                   {formatRentPeriodLabel(period, locale)}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <TextField label={isSq ? "Buxheti minimum EUR" : "Min budget EUR"} name="min_budget_eur" type="number" />
           <TextField label={isSq ? "Buxheti maksimum EUR" : "Max budget EUR"} name="max_budget_eur" type="number" />
@@ -330,36 +332,36 @@ function RequestForm({
             </h3>
           </div>
           <Field label={isSq ? "Burimi" : "Source"}>
-            <select className="crm-input text-slate-950" name="source" required>
+            <Select name="source" required>
               {crmRequestSources.map((source) => (
                 <option key={source} value={source}>
                   {formatCrmRequestSource(source, locale)}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label={isSq ? "Cakto agjent" : "Assign agent"}>
-            <select className="crm-input text-slate-950" name="assigned_agent_id">
+            <Select name="assigned_agent_id">
               <option value="">{currentUserName}</option>
               {agents.map((agent) => (
                 <option key={agent.id} value={agent.id}>
                   {agent.full_name || agent.role}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <TextField label={isSq ? "Ndjekja tjetër" : "Next follow-up"} name="next_follow_up_at" type="datetime-local" />
           <TextField label={isSq ? "Detaje burimi" : "Source details"} name="source_details" />
-          <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2">
+          <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             {isSq ? "Shënime" : "Notes"}
-            <textarea className="crm-textarea text-slate-950" name="notes" rows={4} />
+            <Textarea name="notes" rows={4} />
           </label>
         </div>
 
-        <button className="crm-button crm-button-primary w-full sm:w-fit">
+        <Button className="w-full sm:w-fit">
           <Plus className="h-4 w-4" />
           {isSq ? "Krijo kërkesë" : "Create request"}
-        </button>
+        </Button>
       </form>
     </section>
   );
@@ -378,9 +380,9 @@ function StatusAction({
     <form action={updateCrmRequestStatusAction}>
       <input name="request_id" type="hidden" value={requestId} />
       <input name="status" type="hidden" value={status} />
-      <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+      <Button className="h-9 px-3 text-xs" size="sm" variant="outline">
         {children}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -398,9 +400,9 @@ function MatchAction({
     <form action={createCrmRequestMatchAction}>
       <input name="request_id" type="hidden" value={requestId} />
       <input name="property_id" type="hidden" value={propertyId} />
-      <button className="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100">
+      <Button className="h-9 border-emerald-200 px-3 text-xs text-emerald-800 hover:bg-emerald-50" size="sm" variant="outline">
         {children}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -418,9 +420,9 @@ function MatchStatusAction({
     <form action={updateCrmRequestMatchStatusAction}>
       <input name="match_id" type="hidden" value={matchId} />
       <input name="match_status" type="hidden" value={status} />
-      <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+      <Button className="h-9 px-3 text-xs" size="sm" variant="outline">
         {children}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -438,10 +440,10 @@ function ListingConversionAction({
     <form action={createListingFromCrmRequestAction}>
       <input name="request_id" type="hidden" value={requestId} />
       <input name="transaction_type" type="hidden" value={transactionType} />
-      <button className="crm-button crm-button-secondary h-9 min-h-9 w-full px-3 sm:w-auto">
+      <Button className="h-9 min-h-9 w-full px-3 sm:w-auto" size="sm" variant="secondary">
         <Plus className="h-4 w-4" />
         {children}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -786,7 +788,12 @@ export default async function RequestsPage({ searchParams }: RequestsPageProps) 
               </p>
             </div>
             {canManage ? (
-              <a className="crm-button crm-button-primary w-full sm:w-fit" href="#add-request">
+              <a
+                className={buttonVariants({
+                  className: "w-full sm:w-fit",
+                })}
+                href="#add-request"
+              >
                 <Plus className="h-4 w-4" />
                 {isSq ? "Shto kërkesë" : "Add request"}
               </a>
@@ -832,37 +839,37 @@ export default async function RequestsPage({ searchParams }: RequestsPageProps) 
             <label className="relative min-w-0">
               <span className="sr-only">{isSq ? "Kërko kërkesa" : "Search requests"}</span>
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                className="crm-input bg-slate-50 pl-9 pr-3 text-sm focus:bg-white"
+              <Input
+                className="bg-muted/60 pl-9 pr-3 text-sm focus:bg-background"
                 defaultValue={q}
                 name="q"
                 placeholder={isSq ? "Kërko klient, telefon, qytet, shënime" : "Search client, phone, city, notes"}
               />
             </label>
-            <select className="crm-input bg-slate-50 text-sm" defaultValue={typeFilter} name="type">
+            <Select className="bg-muted/60 text-sm" defaultValue={typeFilter} name="type">
               <option value="">{isSq ? "Të gjitha llojet" : "All types"}</option>
               {crmRequestTypes.map((type) => (
                 <option key={type} value={type}>
                   {formatCrmRequestType(type, locale)}
                 </option>
               ))}
-            </select>
-            <select className="crm-input bg-slate-50 text-sm" defaultValue={statusFilter} name="status">
+            </Select>
+            <Select className="bg-muted/60 text-sm" defaultValue={statusFilter} name="status">
               <option value="">{isSq ? "Të gjitha statuset" : "All statuses"}</option>
               {crmRequestStatuses.map((status) => (
                 <option key={status} value={status}>
                   {formatCrmRequestStatus(status, locale)}
                 </option>
               ))}
-            </select>
-            <select className="crm-input bg-slate-50 text-sm" defaultValue={sort} name="sort">
+            </Select>
+            <Select className="bg-muted/60 text-sm" defaultValue={sort} name="sort">
               <option value="newest">{isSq ? "Më të rejat" : "Newest"}</option>
               <option value="follow_up">{isSq ? "Ndjekja e radhës" : "Next follow-up"}</option>
-            </select>
-            <button className="crm-button crm-button-primary w-full lg:w-auto">
+            </Select>
+            <Button className="w-full lg:w-auto">
               <SlidersHorizontal className="h-4 w-4" />
               {isSq ? "Kërko" : "Search"}
-            </button>
+            </Button>
           </form>
         </div>
 

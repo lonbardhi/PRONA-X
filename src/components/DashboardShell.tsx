@@ -21,6 +21,7 @@ import { RentalsIcon } from "@/components/RentalsIcon";
 import { SalesIcon } from "@/components/SalesIcon";
 import { SessionTimeout } from "@/components/SessionTimeout";
 import { SupportIcon } from "@/components/SupportIcon";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { UsersIcon } from "@/components/UsersIcon";
 import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
 import { t } from "@/lib/i18n";
@@ -142,12 +143,14 @@ export async function DashboardShell({
               <ProfileWorkspacePanel data={workspaceData} locale={locale} />
             ) : null}
             <form action={signOutAction}>
-              <button
+              <Button
                 aria-label={t(locale, "pending.signOut")}
-                className="crm-icon-button"
+                className="rounded-full"
+                size="icon"
+                variant="outline"
               >
                 <LogoutIcon className="h-6 w-6 object-contain" />
-              </button>
+              </Button>
             </form>
           </div>
         </div>
@@ -159,7 +162,10 @@ export async function DashboardShell({
           className="crm-scroll-area flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden"
         >
           <Link
-            className="crm-button crm-button-primary h-9 min-h-9 shrink-0 px-3 text-xs"
+            className={buttonVariants({
+              className: "h-9 min-h-9 shrink-0 px-3 text-xs",
+              size: "sm",
+            })}
             href="/sales#add-property"
             prefetch={false}
           >
@@ -167,7 +173,11 @@ export async function DashboardShell({
             {locale === "sq" ? "Shto shitje" : "Add sale"}
           </Link>
           <Link
-            className="crm-button crm-button-success h-9 min-h-9 shrink-0 px-3 text-xs"
+            className={buttonVariants({
+              className: "h-9 min-h-9 shrink-0 px-3 text-xs",
+              size: "sm",
+              variant: "success",
+            })}
             href="/rentals#add-property"
             prefetch={false}
           >
@@ -175,7 +185,11 @@ export async function DashboardShell({
             {locale === "sq" ? "Shto qira" : "Add rental"}
           </Link>
           <Link
-            className="crm-button crm-button-secondary h-9 min-h-9 shrink-0 px-3 text-xs"
+            className={buttonVariants({
+              className: "h-9 min-h-9 shrink-0 px-3 text-xs",
+              size: "sm",
+              variant: "secondary",
+            })}
             href="/requests#add-request"
             prefetch={false}
           >

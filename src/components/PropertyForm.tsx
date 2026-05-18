@@ -9,6 +9,11 @@ import {
   type ReactNode,
 } from "react";
 
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type {
   AssetDuplicateCandidate,
   PropertyRecord,
@@ -68,12 +73,12 @@ type FieldProps = {
 
 function Field({ children, className = "", label }: FieldProps) {
   return (
-    <label
-      className={`grid min-w-0 gap-2 text-sm font-medium text-slate-700 ${className}`}
+    <Label
+      className={`grid min-w-0 gap-2 text-sm font-medium text-foreground ${className}`}
     >
       {label}
       {children}
-    </label>
+    </Label>
   );
 }
 
@@ -89,9 +94,9 @@ function Section({
   return (
     <section className="crm-section">
       <div>
-        <h3 className="text-sm font-semibold text-slate-950">{title}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         {description ? (
-          <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>
         ) : null}
       </div>
       <div className="grid gap-4 md:grid-cols-2">{children}</div>
@@ -99,10 +104,8 @@ function Section({
   );
 }
 
-const inputClass =
-  "crm-input focus:border-orange-500 focus:ring-orange-100";
-const textareaClass =
-  "crm-textarea focus:border-orange-500 focus:ring-orange-100";
+const inputClass = "focus-visible:border-orange-500 focus-visible:ring-orange-100";
+const textareaClass = "focus-visible:border-orange-500 focus-visible:ring-orange-100";
 
 function toNumber(value: string) {
   return value.trim() === "" ? null : Number(value);
@@ -555,7 +558,7 @@ export function PropertyForm({
           className="md:col-span-2"
           label={locale === "sq" ? "Titulli i pronës" : "Property title"}
         >
-          <input
+          <Input
             className={inputClass}
             defaultValue={property?.title}
             name="title"
@@ -573,7 +576,7 @@ export function PropertyForm({
         </Field>
 
         <Field label={locale === "sq" ? "Tipi" : "Type"}>
-          <select
+          <Select
             className={inputClass}
             name="type"
             onChange={(event) => changeType(event.target.value as PropertyType)}
@@ -585,11 +588,11 @@ export function PropertyForm({
                 {formatPropertyType(type, locale)}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
 
         <Field label={locale === "sq" ? "Statusi" : "Status"}>
-          <select
+          <Select
             className={inputClass}
             name="status"
             onChange={(event) => setSelectedStatus(event.target.value as PropertyStatus)}
@@ -601,11 +604,11 @@ export function PropertyForm({
                 {formatStatusLabel(status, locale)}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
 
         <Field label={locale === "sq" ? "Qyteti" : "City"}>
-          <input
+          <Input
             className={inputClass}
             defaultValue={property?.city}
             name="city"
@@ -626,7 +629,7 @@ export function PropertyForm({
                 : "Neighborhood"
           }
         >
-          <input
+          <Input
             className={inputClass}
             defaultValue={property?.neighborhood || ""}
             name="neighborhood"
@@ -643,7 +646,7 @@ export function PropertyForm({
               : "Address or approximate location"
           }
         >
-          <input
+          <Input
             className={inputClass}
             defaultValue={property?.address || ""}
             name="address"
@@ -668,7 +671,7 @@ export function PropertyForm({
             title={isSq ? "Vendndodhja & informacioni kadastral" : "Location & Cadastral Information"}
           >
             <Field label={isSq ? "Sipërfaqja e parcelës m2" : "Plot size m2"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.plot_size_m2 ?? property?.area_m2)}
                 min="0"
@@ -682,7 +685,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Zona kadastrale" : "Cadastral zone"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.cadastral_zone || ""}
                 name="cadastral_zone"
@@ -691,7 +694,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Numri i parcelës" : "Parcel number"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.parcel_number || ""}
                 name="parcel_number"
@@ -700,7 +703,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Numri i certifikatës së pronësisë" : "Land certificate number"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.land_certificate_number || ""}
                 name="land_certificate_number"
@@ -709,7 +712,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Statusi i pronësisë" : "Ownership status"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.ownership_status || ""}
                 name="ownership_status"
@@ -722,7 +725,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Numri i pronarëve të tokës" : "Number of landowners"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.landowners_count)}
                 min="0"
@@ -734,7 +737,7 @@ export function PropertyForm({
 
           <Section title={isSq ? "Parcela & potenciali i zhvillimit" : "Plot & Development Potential"}>
             <Field label={isSq ? "Përdorimi aktual i tokës" : "Current land use"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.current_land_use || ""}
                 name="current_land_use"
@@ -743,7 +746,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Zona e zhvillimit" : "Development zone"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.development_zone || ""}
                 name="development_zone"
@@ -752,7 +755,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Koeficienti i ndërtimit" : "Building coefficient"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.building_coefficient)}
                 min="0"
@@ -765,7 +768,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Numri maksimal i kateve" : "Maximum floors allowed"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.max_floors)}
                 min="0"
@@ -776,7 +779,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Sipërfaqja bruto e ndërtueshme m2" : "Estimated gross buildable area m2"}>
-              <input
+              <Input
                 className={inputClass}
                 name="estimated_gross_buildable_area_m2"
                 readOnly
@@ -789,7 +792,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Sipërfaqja neto e shitshme m2" : "Estimated net sellable area m2"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_net_sellable_area_m2)}
                 min="0"
@@ -801,7 +804,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Apartamente të vlerësuara" : "Estimated apartments"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_apartments)}
                 min="0"
@@ -811,7 +814,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Garazhe të vlerësuara" : "Estimated garages"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_garages)}
                 min="0"
@@ -821,7 +824,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Vende parkimi" : "Parking spaces"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_parking_spaces)}
                 min="0"
@@ -831,7 +834,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Njësi komerciale" : "Commercial units"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.estimated_commercial_units)}
                 min="0"
@@ -843,7 +846,7 @@ export function PropertyForm({
 
           <Section title={isSq ? "Marrëveshja me pronarin e tokës" : "Landowner Agreement"}>
             <Field label={isSq ? "Përqindja e kërkuar nga pronari" : "Landowner requested percentage"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.landowner_requested_percentage)}
                 max="100"
@@ -857,7 +860,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Përqindja minimale e pranueshme" : "Minimum acceptable percentage"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.minimum_acceptable_percentage)}
                 max="100"
@@ -870,7 +873,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Forma e preferuar e kompensimit" : "Preferred compensation type"}>
-              <select
+              <Select
                 className={inputClass}
                 defaultValue={property?.preferred_compensation_type || ""}
                 name="preferred_compensation_type"
@@ -884,11 +887,11 @@ export function PropertyForm({
                   {isSq ? "Njësi komerciale" : "Commercial units"}
                 </option>
                 <option value="mixed_units">{isSq ? "Njësi të përziera" : "Mixed units"}</option>
-              </select>
+              </Select>
             </Field>
 
             <Field label={isSq ? "Shpërndarja e preferuar e kateve" : "Preferred floor allocation"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.preferred_floor_allocation || ""}
                 name="preferred_floor_allocation"
@@ -897,7 +900,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Orientimi i preferuar" : "Preferred orientation"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.preferred_unit_orientation || ""}
                 name="preferred_unit_orientation"
@@ -906,7 +909,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Statusi i negociimit" : "Negotiation status"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.negotiation_status || ""}
                 name="negotiation_status"
@@ -915,7 +918,7 @@ export function PropertyForm({
             </Field>
 
             <Field className="md:col-span-2" label={isSq ? "Shënime marrëveshjeje" : "Agreement notes"}>
-              <textarea
+              <Textarea
                 className={textareaClass}
                 defaultValue={property?.agreement_notes || ""}
                 name="agreement_notes"
@@ -931,7 +934,7 @@ export function PropertyForm({
 
           <Section title={isSq ? "Interesi i zhvilluesit" : "Developer Interest"}>
             <Field label={isSq ? "Emri i zhvilluesit" : "Developer name"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.developer_name || ""}
                 name="developer_name"
@@ -940,7 +943,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Kontakti i zhvilluesit" : "Developer contact"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.developer_contact || ""}
                 name="developer_contact"
@@ -949,7 +952,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Përqindja e ofruar nga zhvilluesi" : "Developer offered percentage"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={numberValue(property?.developer_offered_percentage)}
                 max="100"
@@ -962,7 +965,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Statusi i ofertës" : "Offer status"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.developer_offer_status || ""}
                 name="developer_offer_status"
@@ -971,7 +974,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Madhësia e propozuar e projektit" : "Proposed project size"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.developer_proposed_project_size || ""}
                 name="developer_proposed_project_size"
@@ -980,7 +983,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Afati i dorëzimit" : "Delivery timeline"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.developer_proposed_delivery_timeline || ""}
                 name="developer_proposed_delivery_timeline"
@@ -989,7 +992,7 @@ export function PropertyForm({
             </Field>
 
             <Field className="md:col-span-2" label={isSq ? "Shpërndarja e propozuar e njësive" : "Proposed unit allocation"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.developer_proposed_unit_allocation || ""}
                 name="developer_proposed_unit_allocation"
@@ -998,7 +1001,7 @@ export function PropertyForm({
             </Field>
 
             <Field className="md:col-span-2" label={isSq ? "Kushtet e zhvilluesit" : "Developer conditions"}>
-              <textarea
+              <Textarea
                 className={textareaClass}
                 defaultValue={property?.developer_conditions || ""}
                 name="developer_conditions"
@@ -1010,7 +1013,7 @@ export function PropertyForm({
 
           <Section title={isSq ? "Planifikimi, aksesi & dukshmëria" : "Planning, Access & Visibility"}>
             <Field label={isSq ? "Aksesi në rrugë" : "Road access"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.road_access || ""}
                 name="road_access"
@@ -1019,7 +1022,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Aksesi në utilitete" : "Utilities access"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.utilities_access || ""}
                 name="utilities_access"
@@ -1028,7 +1031,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Statusi i lejes së planifikimit" : "Planning permission status"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.planning_permission_status || ""}
                 name="planning_permission_status"
@@ -1037,7 +1040,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Statusi i lejes së ndërtimit" : "Construction permit status"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.construction_permit_status || ""}
                 name="construction_permit_status"
@@ -1046,7 +1049,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Statusi i studimit urbanistik" : "Urban study status"}>
-              <input
+              <Input
                 className={inputClass}
                 defaultValue={property?.urban_study_status || ""}
                 name="urban_study_status"
@@ -1055,7 +1058,7 @@ export function PropertyForm({
             </Field>
 
             <Field label={isSq ? "Dukshmëria" : "Visibility"}>
-              <select
+              <Select
                 className={inputClass}
                 defaultValue={property?.visibility || "internal_only"}
                 name="visibility"
@@ -1069,7 +1072,7 @@ export function PropertyForm({
                 <option value="manager_approved_public">
                   {isSq ? "Publike me miratim menaxheri" : "Manager Approved Public"}
                 </option>
-              </select>
+              </Select>
             </Field>
           </Section>
         </>
@@ -1096,7 +1099,7 @@ export function PropertyForm({
                   : "Sale price"
             }
           >
-            <input
+            <Input
               className={inputClass}
               defaultValue={numberValue(property?.price_eur)}
               min="0"
@@ -1126,7 +1129,7 @@ export function PropertyForm({
           </label>
 
           <Field label={locale === "sq" ? "Sipërfaqe m2" : "Area m2"}>
-            <input
+            <Input
               className={inputClass}
               defaultValue={numberValue(property?.area_m2)}
               min="0"
@@ -1141,7 +1144,7 @@ export function PropertyForm({
           {rentalWorkflow ? (
             <>
               <Field label={locale === "sq" ? "Periudha e qirasë" : "Rent period"}>
-                <select
+                <Select
                   className={inputClass}
                   defaultValue={property?.rent_period || "monthly"}
                   name="rent_period"
@@ -1152,11 +1155,11 @@ export function PropertyForm({
                       {formatRentPeriodLabel(period, locale)}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
 
               <Field label={locale === "sq" ? "Depozita EUR" : "Deposit EUR"}>
-                <input
+                <Input
                   className={inputClass}
                   defaultValue={numberValue(property?.deposit_eur)}
                   min="0"
@@ -1168,7 +1171,7 @@ export function PropertyForm({
               </Field>
 
               <Field label={locale === "sq" ? "E disponueshme nga" : "Available from"}>
-                <input
+                <Input
                   className={inputClass}
                   defaultValue={property?.available_from || ""}
                   name="available_from"
@@ -1177,7 +1180,7 @@ export function PropertyForm({
               </Field>
 
               <Field label={locale === "sq" ? "Mobiluar / Pamobiluar" : "Furnished state"}>
-                <select
+                <Select
                   className={inputClass}
                   defaultValue={property?.furnished_state || "unknown"}
                   name="furnished_state"
@@ -1188,11 +1191,11 @@ export function PropertyForm({
                     {locale === "sq" ? "Pjesërisht mobiluar" : "Partially furnished"}
                   </option>
                   <option value="unfurnished">{locale === "sq" ? "Pamobiluar" : "Unfurnished"}</option>
-                </select>
+                </Select>
               </Field>
 
               <Field label={locale === "sq" ? "Kohëzgjatja minimale (muaj)" : "Minimum lease (months)"}>
-                <input
+                <Input
                   className={inputClass}
                   defaultValue={numberValue(property?.minimum_lease_months)}
                   min="0"
@@ -1202,7 +1205,7 @@ export function PropertyForm({
               </Field>
 
               <Field label={locale === "sq" ? "Kohëzgjatja maksimale (muaj)" : "Maximum lease (months)"}>
-                <input
+                <Input
                   className={inputClass}
                   defaultValue={numberValue(property?.maximum_lease_months)}
                   min="0"
@@ -1246,7 +1249,7 @@ export function PropertyForm({
           {!landProperty ? (
             <>
               <Field label={locale === "sq" ? "Dhoma gjumi" : "Bedrooms"}>
-                <input
+                <Input
                   className={inputClass}
                   defaultValue={numberValue(property?.bedrooms)}
                   min="0"
@@ -1256,7 +1259,7 @@ export function PropertyForm({
               </Field>
 
               <Field label={locale === "sq" ? "Banjo" : "Bathrooms"}>
-                <input
+                <Input
                   className={inputClass}
                   defaultValue={numberValue(property?.bathrooms)}
                   min="0"
@@ -1266,7 +1269,7 @@ export function PropertyForm({
               </Field>
 
               <Field label={locale === "sq" ? "Viti i ndërtimit" : "Year built"}>
-                <input
+                <Input
                   className={inputClass}
                   defaultValue={numberValue(property?.year_built)}
                   max="2100"
@@ -1378,8 +1381,16 @@ export function PropertyForm({
                       }
                       className={
                         sameWorkflow
-                          ? "crm-button crm-button-accent min-h-10 w-full px-3 text-xs sm:w-auto"
-                          : "crm-button crm-button-secondary h-9 min-h-9 w-full px-3 text-xs sm:w-auto"
+                          ? buttonVariants({
+                              className:
+                                "min-h-10 w-full bg-orange-600 px-3 text-xs text-white hover:bg-orange-700 sm:w-auto",
+                              size: "sm",
+                            })
+                          : buttonVariants({
+                              className: "h-9 min-h-9 w-full px-3 text-xs sm:w-auto",
+                              size: "sm",
+                              variant: "secondary",
+                            })
                       }
                       href={`/properties/${candidate.id}/edit`}
                     >
@@ -1424,7 +1435,7 @@ export function PropertyForm({
                 : "Property media"
           }
         >
-          <input
+          <Input
             accept={propertyMediaAccept}
             aria-describedby="property-media-help property-media-error"
             className="w-full min-w-0 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 transition file:mr-4 file:rounded-md file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-orange-700 hover:border-orange-200 focus:outline-none focus:ring-4 focus:ring-orange-100"
@@ -1452,14 +1463,15 @@ export function PropertyForm({
               {savedMediaProperty ? (
                 <div className="flex flex-wrap gap-2">
                   {uploadQueue.some((item) => item.status === "error") ? (
-                    <button
-                      className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-orange-700 disabled:opacity-60"
+                    <Button
+                      className="h-9 bg-orange-600 px-3 text-xs text-white hover:bg-orange-700 disabled:opacity-60"
                       disabled={isUploadingMedia}
                       onClick={() => void retryFailedUploads()}
+                      size="sm"
                       type="button"
                     >
                       {isSq ? "Provo perseri median" : "Retry media"}
-                    </button>
+                    </Button>
                   ) : null}
                   <a
                     className="rounded-lg border border-orange-200 bg-white px-3 py-2 text-xs font-semibold text-orange-800 transition hover:bg-orange-100"
@@ -1508,19 +1520,21 @@ export function PropertyForm({
                         {item.status !== "uploading" &&
                         item.status !== "saving" &&
                         item.status !== "done" ? (
-                          <button
+                          <Button
                             aria-label={
                               isSq
                                 ? `Hiq ${item.name} nga radha`
                                 : `Remove ${item.name} from queue`
                             }
-                            className="rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                            className="h-7 px-2 text-xs hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
                             disabled={isUploadingMedia}
                             onClick={() => removeQueueItem(item.id)}
+                            size="sm"
                             type="button"
+                            variant="outline"
                           >
                             {isSq ? "Hiq" : "Remove"}
-                          </button>
+                          </Button>
                         ) : null}
                       </div>
                     </div>
@@ -1554,7 +1568,7 @@ export function PropertyForm({
               : "Description / internal notes"
           }
         >
-          <textarea
+          <Textarea
             className={textareaClass}
             defaultValue={property?.description || ""}
             name="description"
@@ -1572,8 +1586,8 @@ export function PropertyForm({
         </Field>
       </Section>
 
-      <button
-        className="crm-button crm-button-accent w-full sm:w-fit"
+      <Button
+        className="w-full bg-orange-600 text-white hover:bg-orange-700 sm:w-fit"
         disabled={isUploadingMedia || hasBlockingMediaState}
       >
         {isUploadingMedia
@@ -1585,7 +1599,7 @@ export function PropertyForm({
               ? "Po validohet media..."
               : "Validating media..."
             : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

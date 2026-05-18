@@ -3,6 +3,10 @@
 import { CircleDot } from "lucide-react";
 
 import { updateAvailabilityStatusAction } from "@/app/profile/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import {
   availabilityStatuses,
   getAvailabilityStatusLabels,
@@ -26,11 +30,11 @@ export function AvailabilityStatusSelector({
   return (
     <form action={updateAvailabilityStatusAction} className="grid gap-2">
       <input name="return_to" type="hidden" value={returnTo} />
-      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+      <Label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         {locale === "sq" ? "Statusi i punes" : "Work status"}
         <div className="grid grid-cols-[1fr_auto] gap-2">
-          <select
-            className="crm-input h-10 min-h-10 min-w-0 text-sm font-semibold normal-case tracking-normal text-slate-800"
+          <Select
+            className="h-10 text-sm font-semibold normal-case tracking-normal"
             defaultValue={status.status}
             name="status"
           >
@@ -39,15 +43,15 @@ export function AvailabilityStatusSelector({
                 {statusLabels[value]}
               </option>
             ))}
-          </select>
-          <button className="crm-button crm-button-primary h-10 min-h-10 px-3 text-sm normal-case tracking-normal">
+          </Select>
+          <Button className="h-10 min-h-10 px-3 text-sm normal-case tracking-normal">
             <CircleDot className="h-4 w-4" />
             {locale === "sq" ? "Ruaj" : "Save"}
-          </button>
+          </Button>
         </div>
-      </label>
-      <input
-        className="crm-input h-10 min-h-10 text-sm text-slate-800"
+      </Label>
+      <Input
+        className="h-10 min-h-10 text-sm"
         defaultValue={status.status_message || ""}
         maxLength={160}
         name="status_message"

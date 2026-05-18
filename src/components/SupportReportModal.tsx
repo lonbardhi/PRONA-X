@@ -5,6 +5,10 @@ import { useFormStatus } from "react-dom";
 import { AlertCircle, FileUp, Plus, X } from "lucide-react";
 
 import { createSupportTicketAction } from "@/app/support/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { type Locale, t } from "@/lib/i18n";
 import {
   getSupportCategoryLabels,
@@ -33,13 +37,13 @@ function SubmitButton({ locale }: { locale: Locale }) {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      className="crm-button crm-button-primary disabled:cursor-not-allowed disabled:opacity-60"
+    <Button
+      className="disabled:cursor-not-allowed disabled:opacity-60"
       disabled={pending}
     >
       <AlertCircle className="h-4 w-4" />
       {pending ? t(locale, "support.submitting") : t(locale, "support.submit")}
-    </button>
+    </Button>
   );
 }
 
@@ -71,8 +75,8 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
 
   return (
     <>
-      <button
-        className="crm-button crm-button-primary w-full sm:w-auto"
+      <Button
+        className="w-full sm:w-auto"
         onClick={() => {
           setEnvironment(getClientEnvironment());
           setOpen(true);
@@ -81,7 +85,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
       >
         <Plus className="h-4 w-4" />
         {t(locale, "support.report")}
-      </button>
+      </Button>
 
       {open ? (
         <div
@@ -102,14 +106,16 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                   {t(locale, "support.whatInclude")}
                 </p>
               </div>
-              <button
+              <Button
                 aria-label={t(locale, "common.cancel")}
-                className="crm-icon-button shrink-0"
+                className="shrink-0 rounded-full"
                 onClick={() => setOpen(false)}
+                size="icon"
                 type="button"
+                variant="outline"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
 
             <form action={createSupportTicketAction} className="grid gap-5 p-4 sm:p-6">
@@ -121,8 +127,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
 
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.title")}
-                <input
-                  className="crm-input"
+                <Input
                   name="title"
                   placeholder={t(locale, "support.titlePlaceholder")}
                   required
@@ -132,8 +137,7 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
               <div className="grid gap-4 md:grid-cols-3">
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   {t(locale, "support.category")}
-                  <select
-                    className="crm-input"
+                  <Select
                     name="category"
                     required
                   >
@@ -142,13 +146,12 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                         {categoryLabels[category]}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
 
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   {t(locale, "support.priority")}
-                  <select
-                    className="crm-input"
+                  <Select
                     name="priority"
                     required
                   >
@@ -157,13 +160,12 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                         {priorityLabels[priority]}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
 
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   {t(locale, "support.module")}
-                  <select
-                    className="crm-input"
+                  <Select
                     name="related_module"
                   >
                     <option value="">{t(locale, "support.module")}</option>
@@ -172,14 +174,13 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                         {getSupportModuleLabel(locale, module)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               </div>
 
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.property")}
-                <select
-                  className="crm-input"
+                <Select
                   name="related_property_id"
                 >
                   <option value="">{t(locale, "support.noProperty")}</option>
@@ -189,13 +190,13 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
                       {property.city ? ` - ${property.city}` : ""}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
 
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.description")}
-                <textarea
-                  className="crm-textarea min-h-32"
+                <Textarea
+                  className="min-h-32"
                   minLength={20}
                   name="description"
                   placeholder={t(locale, "support.descriptionPlaceholder")}
@@ -205,8 +206,8 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
 
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 {t(locale, "support.steps")}
-                <textarea
-                  className="crm-textarea min-h-24"
+                <Textarea
+                  className="min-h-24"
                   name="steps_to_reproduce"
                   placeholder={t(locale, "support.stepsPlaceholder")}
                 />
@@ -248,13 +249,13 @@ export function SupportReportModal({ locale, properties }: SupportReportModalPro
               </div>
 
               <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
-                <button
-                  className="crm-button crm-button-secondary"
+                <Button
                   onClick={() => setOpen(false)}
                   type="button"
+                  variant="secondary"
                 >
                   {t(locale, "common.cancel")}
-                </button>
+                </Button>
                 <SubmitButton locale={locale} />
               </div>
             </form>

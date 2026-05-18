@@ -3,6 +3,10 @@
 import { BellRing } from "lucide-react";
 
 import { updateUserPreferencesAction } from "@/app/profile/actions";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import {
   calendarViewPreferences,
   getCalendarViewLabels,
@@ -50,10 +54,9 @@ export function PreferencesForm({
       <input name="return_to" type="hidden" value={returnTo} />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <Label className="grid gap-2 text-sm font-medium text-foreground">
           {locale === "sq" ? "Kujtese para takimit" : "Reminder before meeting"}
-          <select
-            className="crm-input text-slate-950"
+          <Select
             defaultValue={preferences.reminder_minutes_before_meeting}
             name="reminder_minutes_before_meeting"
           >
@@ -62,13 +65,12 @@ export function PreferencesForm({
             <option value="60">1 hour</option>
             <option value="120">2 hours</option>
             <option value="1440">1 day</option>
-          </select>
-        </label>
+          </Select>
+        </Label>
 
-        <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <Label className="grid gap-2 text-sm font-medium text-foreground">
           {locale === "sq" ? "Pamja e kalendarit" : "Calendar view"}
-          <select
-            className="crm-input text-slate-950"
+          <Select
             defaultValue={preferences.preferred_calendar_view}
             name="preferred_calendar_view"
           >
@@ -77,8 +79,8 @@ export function PreferencesForm({
                 {calendarViewLabels[view]}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </Label>
       </div>
 
       <div className="grid gap-2">
@@ -86,27 +88,35 @@ export function PreferencesForm({
           {locale === "sq" ? "Kanalet e njoftimeve" : "Notification channels"}
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
-          {channels.map((channel) => (
-            <label
-              className="crm-card-interactive flex items-center gap-3 p-3 text-sm font-medium text-slate-700"
-              key={channel.name}
-            >
-              <input
-                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                defaultChecked={channel.checked}
-                name={channel.name}
-                type="checkbox"
-              />
-              {channel.label}
-            </label>
-          ))}
+          {channels.map((channel) => {
+            const channelId = `preference-${channel.name}`;
+
+            return (
+              <div
+                className="crm-card-interactive flex items-center gap-3 p-3"
+                key={channel.name}
+              >
+                <Checkbox
+                  id={channelId}
+                  defaultChecked={channel.checked}
+                  name={channel.name}
+                />
+                <Label
+                  className="cursor-pointer text-sm font-medium text-foreground"
+                  htmlFor={channelId}
+                >
+                  {channel.label}
+                </Label>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <button className="crm-button crm-button-primary w-full sm:w-fit">
+      <Button className="w-full sm:w-fit">
         <BellRing className="h-4 w-4" />
         {locale === "sq" ? "Ruaj preferencat" : "Save preferences"}
-      </button>
+      </Button>
     </form>
   );
 }
