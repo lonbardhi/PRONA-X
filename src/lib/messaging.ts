@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import {
+  getAvailabilityStatusLabels,
+  type AvailabilityStatus,
+} from "@/lib/agent-workspace";
 import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
 
 export const conversationTypes = [
@@ -65,6 +69,9 @@ export type MessageType = (typeof messageTypes)[number];
 export type MessageNotificationType = (typeof messageNotificationTypes)[number];
 
 export type MessagingProfile = {
+  availability_status?: AvailabilityStatus | null;
+  availability_status_message?: string | null;
+  availability_status_updated_at?: string | null;
   avatar_url?: string | null;
   email?: string | null;
   full_name: string | null;
@@ -212,6 +219,32 @@ export function getProfileDisplayName(profile: MessagingProfile | null | undefin
   }
 
   return profile.full_name || profile.email || `User ${profile.id.slice(0, 8)}`;
+}
+
+export function getProfileAvailabilityLabel(
+  profile: MessagingProfile | null | undefined,
+  locale: Locale = defaultLocale,
+) {
+  if (!profile?.availability_status) {
+    return null;
+  }
+
+  return getAvailabilityStatusLabels(locale)[profile.availability_status];
+}
+
+export function getProfileAvailabilityTitle(
+  profile: MessagingProfile | null | undefined,
+  locale: Locale = defaultLocale,
+) {
+  const label = getProfileAvailabilityLabel(profile, locale);
+
+  if (!label) {
+    return undefined;
+  }
+
+  return profile?.availability_status_message
+    ? `${label}: ${profile.availability_status_message}`
+    : label;
 }
 
 export function getConversationTypeLabel(

@@ -16,9 +16,16 @@ import { MessageBubble } from "@/components/messaging/MessageBubble";
 import { MessageComposer } from "@/components/messaging/MessageComposer";
 import { useConversationMessages } from "@/hooks/useMessaging";
 import {
+  getAvailabilityStatusDotClass,
+  getAvailabilityStatusToneClass,
+  type AvailabilityStatus,
+} from "@/lib/agent-workspace";
+import {
   getConversationTitle,
   getConversationTypeLabel,
   getConversationTypeTone,
+  getProfileAvailabilityTitle,
+  getProfileDisplayName,
   type ConversationListItem,
   type MessageRecord,
   type MessagingProfile,
@@ -84,6 +91,141 @@ function HeaderIcon({ conversation }: { conversation: ConversationListItem }) {
       <MessageSquareText className="h-5 w-5" />
     </span>
   );
+}
+
+function getParticipantDisplayName(
+  participant: ConversationListItem["participants"][number],
+) {
+  return participant.profile
+    ? getProfileDisplayName(participant.profile)
+    : `User ${participant.user_id.slice(0, 8)}`;
+}
+
+function ParticipantPresenceList({
+  conversation,
+  locale,
+}: {
+  conversation: ConversationListItem;
+  locale: Locale;
+}) {
+  const visibleParticipants = conversation.participants.slice(0, 4);
+
+  if (visibleParticipants.length === 0) {
+    return (
+      <p className="mt-1 text-sm text-slate-500">
+        {locale === "sq" ? "Diskutim i brendshem" : "Internal discussion"}
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
+      {visibleParticipants.map((participant) => {
+        const status = participant.profile?.availability_status;
+        const title = [
+          getParticipantDisplayName(participant),
+          getProfileAvailabilityTitle(participant.profile, locale),
+        ]
+          .filter(Boolean)
+          .join(" / ");
+
+        return (
+          <span
+            className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+              status
+                ? getAvailabilityStatusToneClass(status)
+                : "border-slate-200 bg-slate-50 text-slate-500"
+            }`}
+            key={participant.id}
+            title={title}
+          >
+            {status ? (
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full ${getAvailabilityStatusDotClass(status)}`}
+              />
+            ) : null}
+            <span className="max-w-[160px] truncate">
+              {getParticipantDisplayName(participant)}
+            </span>
+          </span>
+        );
+      })}
+      {conversation.participants.length > visibleParticipants.length ? (
+        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
+          +{conversation.participants.length - visibleParticipants.length}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function getAvailabilityExpectationNotice({
+  conversation,
+  currentUserId,
+  locale,
+}: {
+  conversation: ConversationListItem;
+  currentUserId: string;
+  locale: Locale;
+}) {
+  const participant = conversation.participants.find((item) => {
+    const status = item.profile?.availability_status;
+
+    return item.user_id !== currentUserId && status && status !== "available";
+  });
+
+  const profile = participant?.profile;
+  const status = profile?.availability_status;
+
+  if (!profile || !status || status === "available") {
+    return null;
+  }
+
+  const name = getProfileDisplayName(profile);
+  const note = profile.availability_status_message
+    ? ` ${profile.availability_status_message}`
+    : "";
+
+  const messages: Record<AvailabilityStatus, { en: string; sq: string }> = {
+    available: { en: "", sq: "" },
+    away: {
+      en: `${name} is away from desk.${note}`,
+      sq: `${name} eshte larg nga tavolina.${note}`,
+    },
+    do_not_disturb: {
+      en: `${name} is not available.${note}`,
+      sq: `${name} nuk eshte i disponueshem.${note}`,
+    },
+    driving: {
+      en: `${name} is on the move.${note}`,
+      sq: `${name} eshte ne levizje.${note}`,
+    },
+    in_meeting: {
+      en: `${name} is in a meeting.${note}`,
+      sq: `${name} eshte ne takim.${note}`,
+    },
+    offline: {
+      en: `${name} is offline.${note}`,
+      sq: `${name} eshte jashte linje.${note}`,
+    },
+    property_visit: {
+      en: `${name} is on a property visit.${note}`,
+      sq: `${name} eshte ne vizite prone.${note}`,
+    },
+    vacation: {
+      en: `${name} is on vacation.${note}`,
+      sq: `${name} eshte me pushime.${note}`,
+    },
+  };
+
+  const expectation =
+    locale === "sq" ? messages[status].sq : messages[status].en;
+
+  return expectation
+    ? `${expectation} ${
+        locale === "sq" ? "Mesazhet dergohen gjithsesi." : "Messages are still delivered."
+      }`
+    : null;
 }
 
 export function ConversationView({
@@ -158,6 +300,11 @@ export function ConversationView({
   );
   const readOnly =
     conversation.is_archived || currentParticipant?.role === "readonly";
+  const availabilityNotice = getAvailabilityExpectationNotice({
+    conversation,
+    currentUserId,
+    locale,
+  });
 
   return (
     <section
@@ -182,18 +329,7 @@ export function ConversationView({
                   {getConversationTypeLabel(conversation.type, locale)}
                 </span>
               </div>
-              <p className="mt-1 line-clamp-1 text-sm text-slate-500">
-                {conversation.participants.length > 0
-                  ? conversation.participants
-                      .slice(0, 4)
-                      .map((participant) =>
-                        participant.profile?.full_name || participant.profile?.email || participant.user_id.slice(0, 8),
-                      )
-                      .join(", ")
-                  : locale === "sq"
-                    ? "Diskutim i brendshem"
-                    : "Internal discussion"}
-              </p>
+              <ParticipantPresenceList conversation={conversation} locale={locale} />
             </div>
           </div>
 
@@ -267,6 +403,12 @@ export function ConversationView({
         )}
         <div ref={bottomRef} />
       </div>
+
+      {availabilityNotice ? (
+        <div className="border-t border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-800">
+          {availabilityNotice}
+        </div>
+      ) : null}
 
       <MessageComposer
         conversationId={conversation.id}

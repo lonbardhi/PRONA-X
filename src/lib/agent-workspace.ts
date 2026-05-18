@@ -6,6 +6,7 @@ import type { PropertyTransactionType } from "./properties.ts";
 
 export const availabilityStatuses = [
   "available",
+  "away",
   "in_meeting",
   "property_visit",
   "driving",
@@ -183,23 +184,55 @@ export function getAgentWorkspaceErrorMessage(error: unknown) {
 
 export const availabilityStatusLabels: Record<AvailabilityStatus, string> = {
   available: "Available",
+  away: "Away",
   in_meeting: "In Meeting",
   property_visit: "Property Visit",
   driving: "Driving",
-  do_not_disturb: "Do Not Disturb",
+  do_not_disturb: "Not Available",
   offline: "Offline",
   vacation: "Vacation",
 };
 
 const availabilityStatusLabelsSq: Record<AvailabilityStatus, string> = {
   available: "I lire",
+  away: "Larg nga tavolina",
   in_meeting: "Ne takim",
   property_visit: "Vizite prone",
   driving: "Ne levizje",
-  do_not_disturb: "Mos me shqeteso",
+  do_not_disturb: "Jo i disponueshem",
   offline: "Jashte linje",
   vacation: "Pushime",
 };
+
+export const availabilityStatusDotClasses: Record<AvailabilityStatus, string> = {
+  available: "bg-emerald-500",
+  away: "bg-amber-500",
+  in_meeting: "bg-amber-500",
+  property_visit: "bg-blue-500",
+  driving: "bg-blue-500",
+  do_not_disturb: "bg-rose-500",
+  offline: "bg-slate-400",
+  vacation: "bg-violet-500",
+};
+
+export const availabilityStatusToneClasses: Record<AvailabilityStatus, string> = {
+  available: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  away: "border-amber-200 bg-amber-50 text-amber-700",
+  in_meeting: "border-amber-200 bg-amber-50 text-amber-700",
+  property_visit: "border-blue-200 bg-blue-50 text-blue-700",
+  driving: "border-blue-200 bg-blue-50 text-blue-700",
+  do_not_disturb: "border-rose-200 bg-rose-50 text-rose-700",
+  offline: "border-slate-200 bg-slate-100 text-slate-600",
+  vacation: "border-violet-200 bg-violet-50 text-violet-700",
+};
+
+export function getAvailabilityStatusDotClass(status: AvailabilityStatus) {
+  return availabilityStatusDotClasses[status];
+}
+
+export function getAvailabilityStatusToneClass(status: AvailabilityStatus) {
+  return availabilityStatusToneClasses[status];
+}
 
 export const notificationTypeLabels: Record<NotificationType, string> = {
   contract_reminder: "Contract reminder",

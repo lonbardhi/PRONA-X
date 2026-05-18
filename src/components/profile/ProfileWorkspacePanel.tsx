@@ -21,6 +21,7 @@ import { PronaAvatar } from "@/components/PronaAvatar";
 import {
   formatWorkspaceDateTime,
   getAvailabilityStatusLabels,
+  getAvailabilityStatusToneClass,
   type AgentWorkspaceData,
 } from "@/lib/agent-workspace";
 import { getRoleLabel, type Locale } from "@/lib/i18n";
@@ -184,7 +185,9 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
                   </h2>
                   <p className="truncate text-xs text-slate-500">{data.profile.email}</p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${getAvailabilityStatusToneClass(data.status.status)}`}
+                    >
                       {statusLabels[data.status.status]}
                     </span>
                     <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
@@ -210,7 +213,7 @@ export function ProfileWorkspacePanel({ data, locale }: ProfileWorkspacePanelPro
               <section className="crm-card p-3">
                 <AvailabilityStatusSelector
                   locale={locale}
-                  returnTo="/profile"
+                  returnTo={returnTo}
                   status={data.status}
                 />
                 {data.status.updated_at ? (

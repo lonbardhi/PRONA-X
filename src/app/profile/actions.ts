@@ -76,6 +76,8 @@ export async function updateAvailabilityStatusAction(formData: FormData) {
 
   revalidatePath("/profile");
   revalidatePath("/appointments");
+  revalidatePath("/messages");
+  revalidatePath("/admin/users");
   redirect(returnTo);
 }
 

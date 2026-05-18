@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createClient } from "@/lib/supabase/browser";
+import type { AvailabilityStatus } from "@/lib/agent-workspace";
 import {
   getConversationTitle,
   messageAttachmentBucket,
@@ -24,6 +25,12 @@ type RawMessage = Omit<
 };
 type RawAttachment = Omit<MessageAttachment, "signed_url">;
 type RawMention = Omit<MessageMention, "profile">;
+type RawUserStatus = {
+  status: AvailabilityStatus;
+  status_message: string | null;
+  updated_at: string | null;
+  user_id: string;
+};
 
 type ConversationReadMarker = {
   conversationId: string;
@@ -70,7 +77,46 @@ async function getProfilesByIds(
     .select("id,full_name,email,role,avatar_url")
     .in("id", ids);
 
-  return byId((data || []) as MessagingProfile[]);
+  const profiles = (data || []) as MessagingProfile[];
+  const statusMap = await getStatusByUserIds(supabase, ids);
+
+  return byId(
+    profiles.map((profile) => attachAvailabilityStatus(profile, statusMap)),
+  );
+}
+
+async function getStatusByUserIds(
+  supabase: SupabaseBrowserClient,
+  userIds: string[],
+) {
+  const ids = Array.from(new Set(userIds.filter(Boolean)));
+
+  if (ids.length === 0) {
+    return new Map<string, RawUserStatus>();
+  }
+
+  const { data } = await supabase
+    .from("user_status")
+    .select("user_id,status,status_message,updated_at")
+    .in("user_id", ids);
+
+  return new Map(
+    ((data || []) as RawUserStatus[]).map((status) => [status.user_id, status]),
+  );
+}
+
+function attachAvailabilityStatus(
+  profile: MessagingProfile,
+  statusMap: Map<string, RawUserStatus>,
+): MessagingProfile {
+  const status = statusMap.get(profile.id);
+
+  return {
+    ...profile,
+    availability_status: status?.status || "offline",
+    availability_status_message: status?.status_message || null,
+    availability_status_updated_at: status?.updated_at || null,
+  };
 }
 
 async function addSignedAttachmentUrls(

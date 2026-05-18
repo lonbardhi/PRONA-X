@@ -2,6 +2,8 @@
 
 import { PronaAvatar } from "@/components/PronaAvatar";
 import {
+  getProfileAvailabilityLabel,
+  getProfileAvailabilityTitle,
   getMentionHandle,
   getProfileDisplayName,
   type MessagingProfile,
@@ -68,6 +70,8 @@ export function MentionPicker({
             showBorder={false}
             size="sm"
             src={profile.avatar_url}
+            status={profile.availability_status}
+            statusLabel={getProfileAvailabilityTitle(profile, locale)}
           />
           <span className="min-w-0">
             <span className="block truncate text-sm font-semibold text-slate-950">
@@ -75,6 +79,9 @@ export function MentionPicker({
             </span>
             <span className="block truncate text-xs text-slate-500">
               @{getMentionHandle(profile)}
+              {profile.availability_status
+                ? ` / ${getProfileAvailabilityLabel(profile, locale)}`
+                : ""}
             </span>
           </span>
         </button>

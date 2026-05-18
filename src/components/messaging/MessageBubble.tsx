@@ -7,6 +7,7 @@ import { PronaAvatar } from "@/components/PronaAvatar";
 import {
   formatMessageFileSize,
   formatMessagingDateTime,
+  getProfileAvailabilityTitle,
   getProfileDisplayName,
   type MessageAttachment,
   type MessageRecord,
@@ -88,6 +89,8 @@ export function MessageBubble({
           showBorder={false}
           size="sm"
           src={message.sender?.avatar_url}
+          status={message.sender?.availability_status}
+          statusLabel={getProfileAvailabilityTitle(message.sender, locale)}
         />
       ) : null}
       <div

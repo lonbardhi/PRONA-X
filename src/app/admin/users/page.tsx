@@ -3,6 +3,12 @@ import { ShieldCheck, UserCheck, UserCog, UserRoundX } from "lucide-react";
 import { updateUserRoleAction } from "@/app/admin/users/actions";
 import { DashboardShell } from "@/components/DashboardShell";
 import { SetupNotice } from "@/components/SetupNotice";
+import {
+  getAvailabilityStatusDotClass,
+  getAvailabilityStatusLabels,
+  getAvailabilityStatusToneClass,
+  type AvailabilityStatus,
+} from "@/lib/agent-workspace";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getIntlLocale, getRoleLabel, type Locale, t } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
@@ -21,6 +27,13 @@ type ProfileRow = {
   phone: string | null;
   role: AppRole;
   created_at: string;
+};
+
+type UserStatusRow = {
+  status: AvailabilityStatus;
+  status_message: string | null;
+  updated_at: string | null;
+  user_id: string;
 };
 
 const roleOptions: Array<{ value: AppRole; label: string }> = [
@@ -58,6 +71,22 @@ export default async function AdminUsersPage({
     .order("created_at", { ascending: false });
 
   const profiles = (data || []) as ProfileRow[];
+  let statusRows: UserStatusRow[] = [];
+
+  if (profiles.length > 0) {
+    const { data: userStatusRows } = await supabase
+      .from("user_status")
+      .select("user_id,status,status_message,updated_at")
+      .in(
+        "user_id",
+        profiles.map((item) => item.id),
+      );
+
+    statusRows = (userStatusRows || []) as UserStatusRow[];
+  }
+
+  const statusMap = new Map(statusRows.map((status) => [status.user_id, status]));
+  const statusLabels = getAvailabilityStatusLabels(locale);
   const pendingCount = profiles.filter(
     (item) => item.role === "pending" || item.account_status === "pending_approval",
   ).length;
@@ -175,6 +204,9 @@ export default async function AdminUsersPage({
                 item.account_status !== "disabled" &&
                 item.account_status !== "rejected" &&
                 item.account_status !== "deleted";
+              const status = statusMap.get(item.id);
+              const availabilityStatus = status?.status || "offline";
+              const availabilityLabel = statusLabels[availabilityStatus];
 
               return (
                 <div
@@ -199,6 +231,15 @@ export default async function AdminUsersPage({
                       </span>
                       <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-slate-600">
                         {getRoleLabel(locale, item.role)}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getAvailabilityStatusToneClass(availabilityStatus)}`}
+                        title={status?.status_message || availabilityLabel}
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full ${getAvailabilityStatusDotClass(availabilityStatus)}`}
+                        />
+                        {availabilityLabel}
                       </span>
                       {item.role === "viewer" ? (
                         <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">

@@ -5,7 +5,13 @@ import { MessageSquarePlus, Search, X } from "lucide-react";
 
 import { createConversationAction } from "@/app/messages/actions";
 import { PronaAvatar } from "@/components/PronaAvatar";
-import { getMentionHandle, getProfileDisplayName, type MessagingProfile } from "@/lib/messaging";
+import {
+  getMentionHandle,
+  getProfileAvailabilityLabel,
+  getProfileAvailabilityTitle,
+  getProfileDisplayName,
+  type MessagingProfile,
+} from "@/lib/messaging";
 import type { Locale } from "@/lib/i18n";
 
 type CreateConversationModalProps = {
@@ -173,6 +179,8 @@ export function CreateConversationModal({
                     showBorder={false}
                     size="md"
                     src={profile.avatar_url}
+                    status={profile.availability_status}
+                    statusLabel={getProfileAvailabilityTitle(profile, locale)}
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold text-slate-950">
@@ -180,6 +188,9 @@ export function CreateConversationModal({
                     </span>
                     <span className="block truncate text-xs text-slate-500">
                       @{getMentionHandle(profile)} / {profile.role}
+                      {profile.availability_status
+                        ? ` / ${getProfileAvailabilityLabel(profile, locale)}`
+                        : ""}
                     </span>
                   </span>
                 </label>
