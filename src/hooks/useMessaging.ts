@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createClient } from "@/lib/supabase/browser";
 import {
@@ -24,6 +24,13 @@ type RawMessage = Omit<
 };
 type RawAttachment = Omit<MessageAttachment, "signed_url">;
 type RawMention = Omit<MessageMention, "profile">;
+
+type ConversationReadMarker = {
+  conversationId: string;
+  currentUserId: string;
+  latestMessage: MessageRecord;
+  visibleMessageIds: string[];
+};
 
 function normalizeMetadata(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -150,7 +157,46 @@ export async function fetchConversationMessages(
   }));
 }
 
-export function useConversations(initialConversations: ConversationListItem[]) {
+async function persistConversationReadState(
+  supabase: SupabaseBrowserClient,
+  {
+    conversationId,
+    currentUserId,
+    latestMessage,
+    visibleMessageIds,
+  }: ConversationReadMarker,
+) {
+  const { error: readError } = await supabase
+    .from("conversation_participants")
+    .update({
+      last_read_at: latestMessage.created_at,
+      last_read_message_id: latestMessage.id,
+    })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", currentUserId)
+    .is("left_at", null);
+
+  if (readError) {
+    throw readError;
+  }
+
+  if (visibleMessageIds.length === 0) {
+    return;
+  }
+
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", currentUserId)
+    .is("read_at", null)
+    .in("message_id", visibleMessageIds);
+}
+
+export function useConversations(
+  initialConversations: ConversationListItem[],
+  currentUserId: string,
+) {
   const [conversations, setConversations] = useState(initialConversations);
 
   const upsertLastMessage = useCallback(
@@ -176,7 +222,32 @@ export function useConversations(initialConversations: ConversationListItem[]) {
     [],
   );
 
-  return { conversations, setConversations, upsertLastMessage };
+  const markConversationRead = useCallback(
+    (conversationId: string, latestMessage: MessageRecord) => {
+      setConversations((current) =>
+        current.map((conversation) =>
+          conversation.id === conversationId
+            ? {
+                ...conversation,
+                participants: conversation.participants.map((participant) =>
+                  participant.user_id === currentUserId
+                    ? {
+                        ...participant,
+                        last_read_at: latestMessage.created_at,
+                        last_read_message_id: latestMessage.id,
+                      }
+                    : participant,
+                ),
+                unreadCount: 0,
+              }
+            : conversation,
+        ),
+      );
+    },
+    [currentUserId],
+  );
+
+  return { conversations, markConversationRead, setConversations, upsertLastMessage };
 }
 
 export function useConversationMessages({
@@ -184,12 +255,16 @@ export function useConversationMessages({
   currentUserId,
   initialConversationId,
   initialMessages,
+  onConversationRead,
+  onConversationReadCommitted,
   onLatestMessage,
 }: {
   activeConversationId: string | null;
   currentUserId: string;
   initialConversationId: string | null;
   initialMessages: MessageRecord[];
+  onConversationRead?: (conversationId: string, latestMessage: MessageRecord) => void;
+  onConversationReadCommitted?: (conversationId: string) => void;
   onLatestMessage?: (conversationId: string, message: MessageRecord) => void;
 }) {
   const [messages, setMessages] = useState<MessageRecord[]>(
@@ -197,6 +272,7 @@ export function useConversationMessages({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastMarkedReadKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!activeConversationId) {
@@ -292,17 +368,37 @@ export function useConversationMessages({
     }
 
     const latestMessage = messages[messages.length - 1];
+    const readKey = `${activeConversationId}:${latestMessage.id}`;
+
+    if (lastMarkedReadKeyRef.current === readKey) {
+      return;
+    }
+
+    lastMarkedReadKeyRef.current = readKey;
+
+    const visibleMessageIds = messages.map((message) => message.id);
     const supabase = createClient();
 
-    void supabase
-      .from("conversation_participants")
-      .update({
-        last_read_at: latestMessage.created_at,
-        last_read_message_id: latestMessage.id,
+    onConversationRead?.(activeConversationId, latestMessage);
+    void persistConversationReadState(supabase, {
+      conversationId: activeConversationId,
+      currentUserId,
+      latestMessage,
+      visibleMessageIds,
+    })
+      .then(() => {
+        onConversationReadCommitted?.(activeConversationId);
       })
-      .eq("conversation_id", activeConversationId)
-      .eq("user_id", currentUserId);
-  }, [activeConversationId, currentUserId, messages]);
+      .catch(() => {
+        setError("Could not update read status. Refresh the page if badges look stale.");
+      });
+  }, [
+    activeConversationId,
+    currentUserId,
+    messages,
+    onConversationRead,
+    onConversationReadCommitted,
+  ]);
 
   return { error, loading, messages, setMessages };
 }

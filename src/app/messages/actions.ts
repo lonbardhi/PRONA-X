@@ -780,29 +780,37 @@ export async function markConversationReadAction(formData: FormData) {
     redirect(returnTo);
   }
 
-  const { data: latestMessage } = await supabase
+  const { data: visibleMessages } = await supabase
     .from("messages")
     .select("id,created_at")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(80);
+  const latestMessage = visibleMessages?.[0] || null;
 
-  await supabase
-    .from("conversation_participants")
-    .update({
-      last_read_at: latestMessage?.created_at || new Date().toISOString(),
-      last_read_message_id: latestMessage?.id || null,
-    })
-    .eq("conversation_id", conversationId)
-    .eq("user_id", user.id);
+  if (latestMessage) {
+    await supabase
+      .from("conversation_participants")
+      .update({
+        last_read_at: latestMessage.created_at,
+        last_read_message_id: latestMessage.id,
+      })
+      .eq("conversation_id", conversationId)
+      .eq("user_id", user.id)
+      .is("left_at", null);
+  }
 
-  await supabase
-    .from("notifications")
-    .update({ read_at: new Date().toISOString() })
-    .eq("conversation_id", conversationId)
-    .eq("user_id", user.id)
-    .is("read_at", null);
+  const visibleMessageIds = (visibleMessages || []).map((message) => message.id);
+
+  if (visibleMessageIds.length > 0) {
+    await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("conversation_id", conversationId)
+      .eq("user_id", user.id)
+      .is("read_at", null)
+      .in("message_id", visibleMessageIds);
+  }
 
   revalidatePath("/messages");
   redirect(returnTo);

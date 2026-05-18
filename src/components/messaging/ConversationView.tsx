@@ -33,6 +33,8 @@ type ConversationViewProps = {
   initialConversationId: string | null;
   initialMessages: MessageRecord[];
   locale: Locale;
+  onConversationRead?: (conversationId: string, latestMessage: MessageRecord) => void;
+  onConversationReadCommitted?: (conversationId: string) => void;
   onLatestMessage?: (conversationId: string, message: MessageRecord) => void;
   profiles: MessagingProfile[];
   returnTo: string;
@@ -92,6 +94,8 @@ export function ConversationView({
   initialConversationId,
   initialMessages,
   locale,
+  onConversationRead,
+  onConversationReadCommitted,
   onLatestMessage,
   profiles,
   returnTo,
@@ -102,6 +106,8 @@ export function ConversationView({
     currentUserId,
     initialConversationId,
     initialMessages,
+    onConversationRead,
+    onConversationReadCommitted,
     onLatestMessage,
   });
   const mentionProfiles = useMemo(() => {

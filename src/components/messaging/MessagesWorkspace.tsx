@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Inbox } from "lucide-react";
 
@@ -50,7 +50,11 @@ export function MessagesWorkspace({
   const [mobilePane, setMobilePane] = useState<"list" | "conversation">(
     openConversationOnMobile && initialConversationId ? "conversation" : "list",
   );
-  const { conversations, upsertLastMessage } = useConversations(initialConversations);
+  const pendingNavbarRefreshIdsRef = useRef<Set<string>>(new Set());
+  const { conversations, markConversationRead, upsertLastMessage } = useConversations(
+    initialConversations,
+    currentUserId,
+  );
   const filteredConversations = useConversationSearch({
     conversations,
     currentUserId,
@@ -65,7 +69,37 @@ export function MessagesWorkspace({
     [activeConversationId, conversations],
   );
 
+  const handleConversationRead = useCallback(
+    (conversationId: string, latestMessage: MessageRecord) => {
+      const conversation = conversations.find((item) => item.id === conversationId);
+
+      if (conversation && conversation.unreadCount > 0) {
+        pendingNavbarRefreshIdsRef.current.add(conversationId);
+      }
+
+      markConversationRead(conversationId, latestMessage);
+    },
+    [conversations, markConversationRead],
+  );
+
+  const handleConversationReadCommitted = useCallback(
+    (conversationId: string) => {
+      if (!pendingNavbarRefreshIdsRef.current.delete(conversationId)) {
+        return;
+      }
+
+      router.refresh();
+    },
+    [router],
+  );
+
   function selectConversation(conversationId: string) {
+    const conversation = conversations.find((item) => item.id === conversationId);
+
+    if (conversation?.lastMessage) {
+      handleConversationRead(conversationId, conversation.lastMessage);
+    }
+
     setActiveConversationId(conversationId);
     setMobilePane("conversation");
     router.replace(`/messages?conversation=${conversationId}`, { scroll: false });
@@ -211,6 +245,8 @@ export function MessagesWorkspace({
               initialConversationId={initialConversationId}
               initialMessages={initialMessages}
               locale={locale}
+              onConversationRead={handleConversationRead}
+              onConversationReadCommitted={handleConversationReadCommitted}
               onLatestMessage={handleLatestMessage}
               profiles={profiles}
               returnTo={
