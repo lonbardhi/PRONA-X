@@ -455,46 +455,88 @@ function buildActionQueue({
   return items.slice(0, 7);
 }
 
-function MetricTile({
+type MetricAccent = "slate" | "emerald" | "amber" | "rose" | "blue" | "cyan";
+
+function getMetricAccentClasses(accent: MetricAccent) {
+  return {
+    amber: {
+      border: "border-amber-200/70",
+      icon: "bg-amber-50 text-amber-700",
+      text: "text-amber-700",
+    },
+    blue: {
+      border: "border-blue-200/70",
+      icon: "bg-blue-50 text-blue-700",
+      text: "text-blue-700",
+    },
+    cyan: {
+      border: "border-cyan-200/70",
+      icon: "bg-cyan-50 text-cyan-700",
+      text: "text-cyan-700",
+    },
+    emerald: {
+      border: "border-emerald-200/70",
+      icon: "bg-emerald-50 text-emerald-700",
+      text: "text-emerald-700",
+    },
+    rose: {
+      border: "border-rose-200/70",
+      icon: "bg-rose-50 text-rose-700",
+      text: "text-rose-700",
+    },
+    slate: {
+      border: "border-slate-200",
+      icon: "bg-slate-100 text-slate-700",
+      text: "text-slate-700",
+    },
+  }[accent];
+}
+
+function SignalTile({
   accent = "slate",
+  className,
   href,
   icon: Icon,
   label,
   sublabel,
   value,
 }: {
-  accent?: "slate" | "emerald" | "amber" | "rose" | "blue" | "cyan";
+  accent?: MetricAccent;
+  className?: string;
   href?: string;
   icon: LucideIcon;
   label: string;
   sublabel: string;
   value: number | string;
 }) {
-  const accentClass = {
-    amber: "bg-amber-50 text-amber-700",
-    blue: "bg-blue-50 text-blue-700",
-    cyan: "bg-cyan-50 text-cyan-700",
-    emerald: "bg-emerald-50 text-emerald-700",
-    rose: "bg-rose-50 text-rose-700",
-    slate: "bg-slate-100 text-slate-700",
-  }[accent];
+  const accentClasses = getMetricAccentClasses(accent);
   const content = (
-    <Card className="h-full transition-colors hover:border-emerald-200">
-      <CardContent className="flex h-full items-start justify-between gap-3 p-4">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-            {label}
-          </p>
-          <p className="mt-2 text-3xl font-semibold leading-none text-slate-950">
-            {value}
-          </p>
-          <p className="mt-2 text-sm leading-5 text-slate-500">{sublabel}</p>
-        </div>
-        <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", accentClass)}>
-          <Icon className="h-5 w-5" />
-        </span>
-      </CardContent>
-    </Card>
+    <div
+      className={cn(
+        "group flex h-full min-h-[112px] items-start justify-between gap-3 rounded-md border bg-white p-3 transition-colors",
+        href ? "hover:border-slate-300 hover:bg-slate-50" : "",
+        accentClasses.border,
+        className,
+      )}
+    >
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+          {label}
+        </p>
+        <p className={cn("mt-2 text-3xl font-semibold leading-none", accentClasses.text)}>
+          {value}
+        </p>
+        <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500">{sublabel}</p>
+      </div>
+      <span
+        className={cn(
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-md",
+          accentClasses.icon,
+        )}
+      >
+        <Icon className="h-5 w-5" />
+      </span>
+    </div>
   );
 
   if (!href) {
@@ -505,6 +547,87 @@ function MetricTile({
     <Link className="block h-full" href={href}>
       {content}
     </Link>
+  );
+}
+
+function CommandFocusCard({
+  action,
+  locale,
+  signalCount,
+}: {
+  action: ActionItem;
+  locale: Locale;
+  signalCount: number;
+}) {
+  const Icon = action.icon;
+  const isClear = action.id === "all-clear";
+
+  return (
+    <Card className="overflow-hidden border-slate-950 bg-slate-950 text-white">
+      <CardHeader className="border-b border-white/10 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-300">
+              {locale === "sq" ? "Fokusi tani" : "Focus now"}
+            </p>
+            <CardTitle className="mt-3 text-xl leading-6 text-white">
+              {action.title}
+            </CardTitle>
+          </div>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-white/10 text-white">
+            <Icon className="h-5 w-5" />
+          </span>
+        </div>
+        <CardDescription className="max-w-xl text-slate-300">
+          {action.description}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4 p-4">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+            <p className="text-xs font-medium text-slate-400">
+              {locale === "sq" ? "Numër" : "Count"}
+            </p>
+            <p className="mt-1 text-3xl font-semibold leading-none text-white">
+              {action.meta}
+            </p>
+          </div>
+          <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+            <p className="text-xs font-medium text-slate-400">
+              {locale === "sq" ? "Sinjale gjithsej" : "Total signals"}
+            </p>
+            <p className="mt-1 text-3xl font-semibold leading-none text-white">
+              {signalCount}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Badge
+            className={cn(
+              "w-fit",
+              isClear ? "bg-emerald-100 text-emerald-800" : "",
+            )}
+            variant={isClear ? "success" : getPriorityVariant(action.priority)}
+          >
+            {isClear
+              ? locale === "sq"
+                ? "Pa bllokues"
+                : "No blockers"
+              : getPriorityLabel(action.priority, locale)}
+          </Badge>
+          <Link
+            className={buttonVariants({
+              className: "border-white/20 bg-white text-slate-950 hover:bg-slate-100",
+              variant: "outline",
+            })}
+            href={action.href}
+          >
+            {locale === "sq" ? "Hap punën" : "Open work"}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -829,6 +952,77 @@ export default async function DashboardPage() {
     unreadNotifications: notifications.length,
   });
   const appointmentTypeLabels = getAppointmentTypeLabels(locale);
+  const signalCount =
+    overdueFollowups.length +
+    hotRequests.length +
+    todayAppointments.length +
+    missingMediaProperties.length +
+    contractsAtRisk.length +
+    notifications.length;
+  const signalMetrics: Array<{
+    accent: MetricAccent;
+    href: string;
+    icon: LucideIcon;
+    id: string;
+    label: string;
+    sublabel: string;
+    value: number;
+  }> = [
+    {
+      accent: overdueFollowups.length > 0 ? "rose" : "emerald",
+      href: "/appointments",
+      icon: Clock3,
+      id: "overdue-followups",
+      label: locale === "sq" ? "Ndjekje vonë" : "Overdue",
+      sublabel: locale === "sq" ? "telefonata / follow-up" : "calls / follow-ups",
+      value: overdueFollowups.length,
+    },
+    {
+      accent: hotRequests.length > 0 ? "rose" : "cyan",
+      href: "/requests",
+      icon: Target,
+      id: "hot-requests",
+      label: locale === "sq" ? "Kërkesa hot" : "Hot requests",
+      sublabel: locale === "sq" ? "duan kontakt sot" : "need contact today",
+      value: hotRequests.length,
+    },
+    {
+      accent: "blue",
+      href: "/appointments",
+      icon: CalendarDays,
+      id: "today-appointments",
+      label: locale === "sq" ? "Takime sot" : "Today",
+      sublabel: locale === "sq" ? "vizita dhe telefonata" : "viewings and calls",
+      value: todayAppointments.length,
+    },
+    {
+      accent: missingMediaProperties.length > 0 ? "amber" : "emerald",
+      href: "/properties",
+      icon: Camera,
+      id: "missing-media",
+      label: locale === "sq" ? "Pa media" : "No media",
+      sublabel: locale === "sq" ? "listime aktive" : "active listings",
+      value: missingMediaProperties.length,
+    },
+    {
+      accent: contractsAtRisk.length > 0 ? "amber" : "emerald",
+      href: "/documents?tab=contracts",
+      icon: FileWarning,
+      id: "contract-risk",
+      label: locale === "sq" ? "Rrezik kontrate" : "Contract risk",
+      sublabel: locale === "sq" ? "miratim / skadim" : "approval / expiry",
+      value: contractsAtRisk.length,
+    },
+    {
+      accent: notifications.length > 0 ? "amber" : "slate",
+      href: "/messages",
+      icon: Bell,
+      id: "team-signals",
+      label: locale === "sq" ? "Sinjale ekipi" : "Team signals",
+      sublabel: locale === "sq" ? "njoftime pa lexuar" : "unread notifications",
+      value: notifications.length,
+    },
+  ];
 
   return (
     <DashboardShell userEmail={user.email} userRole={profile.role}>
@@ -867,55 +1061,52 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-          <MetricTile
-            accent={overdueFollowups.length > 0 ? "rose" : "emerald"}
-            href="/appointments"
-            icon={Clock3}
-            label={locale === "sq" ? "Ndjekje vonë" : "Overdue"}
-            sublabel={locale === "sq" ? "telefonata / follow-up" : "calls / follow-ups"}
-            value={overdueFollowups.length}
+        <section className="grid gap-3 xl:grid-cols-[minmax(320px,0.95fr)_minmax(0,2fr)]">
+          <CommandFocusCard
+            action={actionQueue[0]}
+            locale={locale}
+            signalCount={signalCount}
           />
-          <MetricTile
-            accent={hotRequests.length > 0 ? "rose" : "cyan"}
-            href="/requests"
-            icon={Target}
-            label={locale === "sq" ? "Kërkesa hot" : "Hot requests"}
-            sublabel={locale === "sq" ? "duan kontakt sot" : "need contact today"}
-            value={hotRequests.length}
-          />
-          <MetricTile
-            accent="blue"
-            href="/appointments"
-            icon={CalendarDays}
-            label={locale === "sq" ? "Takime sot" : "Today"}
-            sublabel={locale === "sq" ? "vizita dhe telefonata" : "viewings and calls"}
-            value={todayAppointments.length}
-          />
-          <MetricTile
-            accent={missingMediaProperties.length > 0 ? "amber" : "emerald"}
-            href="/properties"
-            icon={Camera}
-            label={locale === "sq" ? "Pa media" : "No media"}
-            sublabel={locale === "sq" ? "listime aktive" : "active listings"}
-            value={missingMediaProperties.length}
-          />
-          <MetricTile
-            accent={contractsAtRisk.length > 0 ? "amber" : "emerald"}
-            href="/documents?tab=contracts"
-            icon={FileWarning}
-            label={locale === "sq" ? "Rrezik kontrate" : "Contract risk"}
-            sublabel={locale === "sq" ? "miratim / skadim" : "approval / expiry"}
-            value={contractsAtRisk.length}
-          />
-          <MetricTile
-            accent={notifications.length > 0 ? "amber" : "slate"}
-            href="/messages"
-            icon={Bell}
-            label={locale === "sq" ? "Sinjale ekipi" : "Team signals"}
-            sublabel={locale === "sq" ? "njoftime pa lexuar" : "unread notifications"}
-            value={notifications.length}
-          />
+
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle>
+                    {locale === "sq" ? "Sinjalet operative" : "Operational signals"}
+                  </CardTitle>
+                  <CardDescription>
+                    {locale === "sq"
+                      ? "Kontroll i shpejtë për bllokuesit që ndikojnë ditën e punës."
+                      : "Fast scan of blockers that affect the working day."}
+                  </CardDescription>
+                </div>
+                <Badge variant={signalCount > 0 ? "warning" : "success"}>
+                  {locale === "sq"
+                    ? signalCount > 0
+                      ? `${signalCount} për vëmendje`
+                      : "Në rregull"
+                    : signalCount > 0
+                      ? `${signalCount} need attention`
+                      : "All clear"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
+              {signalMetrics.map((metric) => (
+                <SignalTile
+                  accent={metric.accent}
+                  className="min-h-[104px] bg-slate-50/40"
+                  href={metric.href}
+                  icon={metric.icon}
+                  key={metric.id}
+                  label={metric.label}
+                  sublabel={metric.sublabel}
+                  value={metric.value}
+                />
+              ))}
+            </CardContent>
+          </Card>
         </section>
 
         <section className="grid gap-5 xl:grid-cols-3">
@@ -989,14 +1180,14 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="grid gap-4 pt-0">
               <div className="grid gap-3 sm:grid-cols-2">
-                <MetricTile
+                <SignalTile
                   accent="blue"
                   icon={Home}
                   label={locale === "sq" ? "Aktive" : "Active"}
                   sublabel={locale === "sq" ? "publikuar / negociata" : "published / live"}
                   value={salesMetrics.active}
                 />
-                <MetricTile
+                <SignalTile
                   accent="emerald"
                   icon={TrendingUp}
                   label={locale === "sq" ? "Të shitura" : "Sold"}
@@ -1040,14 +1231,14 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="grid gap-4 pt-0">
               <div className="grid gap-3 sm:grid-cols-2">
-                <MetricTile
+                <SignalTile
                   accent="emerald"
                   icon={KeyRound}
                   label={locale === "sq" ? "Aktive" : "Active"}
                   sublabel={locale === "sq" ? "qira në treg" : "rental inventory"}
                   value={rentalMetrics.active}
                 />
-                <MetricTile
+                <SignalTile
                   accent="cyan"
                   icon={Building2}
                   label={locale === "sq" ? "Kontrata" : "Contracts"}
@@ -1196,14 +1387,14 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="grid gap-4 pt-0">
               <div className="grid gap-3 sm:grid-cols-2">
-                <MetricTile
+                <SignalTile
                   accent={checklistItems.length > 0 ? "amber" : "emerald"}
                   icon={ClipboardList}
                   label={locale === "sq" ? "Mungojnë" : "Missing"}
                   sublabel={locale === "sq" ? "dokumente" : "documents"}
                   value={checklistItems.length}
                 />
-                <MetricTile
+                <SignalTile
                   accent={contractsAtRisk.length > 0 ? "amber" : "emerald"}
                   icon={FileWarning}
                   label={locale === "sq" ? "Në rrezik" : "At risk"}
