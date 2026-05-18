@@ -12,6 +12,8 @@ import {
   Bath,
   BedDouble,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   Edit3,
   Home,
   Images,
@@ -165,12 +167,61 @@ export function PropertyQuickViewDialog({
   property,
 }: PropertyQuickViewDialogProps) {
   const [activeMediaIndex, setActiveMediaIndex] = useState<number | null>(null);
+  const [mediaCarouselState, setMediaCarouselState] = useState({
+    canScrollNext: false,
+    canScrollPrev: false,
+  });
+  const mediaCarouselRef = useRef<HTMLDivElement | null>(null);
   const lastMediaTriggerRef = useRef<HTMLElement | null>(null);
 
   const closeMediaViewer = useCallback(() => {
     setActiveMediaIndex(null);
     window.requestAnimationFrame(() => lastMediaTriggerRef.current?.focus());
   }, []);
+
+  const updateMediaCarouselState = useCallback(() => {
+    const node = mediaCarouselRef.current;
+
+    if (!node) {
+      setMediaCarouselState({ canScrollNext: false, canScrollPrev: false });
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, node.scrollWidth - node.clientWidth);
+    const nextState = {
+      canScrollPrev: node.scrollLeft > 4,
+      canScrollNext: node.scrollLeft < maxScrollLeft - 4,
+    };
+
+    setMediaCarouselState((current) =>
+      current.canScrollNext === nextState.canScrollNext &&
+      current.canScrollPrev === nextState.canScrollPrev
+        ? current
+        : nextState,
+    );
+  }, []);
+
+  const scrollMediaCarousel = useCallback(
+    (direction: "next" | "prev") => {
+      const node = mediaCarouselRef.current;
+
+      if (!node) {
+        return;
+      }
+
+      const firstItem = node.querySelector<HTMLElement>("[data-media-carousel-item]");
+      const gap = 12;
+      const step = firstItem ? firstItem.offsetWidth + gap : node.clientWidth * 0.8;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      node.scrollBy({
+        behavior: reducedMotion ? "auto" : "smooth",
+        left: direction === "next" ? step : -step,
+      });
+      window.requestAnimationFrame(updateMediaCarouselState);
+    },
+    [updateMediaCarouselState],
+  );
 
   useEffect(() => {
     if (!property) {
@@ -203,6 +254,16 @@ export function PropertyQuickViewDialog({
       return () => window.cancelAnimationFrame(frame);
     }
   }, [property]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(updateMediaCarouselState);
+    window.addEventListener("resize", updateMediaCarouselState);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updateMediaCarouselState);
+    };
+  }, [property?.id, property?.property_media?.length, updateMediaCarouselState]);
 
   if (!property) {
     return null;
@@ -421,19 +482,75 @@ export function PropertyQuickViewDialog({
                         {locale === "sq" ? "Media shtesë" : "More media"}
                       </h3>
                       <p className="text-xs text-slate-400">
-                        {locale === "sq" ? "Rrëshqit për t'i parë" : "Scroll to inspect all"}
+                        {locale === "sq" ? "Rrëshqit majtas ose djathtas" : "Swipe left or right"}
                       </p>
                     </div>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white to-transparent" />
+                    <div className="relative min-w-0">
+                      {mediaCarouselState.canScrollPrev ? (
+                        <button
+                          aria-label={
+                            locale === "sq"
+                              ? "Shfaq median e mëparshme"
+                              : "Show previous media"
+                          }
+                          className="crm-icon-button absolute left-1 top-1/2 z-20 hidden h-9 min-h-9 w-9 -translate-y-1/2 border-slate-200 bg-white/95 text-slate-700 shadow-lg hover:bg-white md:inline-flex"
+                          onClick={() => scrollMediaCarousel("prev")}
+                          type="button"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                      ) : null}
+                      {mediaCarouselState.canScrollNext ? (
+                        <button
+                          aria-label={
+                            locale === "sq" ? "Shfaq median tjetër" : "Show next media"
+                          }
+                          className="crm-icon-button absolute right-1 top-1/2 z-20 hidden h-9 min-h-9 w-9 -translate-y-1/2 border-slate-200 bg-white/95 text-slate-700 shadow-lg hover:bg-white md:inline-flex"
+                          onClick={() => scrollMediaCarousel("next")}
+                          type="button"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      ) : null}
                       <div
-                        className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-3 pb-2 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                        className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-white to-transparent transition-opacity ${
+                          mediaCarouselState.canScrollPrev ? "opacity-100" : "opacity-0"
+                        }`}
+                      />
+                      <div
+                        className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-white to-transparent transition-opacity ${
+                          mediaCarouselState.canScrollNext ? "opacity-100" : "opacity-0"
+                        }`}
+                      />
+                      <div
+                        aria-label={
+                          locale === "sq"
+                            ? "Karuseli i medias së pronës"
+                            : "Property media carousel"
+                        }
+                        className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth px-3 pb-2 touch-pan-x focus:outline-none focus:ring-4 focus:ring-emerald-100 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                        onKeyDown={(event) => {
+                          if (event.key === "ArrowLeft") {
+                            event.preventDefault();
+                            scrollMediaCarousel("prev");
+                          }
+
+                          if (event.key === "ArrowRight") {
+                            event.preventDefault();
+                            scrollMediaCarousel("next");
+                          }
+                        }}
+                        onScroll={updateMediaCarouselState}
                         onWheel={(event) => {
                           if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
                             event.currentTarget.scrollLeft += event.deltaY;
                             event.preventDefault();
+                            window.requestAnimationFrame(updateMediaCarouselState);
                           }
                         }}
+                        ref={mediaCarouselRef}
+                        role="region"
+                        tabIndex={0}
                       >
                         {media.map((item, index) => (
                           <button
@@ -443,7 +560,8 @@ export function PropertyQuickViewDialog({
                               media.length,
                               property.title,
                             )}`}
-                            className="relative aspect-[4/3] w-36 shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-slate-100 text-left transition hover:border-emerald-300 focus:outline-none focus:ring-4 focus:ring-emerald-100 sm:w-40"
+                            className="relative aspect-[4/3] w-[42vw] max-w-44 shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-slate-100 text-left transition hover:border-emerald-300 focus:outline-none focus:ring-4 focus:ring-emerald-100 sm:w-40 md:w-44"
+                            data-media-carousel-item
                             key={item.id}
                             onClick={(event) => openMediaViewer(index, event)}
                             type="button"
