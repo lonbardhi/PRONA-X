@@ -19,6 +19,7 @@ import { PropertyIntakePanel } from "@/components/PropertyIntakePanel";
 import { PropertyFilters } from "@/components/PropertyFilters";
 import { PropertyForm } from "@/components/PropertyForm";
 import { PropertyMapListView } from "@/components/properties/PropertyMapListView";
+import { PropertyOperationsPanel } from "@/components/properties/PropertyOperationsPanel";
 import { SetupNotice } from "@/components/SetupNotice";
 import {
   getAlbaniaLocationFilterValues,
@@ -915,6 +916,14 @@ export async function PropertyModulePage({
                   totalCount={resultCount}
                 />
               }
+              properties={typedProperties}
+            />
+
+            <PropertyOperationsPanel
+              canManage={canManage}
+              locale={locale}
+              mapPoints={propertyMapPoints}
+              module={module}
               properties={typedProperties}
             />
           </section>
