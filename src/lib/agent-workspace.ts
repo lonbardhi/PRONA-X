@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { appTimeZone, defaultLocale, getIntlLocale, type Locale } from "@/lib/i18n";
+import { notificationTypes } from "@/lib/notifications/constants";
 import type { AppRole } from "@/lib/supabase/server";
 import type { PropertyTransactionType } from "./properties.ts";
 
@@ -13,22 +14,6 @@ export const availabilityStatuses = [
   "do_not_disturb",
   "offline",
   "vacation",
-] as const;
-
-export const notificationTypes = [
-  "meeting_reminder",
-  "new_assigned_lead",
-  "property_update",
-  "follow_up_reminder",
-  "contract_reminder",
-  "system_alert",
-  "message",
-  "mention",
-  "property_message",
-  "lead_message",
-  "meeting_message",
-  "deal_room_message",
-  "task_created_from_message",
 ] as const;
 
 export const calendarViewPreferences = ["day", "week", "month", "agenda"] as const;
@@ -234,36 +219,94 @@ export function getAvailabilityStatusToneClass(status: AvailabilityStatus) {
   return availabilityStatusToneClasses[status];
 }
 
-export const notificationTypeLabels: Record<NotificationType, string> = {
+export const notificationTypeLabels: Record<string, string> = {
   contract_reminder: "Contract reminder",
+  contract_expiring_soon: "Contract expiring soon",
+  contract_pending_signature: "Contract pending signature",
+  data_quality_warning: "Data quality warning",
   deal_room_message: "Deal room message",
+  document_rejected: "Document rejected",
+  document_requires_review: "Document review",
+  document_uploaded: "Document uploaded",
+  duplicate_lead_detected: "Duplicate lead",
   follow_up_reminder: "Follow-up reminder",
+  lead_assigned: "Lead assigned",
+  lead_follow_up_due: "Lead follow-up due",
+  lead_follow_up_overdue: "Lead follow-up overdue",
   lead_message: "Lead message",
+  map_location_warning: "Map/location warning",
   mention: "Mention",
   message: "Message",
   meeting_reminder: "Meeting reminder",
   meeting_message: "Meeting message",
   new_assigned_lead: "New assigned lead",
+  property_assigned: "Property assigned",
+  property_missing_coordinates: "Missing coordinates",
+  property_missing_media: "Missing media",
   property_message: "Property message",
+  property_price_changed: "Property price changed",
+  property_published: "Property published",
+  property_status_changed: "Property status changed",
   property_update: "Property update",
+  rental_contract_ending: "Rental contract ending",
+  request_assigned: "Request assigned",
+  request_matched: "Request matched",
   system_alert: "System alert",
+  task_assigned: "Task assigned",
   task_created_from_message: "Task from message",
+  task_due_soon: "Task due soon",
+  task_overdue: "Task overdue",
+  visit_cancelled: "Visit cancelled",
+  visit_overdue: "Visit overdue",
+  visit_rescheduled: "Visit rescheduled",
+  visit_scheduled: "Visit scheduled",
+  visit_starts_soon: "Visit starts soon",
+  workspace_alert: "Workspace alert",
 };
 
-const notificationTypeLabelsSq: Record<NotificationType, string> = {
+const notificationTypeLabelsSq: Record<string, string> = {
   contract_reminder: "Kujtese kontrate",
+  contract_expiring_soon: "Kontrate ne skadim",
+  contract_pending_signature: "Kontrate per nenshkrim",
+  data_quality_warning: "Sinjal cilesie te dhenash",
   deal_room_message: "Mesazh deal room",
+  document_rejected: "Dokument i refuzuar",
+  document_requires_review: "Dokument per shqyrtim",
+  document_uploaded: "Dokument i ngarkuar",
+  duplicate_lead_detected: "Lead i dyfishuar",
   follow_up_reminder: "Kujtese ndjekjeje",
+  lead_assigned: "Lead i caktuar",
+  lead_follow_up_due: "Ndjekje lead-i",
+  lead_follow_up_overdue: "Ndjekje lead-i me vonese",
   lead_message: "Mesazh lead",
+  map_location_warning: "Sinjal harte/lokacioni",
   mention: "Permendje",
   message: "Mesazh",
   meeting_reminder: "Kujtese takimi",
   meeting_message: "Mesazh takimi",
   new_assigned_lead: "Lead i ri i caktuar",
+  property_assigned: "Prone e caktuar",
+  property_missing_coordinates: "Mungojne koordinatat",
+  property_missing_media: "Mungon media",
   property_message: "Mesazh prone",
+  property_price_changed: "Cmimi i prones ndryshoi",
+  property_published: "Prone e publikuar",
+  property_status_changed: "Status prone ndryshoi",
   property_update: "Perditesim prone",
+  rental_contract_ending: "Kontrate qiraje ne mbyllje",
+  request_assigned: "Kerkese e caktuar",
+  request_matched: "Kerkese e perputhur",
   system_alert: "Njoftim sistemi",
+  task_assigned: "Detyre e caktuar",
   task_created_from_message: "Detyre nga mesazhi",
+  task_due_soon: "Detyre afer afatit",
+  task_overdue: "Detyre me vonese",
+  visit_cancelled: "Vizite e anuluar",
+  visit_overdue: "Vizite me vonese",
+  visit_rescheduled: "Vizite e riplanifikuar",
+  visit_scheduled: "Vizite e planifikuar",
+  visit_starts_soon: "Vizite se shpejti",
+  workspace_alert: "Sinjal hapesire pune",
 };
 
 export const calendarViewLabels: Record<CalendarViewPreference, string> = {

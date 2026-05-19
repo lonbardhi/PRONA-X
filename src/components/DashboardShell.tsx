@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Bell,
   Landmark,
 } from "lucide-react";
 
@@ -15,6 +14,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { LeadsIcon } from "@/components/LeadsIcon";
 import { LogoutIcon } from "@/components/LogoutIcon";
 import { MessagesNavItem } from "@/components/messaging/MessagesNavItem";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePanel";
 import { RequestIcon } from "@/components/RequestIcon";
 import { RentalsIcon } from "@/components/RentalsIcon";
@@ -27,6 +27,10 @@ import { getAgentWorkspaceData } from "@/lib/agent-workspace-data";
 import { t } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
 import { getUnreadMessagingCount } from "@/lib/messaging-data";
+import {
+  getNotificationWorkspaceId,
+  getUnreadNotificationCount,
+} from "@/lib/notifications/service";
 import { getCurrentUserWithProfile } from "@/lib/supabase/server";
 
 type DashboardShellProps = {
@@ -53,6 +57,14 @@ export async function DashboardShell({
   const messagingUnreadCount = workspaceContext.user
     ? await getUnreadMessagingCount(workspaceContext.supabase, workspaceContext.user.id)
     : 0;
+  const notificationSummary =
+    workspaceContext.user && workspaceContext.profile
+      ? await getUnreadNotificationCount({
+          supabase: workspaceContext.supabase,
+          userId: workspaceContext.user.id,
+          workspaceId: getNotificationWorkspaceId(workspaceContext.profile),
+        })
+      : { unreadCount: 0, urgentUnreadCount: 0 };
   const isViewer = userRole === "viewer";
   const isSupportOnly = userRole === "support";
   const showMobileQuickActions = !isViewer && !isSupportOnly;
@@ -118,14 +130,11 @@ export async function DashboardShell({
   );
   const utilityActions = (
     <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-2">
-      <Link
-        aria-label={t(locale, "notifications")}
-        className="crm-icon-button hidden md:flex"
-        href="/profile?section=notifications"
-        prefetch={false}
-      >
-        <Bell className="h-4 w-4" />
-      </Link>
+      <NotificationBell
+        initialUnreadCount={notificationSummary.unreadCount}
+        initialUrgentUnreadCount={notificationSummary.urgentUnreadCount}
+        locale={locale}
+      />
       <div className="hidden max-w-56 text-right lg:block">
         <p className="truncate text-sm font-medium text-slate-900">
           {workspaceData?.profile.full_name || userEmail}

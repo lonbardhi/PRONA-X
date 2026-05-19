@@ -18,6 +18,7 @@ import {
   type ConversationRecord,
   type MessageNotificationType,
 } from "@/lib/messaging";
+import { getNotificationWorkspaceId } from "@/lib/notifications/service";
 import { createClient, requireApprovedUser } from "@/lib/supabase/server";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
@@ -254,6 +255,7 @@ async function createMessageNotifications({
     new Set(mentionedUserIds.filter((id) => activeRecipientIds.has(id))),
   );
   const mentionSet = new Set(mentionRecipientIds);
+  const workspaceId = getNotificationWorkspaceId();
   const genericRecipientIds = participants
     .filter(
       (participant) =>
@@ -264,11 +266,23 @@ async function createMessageNotifications({
     .map((participant) => participant.user_id);
   const notifications = [
     ...genericRecipientIds.map((userId) => ({
+      action_url: `/messages?conversation=${conversation.id}`,
+      actor_user_id: senderId,
+      category: "messages",
       conversation_id: conversation.id,
+      dedupe_key: `message:${messageId}:${userId}`,
+      delivered_at: new Date().toISOString(),
+      idempotency_key: `message:${messageId}:${userId}`,
       message: truncateNotificationBody(preview),
       message_id: messageId,
+      metadata: {
+        conversation_type: conversation.type,
+        sender_name: senderName,
+      },
+      priority: "normal",
       related_entity_id: conversation.related_entity_id,
       related_entity_type: conversation.related_entity_type,
+      status: "unread",
       title: getMessageNotificationTitle({
         conversation,
         conversationTitle,
@@ -277,13 +291,26 @@ async function createMessageNotifications({
       }),
       type: getNotificationType(conversation, false),
       user_id: userId,
+      workspace_id: workspaceId,
     })),
     ...mentionRecipientIds.map((userId) => ({
+      action_url: `/messages?conversation=${conversation.id}`,
+      actor_user_id: senderId,
+      category: "messages",
       conversation_id: conversation.id,
+      dedupe_key: `mention:${messageId}:${userId}`,
+      delivered_at: new Date().toISOString(),
+      idempotency_key: `mention:${messageId}:${userId}`,
       message: truncateNotificationBody(preview),
       message_id: messageId,
+      metadata: {
+        conversation_type: conversation.type,
+        sender_name: senderName,
+      },
+      priority: "high",
       related_entity_id: conversation.related_entity_id,
       related_entity_type: conversation.related_entity_type,
+      status: "unread",
       title: getMessageNotificationTitle({
         conversation,
         conversationTitle,
@@ -292,6 +319,7 @@ async function createMessageNotifications({
       }),
       type: getNotificationType(conversation, true),
       user_id: userId,
+      workspace_id: workspaceId,
     })),
   ];
 

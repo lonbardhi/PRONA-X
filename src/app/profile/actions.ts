@@ -171,7 +171,7 @@ export async function markNotificationReadAction(formData: FormData) {
 
   const { error } = await supabase
     .from("notifications")
-    .update({ read_at: new Date().toISOString() })
+    .update({ read_at: new Date().toISOString(), status: "read" })
     .eq("id", notificationId)
     .eq("user_id", user.id);
 
@@ -180,6 +180,7 @@ export async function markNotificationReadAction(formData: FormData) {
   }
 
   revalidatePath("/profile");
+  revalidatePath("/notifications");
   redirect(returnTo);
 }
 
@@ -189,7 +190,7 @@ export async function markAllNotificationsReadAction(formData: FormData) {
 
   const { error } = await supabase
     .from("notifications")
-    .update({ read_at: new Date().toISOString() })
+    .update({ read_at: new Date().toISOString(), status: "read" })
     .eq("user_id", user.id)
     .is("read_at", null);
 
@@ -198,5 +199,6 @@ export async function markAllNotificationsReadAction(formData: FormData) {
   }
 
   revalidatePath("/profile");
+  revalidatePath("/notifications");
   redirect(returnTo);
 }

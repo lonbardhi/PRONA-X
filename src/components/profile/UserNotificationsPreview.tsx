@@ -71,7 +71,7 @@ export function UserNotificationsPreview({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-                    {typeLabels[notification.type]}
+                    {typeLabels[notification.type] || notification.type.replaceAll("_", " ")}
                   </p>
                   <h4 className="mt-1 line-clamp-1 text-sm font-semibold text-slate-950">
                     {notification.conversation_id ? (
@@ -113,7 +113,7 @@ export function UserNotificationsPreview({
 
       <Link
         className="text-xs font-semibold text-slate-500 hover:text-emerald-700"
-        href="/profile?section=notifications"
+        href="/notifications"
         prefetch={false}
       >
         {locale === "sq" ? "Shiko te gjitha njoftimet" : "View all notifications"}
