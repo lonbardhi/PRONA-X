@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 
 import { getDefaultMapViewport, getMapProviderName, getTileSourceConfig } from "@/lib/maps/config";
 import type { PropertyMapPoint } from "@/lib/maps/types";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 
 const LeafletMapProvider = dynamic(
   () => import("@/components/map/providers/LeafletMapProvider").then((mod) => mod.LeafletMapProvider),
@@ -18,6 +19,7 @@ const LeafletMapProvider = dynamic(
 export type MapShellProps = {
   className?: string;
   fitToResultsKey?: string;
+  locale?: Locale;
   onSelectProperty?: (property: PropertyMapPoint | null) => void;
   points: PropertyMapPoint[];
   selectedPropertyId?: string | null;
@@ -26,6 +28,7 @@ export type MapShellProps = {
 export function MapShell({
   className,
   fitToResultsKey,
+  locale = defaultLocale,
   onSelectProperty,
   points,
   selectedPropertyId,
@@ -47,6 +50,7 @@ export function MapShell({
       className={className}
       fitToResultsKey={fitToResultsKey}
       initialViewport={viewport}
+      locale={locale}
       onSelectProperty={onSelectProperty}
       points={points}
       selectedPropertyId={selectedPropertyId}

@@ -8,6 +8,7 @@ import { BoundaryLayer } from "@/components/map/layers/BoundaryLayer";
 import { InteractionLayer } from "@/components/map/layers/InteractionLayer";
 import { PropertyMarkerLayer } from "@/components/map/layers/PropertyMarkerLayer";
 import { LeafletTileLayer } from "@/components/map/layers/TileLayer";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 import { calculateBoundsForPoints } from "@/lib/maps/coordinates";
 import type { LatLng, PropertyMapPoint, TileSourceConfig } from "@/lib/maps/types";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ type LeafletMapProviderProps = {
   className?: string;
   fitToResultsKey?: string;
   initialViewport: { center: LatLng; zoom: number };
+  locale?: Locale;
   onSelectProperty?: (property: PropertyMapPoint | null) => void;
   points: PropertyMapPoint[];
   selectedPropertyId?: string | null;
@@ -26,6 +28,7 @@ export function LeafletMapProvider({
   className,
   fitToResultsKey,
   initialViewport,
+  locale = defaultLocale,
   onSelectProperty,
   points,
   selectedPropertyId,
@@ -95,6 +98,7 @@ export function LeafletMapProvider({
       {selectedProperty ? (
         <div className="absolute inset-x-3 bottom-8 z-[500] mx-auto max-w-sm sm:left-4 sm:right-auto">
           <PropertyQuickViewCard
+            locale={locale}
             onClose={() => onSelectProperty?.(null)}
             property={selectedProperty}
           />

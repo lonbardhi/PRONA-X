@@ -268,6 +268,7 @@ export function PropertyMapListView({
         <MapShell
           className="h-[58vh] min-h-[430px] lg:sticky lg:top-4 lg:h-[calc(100vh-8rem)]"
           fitToResultsKey={fitKey}
+          locale={locale}
           onSelectProperty={(point) => setSelectedPropertyId(point?.id || null)}
           points={mapPoints}
           selectedPropertyId={selectedPropertyId}

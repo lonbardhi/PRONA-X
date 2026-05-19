@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Bath, BedDouble, MapPin, Ruler, X } from "lucide-react";
 
 import type { PropertyMapPoint } from "@/lib/maps/types";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 import {
   formatPropertyPrice,
   formatPropertyType,
@@ -11,12 +12,15 @@ import {
 } from "@/lib/properties";
 
 export function PropertyQuickViewCard({
+  locale = defaultLocale,
   onClose,
   property,
 }: {
+  locale?: Locale;
   onClose?: () => void;
   property: PropertyMapPoint;
 }) {
+  const isSq = locale === "sq";
   const location = property.neighborhood
     ? `${property.neighborhood}, ${property.city}`
     : property.city;
@@ -37,7 +41,7 @@ export function PropertyQuickViewCard({
           </div>
         )}
         <button
-          aria-label="Close property quick view"
+          aria-label={isSq ? "Mbyll pamjen e shpejtë të pronës" : "Close property quick view"}
           className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm transition hover:bg-white"
           onClick={onClose}
           type="button"
@@ -50,11 +54,11 @@ export function PropertyQuickViewCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-slate-950 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white">
-              {formatStatusLabel(property.status)}
+              {formatStatusLabel(property.status, locale)}
             </span>
             {property.location_is_approximate ? (
               <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-amber-700">
-                Approx.
+                {isSq ? "Përafërt" : "Approx."}
               </span>
             ) : null}
           </div>
@@ -68,7 +72,7 @@ export function PropertyQuickViewCard({
         </div>
 
         <p className="text-base font-semibold text-slate-950">
-          {formatPropertyPrice(property)}
+          {formatPropertyPrice(property, locale)}
         </p>
 
         <div className="grid grid-cols-3 gap-2 text-xs text-slate-600">
@@ -88,13 +92,13 @@ export function PropertyQuickViewCard({
 
         <div className="flex items-center justify-between gap-2">
           <span className="min-w-0 truncate text-xs font-semibold text-slate-500">
-            {formatPropertyType(property.type)}
+            {formatPropertyType(property.type, locale)}
           </span>
           <Link
             className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-slate-950 px-3 text-xs font-semibold text-white transition hover:bg-slate-800"
             href={property.detailHref}
           >
-            Open
+            {isSq ? "Hap" : "Open"}
           </Link>
         </div>
       </div>
