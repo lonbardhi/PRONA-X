@@ -46,6 +46,7 @@ import {
   type AppointmentStatus,
   type AppointmentType,
 } from "@/lib/appointments";
+import type { CrmRequestType } from "@/lib/crm-requests";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getIntlLocale, type Locale } from "@/lib/i18n";
 import { getCurrentLocale } from "@/lib/i18n-server";
@@ -92,7 +93,7 @@ type RequestSummary = {
   last_contacted_at: string | null;
   next_follow_up_at: string | null;
   property_type: PropertyType | null;
-  request_type: "buyer" | "tenant" | "owner" | "investor";
+  request_type: CrmRequestType;
   status: string;
   urgency: "hot" | "warm" | "cold" | string | null;
 };
@@ -220,6 +221,25 @@ function firstRelation<T>(value: T | T[] | null | undefined) {
   }
 
   return value || null;
+}
+
+function formatDashboardRequestType(type: CrmRequestType, locale: Locale) {
+  const labels: Record<Locale, Record<CrmRequestType, string>> = {
+    sq: {
+      buyer: "Blerës",
+      investor: "Investitor",
+      owner: "Pronar",
+      tenant: "Qiramarrës",
+    },
+    en: {
+      buyer: "Buyer",
+      investor: "Investor",
+      owner: "Owner",
+      tenant: "Tenant",
+    },
+  };
+
+  return labels[locale][type];
 }
 
 function formatShortDateTime(value: string, locale: Locale) {
@@ -1501,7 +1521,7 @@ export default async function DashboardPage() {
                         className="shrink-0"
                         variant={request.urgency === "hot" ? "destructive" : "secondary"}
                       >
-                        {request.request_type}
+                        {formatDashboardRequestType(request.request_type, locale)}
                       </Badge>
                     </div>
                     <p className="mt-3 text-xs font-medium text-slate-500">
@@ -1541,7 +1561,7 @@ export default async function DashboardPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant={request.urgency === "hot" ? "destructive" : "secondary"}>
-                            {request.request_type}
+                            {formatDashboardRequestType(request.request_type, locale)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-slate-600">
