@@ -12,11 +12,14 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PropertyLocationPicker } from "@/components/map/PropertyLocationPicker";
 import { PropertyAssignedAgentCard } from "@/components/PropertyAssignedAgentCard";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   AssetDuplicateCandidate,
+  CoordinateSource,
   PropertyAgentOption,
   PropertyRecord,
   PropertyStatus,
@@ -185,6 +188,18 @@ export function PropertyForm({
     property?.neighborhood || "",
   );
   const [addressValue, setAddressValue] = useState(property?.address || "");
+  const [latitudeValue, setLatitudeValue] = useState(
+    property?.latitude != null ? String(property.latitude) : "",
+  );
+  const [longitudeValue, setLongitudeValue] = useState(
+    property?.longitude != null ? String(property.longitude) : "",
+  );
+  const [locationIsApproximate, setLocationIsApproximate] = useState(
+    Boolean(property?.location_is_approximate),
+  );
+  const [coordinateSource, setCoordinateSource] = useState<CoordinateSource>(
+    property?.coordinate_source || "manual",
+  );
   const [coefficient, setCoefficient] = useState(
     String(property?.building_coefficient ?? ""),
   );
@@ -535,6 +550,17 @@ export function PropertyForm({
       method={typeof action === "string" ? "post" : undefined}
     >
       <input name="transaction_type" type="hidden" value={activeTransactionType} />
+      <input name="coordinate_source" type="hidden" value={coordinateSource} />
+      <input
+        name="coordinate_confidence"
+        type="hidden"
+        value={locationIsApproximate ? "low" : "exact"}
+      />
+      <input
+        name="location_is_approximate"
+        type="hidden"
+        value={locationIsApproximate ? "on" : ""}
+      />
       {!developmentExchangeWorkflow ? (
         <input
           name="visibility"
@@ -707,6 +733,78 @@ export function PropertyForm({
             }
           />
         </Field>
+
+        <Field label={locale === "sq" ? "Latitude" : "Latitude"}>
+          <Input
+            className={inputClass}
+            inputMode="decimal"
+            name="latitude"
+            onChange={(event) => {
+              setLatitudeValue(event.target.value);
+              setCoordinateSource("manual");
+            }}
+            placeholder="41.3275"
+            value={latitudeValue}
+          />
+        </Field>
+
+        <Field label={locale === "sq" ? "Longitude" : "Longitude"}>
+          <Input
+            className={inputClass}
+            inputMode="decimal"
+            name="longitude"
+            onChange={(event) => {
+              setLongitudeValue(event.target.value);
+              setCoordinateSource("manual");
+            }}
+            placeholder="19.8189"
+            value={longitudeValue}
+          />
+        </Field>
+
+        <div className="grid gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 md:col-span-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-amber-950">
+                {locale === "sq"
+                  ? "Shfaq vetëm vendndodhje të përafërt"
+                  : "Approximate location only"}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-amber-800">
+                {locale === "sq"
+                  ? "Koordinatat e sakta ruhen për ekipin, por harta për përdorues pa leje shfaq vetëm pozicion të përafërt."
+                  : "Exact coordinates stay internal, while unauthorized map views receive a stable approximate marker."}
+              </p>
+            </div>
+            <Switch
+              aria-label={
+                locale === "sq"
+                  ? "Aktivizo vendndodhje të përafërt"
+                  : "Enable approximate location"
+              }
+              checked={locationIsApproximate}
+              onCheckedChange={setLocationIsApproximate}
+            />
+          </div>
+        </div>
+
+        <PropertyLocationPicker
+          city={cityValue}
+          latitude={latitudeValue}
+          locale={locale}
+          longitude={longitudeValue}
+          onChange={(position, source) => {
+            setLatitudeValue(String(position.lat));
+            setLongitudeValue(String(position.lng));
+            setCoordinateSource(source);
+          }}
+          onClear={() => {
+            setLatitudeValue("");
+            setLongitudeValue("");
+            setCoordinateSource("manual");
+            setLocationIsApproximate(false);
+          }}
+        />
       </Section>
 
       {developmentExchangeWorkflow ? (

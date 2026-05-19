@@ -42,6 +42,12 @@ const linkedListingSelect = [
   "city",
   "neighborhood",
   "address",
+  "latitude",
+  "longitude",
+  "location_is_approximate",
+  "coordinate_source",
+  "coordinate_confidence",
+  "coordinates_updated_at",
   "price_eur",
   "price_on_request",
   "rent_period",
@@ -94,6 +100,12 @@ type LinkedListingSource = Pick<
   | "city"
   | "neighborhood"
   | "address"
+  | "latitude"
+  | "longitude"
+  | "location_is_approximate"
+  | "coordinate_source"
+  | "coordinate_confidence"
+  | "coordinates_updated_at"
   | "rent_period"
   | "furnished_state"
   | "business_use_allowed"
@@ -199,6 +211,16 @@ function getValidationMessage(message?: string) {
       "Ky status i përket shitjeve dhe nuk vlen për këtë listim.",
     "Maximum lease duration cannot be lower than minimum lease duration":
       "Kohëzgjatja maksimale e qirasë nuk mund të jetë më e ulët se minimumi.",
+    "Coordinates are outside the supported PRONA X market region":
+      "Koordinatat janë jashtë zonës së mbuluar nga PRONA X.",
+    "Latitude and longitude look swapped":
+      "Latitude dhe longitude duken të këmbyera. Kontrollo rendin e koordinatave.",
+    "Latitude and longitude must be saved together":
+      "Latitude dhe longitude duhet të ruhen së bashku.",
+    "Latitude must be between -90 and 90":
+      "Latitude duhet të jetë midis -90 dhe 90.",
+    "Longitude must be between -180 and 180":
+      "Longitude duhet të jetë midis -180 dhe 180.",
     "Title is required": "Shkruaj titullin e pronës.",
   };
 
@@ -338,6 +360,9 @@ function getSharedAssetPayload(
     cadastral_zone: payload.cadastral_zone,
     city: payload.city,
     construction_permit_status: payload.construction_permit_status,
+    coordinate_confidence: payload.coordinate_confidence,
+    coordinate_source: payload.coordinate_source,
+    coordinates_updated_at: payload.coordinates_updated_at,
     current_land_use: payload.current_land_use,
     development_zone: payload.development_zone,
     estimated_apartments: payload.estimated_apartments,
@@ -348,6 +373,9 @@ function getSharedAssetPayload(
     estimated_parking_spaces: payload.estimated_parking_spaces,
     land_certificate_number: payload.land_certificate_number,
     landowners_count: payload.landowners_count,
+    latitude: payload.latitude,
+    location_is_approximate: payload.location_is_approximate,
+    longitude: payload.longitude,
     max_floors: payload.max_floors,
     neighborhood: payload.neighborhood,
     ownership_status: payload.ownership_status,
@@ -373,6 +401,7 @@ async function getPropertyPayload(
   const estimatedGrossBuildableArea =
     normalizeOptionalNumber(input.estimated_gross_buildable_area_m2) ??
     calculateGrossBuildableArea(input.plot_size_m2, input.building_coefficient);
+  const hasCoordinates = input.latitude != null && input.longitude != null;
 
   return {
     title: input.title,
@@ -384,6 +413,14 @@ async function getPropertyPayload(
     city: input.city,
     neighborhood: input.neighborhood || null,
     address: input.address || null,
+    latitude: hasCoordinates ? input.latitude : null,
+    longitude: hasCoordinates ? input.longitude : null,
+    location_is_approximate: hasCoordinates ? input.location_is_approximate : false,
+    coordinate_source: hasCoordinates ? input.coordinate_source || "manual" : null,
+    coordinate_confidence: hasCoordinates
+      ? input.coordinate_confidence || (input.location_is_approximate ? "low" : "exact")
+      : null,
+    coordinates_updated_at: hasCoordinates ? new Date().toISOString() : null,
     price_eur: developmentLand ? null : normalizeOptionalNumber(input.price_eur),
     price_on_request: input.price_on_request,
     rent_period: input.rent_period || "monthly",
@@ -878,6 +915,12 @@ export async function createLinkedListingAction(formData: FormData) {
     city: source.city,
     neighborhood: source.neighborhood,
     address: source.address,
+    latitude: source.latitude,
+    longitude: source.longitude,
+    location_is_approximate: source.location_is_approximate,
+    coordinate_source: source.coordinate_source,
+    coordinate_confidence: source.coordinate_confidence,
+    coordinates_updated_at: source.coordinates_updated_at,
     price_eur: null,
     price_on_request: true,
     rent_period: isRentalTransaction(targetTransactionType) ? "monthly" : source.rent_period || "monthly",

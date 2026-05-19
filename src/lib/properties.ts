@@ -2,6 +2,13 @@ import { z } from "zod";
 
 import type { AppointmentRecord } from "./appointments.ts";
 import { defaultLocale, getIntlLocale, type Locale } from "./i18n.ts";
+import {
+  detectPossiblySwappedLatLng,
+  isCoordinateInSupportedRegion,
+  isValidLatitude,
+  isValidLongitude,
+  parseCoordinate,
+} from "./maps/coordinates.ts";
 
 export const propertyTypes = [
   "apartment",
@@ -131,6 +138,34 @@ const optionalUuid = z.preprocess(
   z.string().uuid("Assigned agent is invalid").optional(),
 );
 
+const optionalLatitude = z.preprocess(
+  (value) => (value === "" || value == null ? undefined : parseCoordinate(value) ?? value),
+  z.number().refine(isValidLatitude, "Latitude must be between -90 and 90").optional(),
+);
+
+const optionalLongitude = z.preprocess(
+  (value) => (value === "" || value == null ? undefined : parseCoordinate(value) ?? value),
+  z.number().refine(isValidLongitude, "Longitude must be between -180 and 180").optional(),
+);
+
+export const coordinateSources = [
+  "manual",
+  "map_picker",
+  "city_centroid",
+  "address_geocode",
+  "imported_csv",
+  "backfill",
+  "unknown",
+] as const;
+
+export const coordinateConfidences = [
+  "exact",
+  "high",
+  "medium",
+  "low",
+  "unknown",
+] as const;
+
 export const propertySchema = z
   .object({
     title: z.string().trim().min(3, "Title is required"),
@@ -141,6 +176,14 @@ export const propertySchema = z
     city: z.string().trim().min(2, "City is required"),
     neighborhood: z.string().trim().optional(),
     address: z.string().trim().optional(),
+    latitude: optionalLatitude,
+    longitude: optionalLongitude,
+    location_is_approximate: z.preprocess(
+      (value) => value === "on" || value === true || value === "true",
+      z.boolean(),
+    ),
+    coordinate_source: z.enum(coordinateSources).optional(),
+    coordinate_confidence: z.enum(coordinateConfidences).optional(),
     price_eur: optionalNumber,
     price_on_request: z.preprocess((value) => value === "on" || value === true, z.boolean()),
     rent_period: z.enum(rentPeriods).optional(),
@@ -287,6 +330,38 @@ export const propertySchema = z
         path: ["minimum_acceptable_percentage"],
       });
     }
+
+    if ((value.latitude == null) !== (value.longitude == null)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Latitude and longitude must be saved together",
+        path: ["latitude"],
+      });
+    }
+
+    if (
+      value.latitude != null &&
+      value.longitude != null &&
+      detectPossiblySwappedLatLng(value.latitude, value.longitude)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Latitude and longitude look swapped",
+        path: ["latitude"],
+      });
+    }
+
+    if (
+      value.latitude != null &&
+      value.longitude != null &&
+      !isCoordinateInSupportedRegion(value.latitude, value.longitude)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Coordinates are outside the supported PRONA X market region",
+        path: ["latitude"],
+      });
+    }
   });
 
 export type PropertyFormInput = z.infer<typeof propertySchema>;
@@ -297,6 +372,8 @@ export type PropertyTransactionType = (typeof propertyTransactionTypes)[number];
 export type PropertyModule = "sales" | "rentals";
 export type RentPeriod = (typeof rentPeriods)[number];
 export type FurnishedState = (typeof furnishedStates)[number];
+export type CoordinateSource = (typeof coordinateSources)[number];
+export type CoordinateConfidence = (typeof coordinateConfidences)[number];
 
 export type AssetDuplicateCandidate = {
   address: string | null;
@@ -353,6 +430,12 @@ export type PropertyRecord = {
   city: string;
   neighborhood: string | null;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_is_approximate: boolean | null;
+  coordinate_source: CoordinateSource | null;
+  coordinate_confidence: CoordinateConfidence | null;
+  coordinates_updated_at: string | null;
   price_eur: number | null;
   price_on_request: boolean | null;
   rent_period: RentPeriod | null;
@@ -425,6 +508,11 @@ export function formDataToPropertyInput(formData: FormData) {
     city: formData.get("city"),
     neighborhood: formData.get("neighborhood") || undefined,
     address: formData.get("address") || undefined,
+    latitude: formData.get("latitude") || undefined,
+    longitude: formData.get("longitude") || undefined,
+    location_is_approximate: formData.get("location_is_approximate"),
+    coordinate_source: formData.get("coordinate_source") || undefined,
+    coordinate_confidence: formData.get("coordinate_confidence") || undefined,
     price_eur: formData.get("price_eur"),
     price_on_request: formData.get("price_on_request"),
     rent_period: formData.get("rent_period") || undefined,

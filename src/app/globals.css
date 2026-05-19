@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "leaflet/dist/leaflet.css";
+@import "leaflet.markercluster/dist/MarkerCluster.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -228,6 +230,89 @@ svg {
 
   .crm-button-success:hover {
     background: rgb(4 120 87);
+  }
+
+  .prona-map-marker {
+    display: inline-flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgb(255 255 255);
+    border-radius: 9999px;
+    box-shadow:
+      0 10px 25px rgb(15 23 42 / 0.22),
+      0 1px 3px rgb(15 23 42 / 0.18);
+    color: rgb(255 255 255);
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    transform: translateZ(0);
+    transition:
+      transform var(--crm-motion-fast) var(--crm-ease-out),
+      box-shadow var(--crm-motion-fast) var(--crm-ease-out);
+  }
+
+  .prona-map-marker:hover,
+  .prona-map-marker-selected {
+    transform: scale(1.14);
+    box-shadow:
+      0 14px 28px rgb(15 23 42 / 0.28),
+      0 0 0 4px rgb(16 185 129 / 0.2);
+  }
+
+  .prona-map-marker-sale {
+    background: rgb(5 150 105);
+  }
+
+  .prona-map-marker-rent {
+    background: rgb(37 99 235);
+  }
+
+  .prona-map-marker-development {
+    background: rgb(249 115 22);
+  }
+
+  .prona-map-marker-inactive {
+    background: rgb(100 116 139);
+  }
+
+  .prona-map-cluster {
+    display: inline-flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgb(255 255 255);
+    border-radius: 9999px;
+    background: rgb(15 23 42);
+    box-shadow:
+      0 16px 34px rgb(15 23 42 / 0.28),
+      0 0 0 7px rgb(16 185 129 / 0.18);
+    color: rgb(255 255 255);
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+
+  .prona-map-picker-marker {
+    position: relative;
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    border: 3px solid rgb(255 255 255);
+    border-radius: 9999px 9999px 9999px 0;
+    background: rgb(5 150 105);
+    box-shadow: 0 12px 28px rgb(15 23 42 / 0.28);
+    transform: rotate(-45deg);
+  }
+
+  .prona-map-picker-marker::after {
+    position: absolute;
+    inset: 0.45rem;
+    border-radius: 9999px;
+    background: rgb(255 255 255);
+    content: "";
   }
 
   .crm-button-secondary {

@@ -18,7 +18,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PropertyIntakePanel } from "@/components/PropertyIntakePanel";
 import { PropertyFilters } from "@/components/PropertyFilters";
 import { PropertyForm } from "@/components/PropertyForm";
-import { PropertyGrid } from "@/components/PropertyGrid";
+import { PropertyMapListView } from "@/components/properties/PropertyMapListView";
 import { SetupNotice } from "@/components/SetupNotice";
 import {
   getAlbaniaLocationFilterValues,
@@ -49,6 +49,11 @@ import {
   type PropertyModule,
   type PropertyRecord,
 } from "@/lib/properties";
+import {
+  propertyMapSelect,
+  toPropertyMapPoints,
+  type PropertyMapRow,
+} from "@/lib/properties/mapQuery";
 import { isOperatorRole, requireApprovedUser } from "@/lib/supabase/server";
 
 type PropertiesPageProps = {
@@ -57,7 +62,7 @@ type PropertiesPageProps = {
 };
 
 export const propertySelect =
-  "id,title,slug,description,type,transaction_type,status,city,neighborhood,address,price_eur,price_on_request,rent_period,available_from,deposit_eur,minimum_lease_months,maximum_lease_months,furnished_state,utilities_included,sublease_allowed,business_use_allowed,asset_id,linked_sale_property_id,linked_rental_property_id,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,assigned_agent_id,created_at,assigned_agent:profiles!properties_assigned_agent_id_fkey(id,full_name,email,phone,role,avatar_url,agency_name),property_media(id,public_url,alt_text,sort_order)";
+  "id,title,slug,description,type,transaction_type,status,city,neighborhood,address,latitude,longitude,location_is_approximate,coordinate_source,coordinate_confidence,coordinates_updated_at,price_eur,price_on_request,rent_period,available_from,deposit_eur,minimum_lease_months,maximum_lease_months,furnished_state,utilities_included,sublease_allowed,business_use_allowed,asset_id,linked_sale_property_id,linked_rental_property_id,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,assigned_agent_id,created_at,assigned_agent:profiles!properties_assigned_agent_id_fkey(id,full_name,email,phone,role,avatar_url,agency_name),property_media(id,public_url,alt_text,sort_order)";
 
 const assetCandidateSelect =
   "id,title,type,transaction_type,status,city,neighborhood,address,area_m2,plot_size_m2,asset_id,linked_sale_property_id,linked_rental_property_id";
@@ -493,10 +498,19 @@ export async function PropertyModulePage({
   let propertiesQuery = supabase
     .from("properties")
     .select(propertySelect, { count: "exact" });
+  let mapPropertiesQuery = supabase
+    .from("properties")
+    .select(propertyMapSelect)
+    .not("latitude", "is", null)
+    .not("longitude", "is", null)
+    .limit(1000);
 
   propertiesQuery = isRentalModule
     ? propertiesQuery.in("transaction_type", ["rent", "rent_to_own"])
     : propertiesQuery.eq("transaction_type", "sale");
+  mapPropertiesQuery = isRentalModule
+    ? mapPropertiesQuery.in("transaction_type", ["rent", "rent_to_own"])
+    : mapPropertiesQuery.eq("transaction_type", "sale");
 
   const searchTerm = getIlikeSearchTerm(filters.q);
   if (searchTerm) {
@@ -504,18 +518,25 @@ export async function PropertyModulePage({
     propertiesQuery = propertiesQuery.or(
       `title.ilike.${pattern},city.ilike.${pattern},neighborhood.ilike.${pattern},description.ilike.${pattern},parcel_number.ilike.${pattern},cadastral_zone.ilike.${pattern},land_certificate_number.ilike.${pattern},developer_name.ilike.${pattern},agreement_notes.ilike.${pattern}`,
     );
+    mapPropertiesQuery = mapPropertiesQuery.or(
+      `title.ilike.${pattern},city.ilike.${pattern},neighborhood.ilike.${pattern}`,
+    );
   }
 
   if (filters.types.length === 1) {
     propertiesQuery = propertiesQuery.eq("type", filters.types[0]);
+    mapPropertiesQuery = mapPropertiesQuery.eq("type", filters.types[0]);
   } else if (filters.types.length > 1) {
     propertiesQuery = propertiesQuery.in("type", filters.types);
+    mapPropertiesQuery = mapPropertiesQuery.in("type", filters.types);
   }
 
   if (filters.statuses.length === 1) {
     propertiesQuery = propertiesQuery.eq("status", filters.statuses[0]);
+    mapPropertiesQuery = mapPropertiesQuery.eq("status", filters.statuses[0]);
   } else if (filters.statuses.length > 1) {
     propertiesQuery = propertiesQuery.in("status", filters.statuses);
+    mapPropertiesQuery = mapPropertiesQuery.in("status", filters.statuses);
   }
 
   if (filters.city) {
@@ -525,31 +546,47 @@ export async function PropertyModulePage({
       locationFilterValues.length > 1
         ? propertiesQuery.in("city", locationFilterValues)
         : propertiesQuery.eq("city", filters.city);
+    mapPropertiesQuery =
+      locationFilterValues.length > 1
+        ? mapPropertiesQuery.in("city", locationFilterValues)
+        : mapPropertiesQuery.eq("city", filters.city);
   }
 
   if (filters.minPrice && filters.maxPrice) {
     propertiesQuery = propertiesQuery.or(
       `and(price_eur.gte.${filters.minPrice},price_eur.lte.${filters.maxPrice}),type.eq.development_land`,
     );
+    mapPropertiesQuery = mapPropertiesQuery.or(
+      `and(price_eur.gte.${filters.minPrice},price_eur.lte.${filters.maxPrice}),type.eq.development_land`,
+    );
   } else if (filters.minPrice) {
     propertiesQuery = propertiesQuery.or(
+      `price_eur.gte.${filters.minPrice},type.eq.development_land`,
+    );
+    mapPropertiesQuery = mapPropertiesQuery.or(
       `price_eur.gte.${filters.minPrice},type.eq.development_land`,
     );
   } else if (filters.maxPrice) {
     propertiesQuery = propertiesQuery.or(
       `price_eur.lte.${filters.maxPrice},type.eq.development_land`,
     );
+    mapPropertiesQuery = mapPropertiesQuery.or(
+      `price_eur.lte.${filters.maxPrice},type.eq.development_land`,
+    );
   }
 
   if (filters.minBedrooms) {
     propertiesQuery = propertiesQuery.gte("bedrooms", Number(filters.minBedrooms));
+    mapPropertiesQuery = mapPropertiesQuery.gte("bedrooms", Number(filters.minBedrooms));
   }
 
   if (isRentalModule && filters.rentPeriod) {
     propertiesQuery = propertiesQuery.eq("rent_period", filters.rentPeriod);
+    mapPropertiesQuery = mapPropertiesQuery.eq("rent_period", filters.rentPeriod);
   }
 
   propertiesQuery = applySort(propertiesQuery, filters.sort).range(rangeFrom, rangeTo);
+  mapPropertiesQuery = mapPropertiesQuery.order("created_at", { ascending: false });
 
   let cityQuery = supabase
     .from("properties")
@@ -561,12 +598,14 @@ export async function PropertyModulePage({
 
   const [
     propertyResult,
+    mapPropertyResult,
     cityResult,
     appointmentResult,
     assetCandidateResult,
     profileResult,
   ] = await Promise.all([
     propertiesQuery,
+    mapPropertiesQuery,
     cityQuery,
     canManage
       ? supabase
@@ -592,6 +631,10 @@ export async function PropertyModulePage({
   ]);
 
   const { data: properties, error, count } = propertyResult;
+  const propertyMapPoints = toPropertyMapPoints({
+    canViewExact: canManage,
+    rows: ((mapPropertyResult.data || []) as unknown as PropertyMapRow[]),
+  });
   const appointments = normalizeAppointments(appointmentResult.data).sort(
     (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
   );
@@ -859,13 +902,20 @@ export async function PropertyModulePage({
               ) : null}
             </div>
 
-            <PropertyGrid canManage={canManage} locale={locale} properties={typedProperties} />
-            <PropertyPaginationControls
-              filters={filters}
+            <PropertyMapListView
+              canManage={canManage}
               locale={locale}
-              modulePath={modulePath}
-              pagination={pagination}
-              totalCount={resultCount}
+              mapPoints={propertyMapPoints}
+              paginationNode={
+                <PropertyPaginationControls
+                  filters={filters}
+                  locale={locale}
+                  modulePath={modulePath}
+                  pagination={pagination}
+                  totalCount={resultCount}
+                />
+              }
+              properties={typedProperties}
             />
           </section>
         </div>
