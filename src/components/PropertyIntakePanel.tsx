@@ -106,25 +106,18 @@ export function PropertyIntakePanel({
         </div>
       </button>
 
-      <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-        }`}
-        id={contentId}
-      >
-        <div className="overflow-hidden">
-          <div className="border-t border-slate-200 p-4 sm:p-5">
-            <div className="mb-5 max-w-3xl text-sm leading-6 text-slate-500">
-              {isRental
-                ? locale === "sq"
-                  ? "Listimet me qira ruhen në inventarin e qirave dhe nuk përzihen me shitjet."
-                  : "Rental listings enter the rental inventory and stay separate from sales."
-                : locale === "sq"
-                  ? "Listimet për shitje ruhen në inventarin e shitjeve dhe nuk përzihen me qiratë."
-                  : "Sale listings enter the sales inventory and stay separate from rentals."}
-            </div>
-            {children}
+      <div hidden={!isOpen} id={contentId}>
+        <div className="border-t border-slate-200 p-4 sm:p-5">
+          <div className="mb-5 max-w-3xl text-sm leading-6 text-slate-500">
+            {isRental
+              ? locale === "sq"
+                ? "Listimet me qira ruhen në inventarin e qirave dhe nuk përzihen me shitjet."
+                : "Rental listings enter the rental inventory and stay separate from sales."
+              : locale === "sq"
+                ? "Listimet për shitje ruhen në inventarin e shitjeve dhe nuk përzihen me qiratë."
+                : "Sale listings enter the sales inventory and stay separate from rentals."}
           </div>
+          {children}
         </div>
       </div>
     </section>
