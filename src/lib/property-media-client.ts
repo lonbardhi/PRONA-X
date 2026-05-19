@@ -6,6 +6,7 @@ import {
   createPropertyMediaStoragePath,
   getPropertyMediaKindFromUrl,
   getPropertyMediaMimeType,
+  propertyMediaMaxFileSizeMb,
   propertyMediaMaxFiles,
   propertyMediaRules,
   propertyVideoMaxDurationSeconds,
@@ -14,8 +15,8 @@ import {
 import { createClient } from "@/lib/supabase/browser";
 
 const MEDIA_BUCKET = "property-media";
-const UPLOAD_TIMEOUT_MS = 120_000;
-const UPLOAD_STALL_MS = 45_000;
+const UPLOAD_TIMEOUT_MS = 15 * 60 * 1000;
+const UPLOAD_STALL_MS = 90_000;
 
 export type PropertyUploadQueueStatus =
   | "queued"
@@ -143,7 +144,7 @@ function translateValidationError(error: string, locale: "sq" | "en") {
   }
 
   if (error.includes("too large")) {
-    return "Skedari eshte shume i madh. Kompresoje dhe provo perseri.";
+    return `Skedari eshte shume i madh. Maksimumi eshte ${propertyMediaMaxFileSizeMb} MB per skedar.`;
   }
 
   return "Skedari nuk kaloi validimin. Kontrollo formatin dhe madhesine.";
@@ -291,8 +292,8 @@ function getUploadErrorMessage(error: unknown, locale: "sq" | "en") {
 
   if (status === 413 || message.includes("Payload too large")) {
     return isSq(locale)
-      ? "Skedari eshte shume i madh per ngarkim. Kompresoje dhe provo perseri."
-      : "The file is too large to upload. Compress it and try again.";
+      ? `Skedari eshte shume i madh per ngarkim. Maksimumi eshte ${propertyMediaMaxFileSizeMb} MB per skedar.`
+      : `The file is too large to upload. The maximum is ${propertyMediaMaxFileSizeMb} MB per file.`;
   }
 
   if (status === 415 || message.includes("Unsupported")) {
@@ -314,8 +315,8 @@ function getUploadErrorMessage(error: unknown, locale: "sq" | "en") {
   }
 
   return isSq(locale)
-    ? "Ngarkimi i medias deshtoi. Provo perseri me nje skedar me te vogel ose lidhje me te qendrueshme."
-    : "Media upload failed. Try again with a smaller file or a more stable connection.";
+    ? "Ngarkimi i medias deshtoi. Kontrollo lidhjen dhe provo perseri."
+    : "Media upload failed. Check the connection and try again.";
 }
 
 export async function uploadPropertyMediaDirect({

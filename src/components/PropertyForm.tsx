@@ -49,9 +49,9 @@ import {
 import {
   propertyMediaAccept,
   propertyMediaHelpText,
+  propertyMediaMaxFileSizeMb,
   propertyMediaMaxFiles,
   propertyVideoMaxDurationSeconds,
-  propertyVideoMaxSizeMb,
 } from "@/lib/property-media";
 import { defaultLocale, type Locale } from "@/lib/i18n";
 
@@ -1450,7 +1450,7 @@ export function PropertyForm({
             id="property-media-help"
           >
             {isSq
-              ? `Ngarko deri në ${propertyMediaMaxFiles} skedarë njëkohësisht. Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri në ${propertyVideoMaxDurationSeconds} sekonda dhe ${propertyVideoMaxSizeMb} MB. Dokumente: PDF.`
+              ? `Ngarko deri në ${propertyMediaMaxFiles} skedarë njëkohësisht. Foto: JPG, PNG, WebP, AVIF, GIF. Video: MP4, WebM, MOV deri në ${propertyVideoMaxDurationSeconds} sekonda. Dokumente: PDF. Maksimumi ${propertyMediaMaxFileSizeMb} MB për skedar.`
               : propertyMediaHelpText}
           </span>
           {uploadError ? (
@@ -1491,8 +1491,8 @@ export function PropertyForm({
                 </p>
                 <p className="text-xs text-slate-500">
                   {isSq
-                    ? "Video: maksimumi 1 minutë dhe 25 MB."
-                    : "Video: maximum 1 minute and 25 MB."}
+                    ? `Maksimumi ${propertyMediaMaxFileSizeMb} MB për skedar. Video: deri në ${propertyVideoMaxDurationSeconds} sekonda.`
+                    : `Maximum ${propertyMediaMaxFileSizeMb} MB per file. Videos: up to ${propertyVideoMaxDurationSeconds} seconds.`}
                 </p>
               </div>
               <div className="grid gap-2">

@@ -11,40 +11,42 @@ type MediaRule = {
 
 const MB = 1024 * 1024;
 export const propertyVideoMaxDurationSeconds = 60;
-export const propertyVideoMaxSizeMb = 25;
+export const propertyMediaMaxFileSizeMb = 200;
+export const propertyMediaMaxFileSizeBytes = propertyMediaMaxFileSizeMb * MB;
+export const propertyVideoMaxSizeMb = propertyMediaMaxFileSizeMb;
 export const propertyMediaMaxFiles = 10;
-const propertyVideoMaxSizeBytes = propertyVideoMaxSizeMb * MB;
+const propertyVideoMaxSizeBytes = propertyMediaMaxFileSizeBytes;
 
 export const propertyMediaRules: Record<string, MediaRule> = {
   "image/jpeg": {
     extensions: [".jpg", ".jpeg"],
     kind: "image",
     label: "JPEG image",
-    maxSize: 20 * MB,
+    maxSize: propertyMediaMaxFileSizeBytes,
   },
   "image/png": {
     extensions: [".png"],
     kind: "image",
     label: "PNG image",
-    maxSize: 20 * MB,
+    maxSize: propertyMediaMaxFileSizeBytes,
   },
   "image/webp": {
     extensions: [".webp"],
     kind: "image",
     label: "WebP image",
-    maxSize: 20 * MB,
+    maxSize: propertyMediaMaxFileSizeBytes,
   },
   "image/avif": {
     extensions: [".avif"],
     kind: "image",
     label: "AVIF image",
-    maxSize: 20 * MB,
+    maxSize: propertyMediaMaxFileSizeBytes,
   },
   "image/gif": {
     extensions: [".gif"],
     kind: "image",
     label: "GIF image",
-    maxSize: 20 * MB,
+    maxSize: propertyMediaMaxFileSizeBytes,
   },
   "video/mp4": {
     extensions: [".mp4", ".m4v"],
@@ -68,7 +70,7 @@ export const propertyMediaRules: Record<string, MediaRule> = {
     extensions: [".pdf"],
     kind: "pdf",
     label: "PDF document",
-    maxSize: 25 * MB,
+    maxSize: propertyMediaMaxFileSizeBytes,
   },
 };
 
@@ -88,7 +90,7 @@ export const propertyMediaAccept = Object.entries(propertyMediaRules)
   .join(",");
 
 export const propertyMediaHelpText =
-  "Upload up to 10 files at once. Photos: JPG, PNG, WebP, AVIF, GIF. Videos: MP4, WebM, MOV up to 60 seconds and 25 MB. Documents: PDF.";
+  "Upload up to 10 files at once. Photos: JPG, PNG, WebP, AVIF, GIF. Videos: MP4, WebM, MOV up to 60 seconds. Documents: PDF. Maximum 200 MB per file.";
 
 function getFileExtension(name: string) {
   const match = name.toLowerCase().match(/\.[a-z0-9]+$/);
