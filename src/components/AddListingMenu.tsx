@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ComponentType } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   BriefcaseBusiness,
   Building2,
@@ -10,10 +10,24 @@ import {
   ClipboardList,
   Plus,
   Users,
+  X,
 } from "lucide-react";
 
 import { AddPropertyIcon } from "@/components/AddPropertyIcon";
 import { RentalsIcon } from "@/components/RentalsIcon";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import type { Locale } from "@/lib/i18n";
 
 type AddListingMenuProps = {
@@ -27,34 +41,15 @@ type AddAction = {
   label: string;
 };
 
+type AddActionGroup = {
+  actions: AddAction[];
+  title: string;
+};
+
 export function AddListingMenu({ locale }: AddListingMenuProps) {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [desktopOpen, setDesktopOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const isSq = locale === "sq";
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
 
   const primaryActions: AddAction[] = [
     {
@@ -101,25 +96,53 @@ export function AddListingMenu({ locale }: AddListingMenuProps) {
     },
   ];
 
-  const renderAction = (action: AddAction) => {
+  const actionGroups: AddActionGroup[] = [
+    {
+      actions: primaryActions,
+      title: isSq ? "Prona" : "Properties",
+    },
+    {
+      actions: requestActions,
+      title: isSq ? "Kërkesa" : "Requests",
+    },
+    {
+      actions: assetActions,
+      title: isSq ? "Speciale" : "Special",
+    },
+  ];
+
+  const closeMenus = () => {
+    setDesktopOpen(false);
+    setMobileOpen(false);
+  };
+
+  const renderAction = (action: AddAction, mode: "desktop" | "mobile") => {
     const Icon = action.icon;
 
     return (
       <Link
-        className="group flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+        className={[
+          "group flex items-center gap-3 rounded-xl text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
+          mode === "mobile" ? "min-h-14 px-3 py-3" : "min-h-12 px-3 py-2",
+        ].join(" ")}
         href={action.href}
         key={action.href}
-        onClick={() => setOpen(false)}
+        onClick={closeMenus}
         prefetch={false}
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition group-hover:bg-emerald-50 group-hover:text-emerald-700">
+        <span
+          className={[
+            "flex shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition group-hover:bg-emerald-50 group-hover:text-emerald-700",
+            mode === "mobile" ? "h-11 w-11" : "h-9 w-9",
+          ].join(" ")}
+        >
           <Icon className="h-4 w-4" />
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-slate-950">
+          <span className="block break-words text-sm font-semibold leading-5 text-slate-950">
             {action.label}
           </span>
-          <span className="block truncate text-xs text-slate-500">
+          <span className="block break-words text-xs leading-5 text-slate-500">
             {action.description}
           </span>
         </span>
@@ -127,43 +150,86 @@ export function AddListingMenu({ locale }: AddListingMenuProps) {
     );
   };
 
-  return (
-    <div className="relative" ref={menuRef}>
-      <button
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className="crm-button crm-button-primary h-9 min-h-9 px-3 text-sm"
-        onClick={() => setOpen((value) => !value)}
-        type="button"
-      >
-        <Plus className="h-4 w-4" />
-        {isSq ? "Shto" : "Add"}
-        <ChevronDown className="h-4 w-4" />
-      </button>
-
-      {open ? (
-        <div
-          className="absolute right-0 top-11 z-30 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-white p-2 shadow-xl"
-          role="menu"
-        >
+  const renderGroups = (mode: "desktop" | "mobile") => (
+    <div className={mode === "mobile" ? "grid gap-4" : "grid gap-3"}>
+      {actionGroups.map((group) => (
+        <section className="grid gap-1" key={group.title}>
+          <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+            {group.title}
+          </p>
           <div className="grid gap-1">
-            {primaryActions.map(renderAction)}
+            {group.actions.map((action) => renderAction(action, mode))}
           </div>
-          <div className="my-2 h-px bg-slate-100" />
-          <div className="grid gap-1">
-            {requestActions.map(renderAction)}
-          </div>
-          <div className="my-2 h-px bg-slate-100" />
-          <div className="grid gap-1">
-            {assetActions.map(renderAction)}
-          </div>
-          <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">
-            {isSq
-              ? "Zgjidh fillimisht qëllimin. Shitjet, qiratë dhe kërkesat ruhen si procese të ndara."
-              : "Choose the intent first. Sales, rentals, and requests stay as separate workflows."}
-          </div>
-        </div>
-      ) : null}
+        </section>
+      ))}
     </div>
+  );
+
+  const helperText = isSq
+    ? "Zgjidh çfarë dëshiron të krijosh. Shitjet, qiratë dhe kërkesat ruhen në module të ndara."
+    : "Choose what you want to create. Sales, rentals, and requests stay in separate modules.";
+
+  const renderTrigger = () => (
+    <button
+      aria-label={isSq ? "Hap menunë Shto" : "Open Add menu"}
+      className="crm-button crm-button-primary h-9 min-h-9 px-3 text-sm"
+      type="button"
+    >
+      <Plus className="h-4 w-4" />
+      {isSq ? "Shto" : "Add"}
+      <ChevronDown className="h-4 w-4" />
+    </button>
+  );
+
+  return (
+    <>
+      <div className="hidden md:block">
+        <Popover open={desktopOpen} onOpenChange={setDesktopOpen}>
+          <PopoverTrigger asChild>{renderTrigger()}</PopoverTrigger>
+          <PopoverContent
+            align="start"
+            className="w-[min(21rem,calc(100vw-2rem))] rounded-2xl border-slate-200 bg-white p-2 shadow-xl"
+            side="bottom"
+            sideOffset={8}
+          >
+            <div className="grid gap-3">
+              {renderGroups("desktop")}
+              <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">
+                {helperText}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="md:hidden">
+        <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
+          <DrawerTrigger asChild>{renderTrigger()}</DrawerTrigger>
+          <DrawerContent className="max-h-[86dvh] rounded-t-2xl">
+            <DrawerHeader className="border-b border-slate-100 text-left">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <DrawerTitle>{isSq ? "Shto" : "Add"}</DrawerTitle>
+                  <DrawerDescription className="mt-1 leading-5">
+                    {helperText}
+                  </DrawerDescription>
+                </div>
+                <button
+                  aria-label={isSq ? "Mbyll menunë" : "Close menu"}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700"
+                  onClick={() => setMobileOpen(false)}
+                  type="button"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </DrawerHeader>
+            <div className="overflow-y-auto px-3 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              {renderGroups("mobile")}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </>
   );
 }
