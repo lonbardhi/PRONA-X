@@ -179,6 +179,7 @@ function getDatabaseMessage(message: string) {
 
 function getValidationMessage(message?: string) {
   const validationMessages: Record<string, string> = {
+    "Assigned agent is invalid": "Zgjidh njÃ« agjent pÃ«rgjegjÃ«s tÃ« vlefshÃ«m.",
     "City is required": "Shkruaj qytetin e pronës.",
     "Landowner requested percentage is required":
       "Shkruaj perqindjen e kerkuar nga pronari.",
@@ -206,6 +207,31 @@ function getValidationMessage(message?: string) {
 
 function getSalesMessagePath(message: string) {
   return `/sales?message=${encodeURIComponent(message)}`;
+}
+
+async function resolveAssignedAgentId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  requestedAgentId: string | undefined,
+  fallbackUserId: string,
+) {
+  const assignedAgentId = requestedAgentId || fallbackUserId;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id,role")
+    .eq("id", assignedAgentId)
+    .in("role", ["admin", "manager", "agent"])
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Assigned agent is invalid");
+  }
+
+  return assignedAgentId;
 }
 
 function getModuleMessagePath(transactionType: "sale" | "rent" | "rent_to_own", message: string) {
@@ -300,7 +326,9 @@ async function resolveLinkableAssetSelection(
   };
 }
 
-function getSharedAssetPayload(payload: ReturnType<typeof getPropertyPayload>) {
+function getSharedAssetPayload(
+  payload: Awaited<ReturnType<typeof getPropertyPayload>>,
+) {
   return {
     address: payload.address,
     area_m2: payload.area_m2,
@@ -334,7 +362,11 @@ function getSharedAssetPayload(payload: ReturnType<typeof getPropertyPayload>) {
   };
 }
 
-function getPropertyPayload(formData: FormData, userId: string) {
+async function getPropertyPayload(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  formData: FormData,
+  userId: string,
+) {
   const input = formDataToPropertyInput(formData);
   const developmentLand =
     isDevelopmentLand(input.type) && input.transaction_type === "sale";
@@ -420,7 +452,11 @@ function getPropertyPayload(formData: FormData, userId: string) {
     developer_offer_status: input.developer_offer_status || null,
     visibility: input.visibility || "internal_only",
     created_by: userId,
-    assigned_agent_id: userId,
+    assigned_agent_id: await resolveAssignedAgentId(
+      supabase,
+      input.assigned_agent_id,
+      userId,
+    ),
   };
 }
 
@@ -493,9 +529,9 @@ async function uploadPropertyMedia(
 export async function createPropertyFromFormData(formData: FormData) {
   const { supabase, user } = await requireUser();
 
-  let payload: ReturnType<typeof getPropertyPayload>;
+  let payload: Awaited<ReturnType<typeof getPropertyPayload>>;
   try {
-    payload = getPropertyPayload(formData, user.id);
+    payload = await getPropertyPayload(supabase, formData, user.id);
   } catch (error) {
     return {
       mediaCount: 0,
@@ -671,9 +707,9 @@ export async function updatePropertyFromFormData(
 ) {
   const { supabase, user } = await requireUser();
 
-  let payload: ReturnType<typeof getPropertyPayload>;
+  let payload: Awaited<ReturnType<typeof getPropertyPayload>>;
   try {
-    payload = getPropertyPayload(formData, user.id);
+    payload = await getPropertyPayload(supabase, formData, user.id);
   } catch (error) {
     const message = getActionErrorMessage(error);
     return {
@@ -685,9 +721,8 @@ export async function updatePropertyFromFormData(
     } satisfies PropertyMutationResult;
   }
 
-  const { created_by, assigned_agent_id, ...updatePayload } = payload;
+  const { created_by, ...updatePayload } = payload;
   void created_by;
-  void assigned_agent_id;
 
   const { data: existingProperty, error: existingError } = await supabase
     .from("properties")

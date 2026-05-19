@@ -44,6 +44,8 @@ import { getCurrentLocale } from "@/lib/i18n-server";
 import {
   type AssetDuplicateCandidate,
   getTransactionTypeForModule,
+  normalizeAssignedAgent,
+  type PropertyAgentOption,
   type PropertyModule,
   type PropertyRecord,
 } from "@/lib/properties";
@@ -55,7 +57,7 @@ type PropertiesPageProps = {
 };
 
 export const propertySelect =
-  "id,title,slug,description,type,transaction_type,status,city,neighborhood,address,price_eur,price_on_request,rent_period,available_from,deposit_eur,minimum_lease_months,maximum_lease_months,furnished_state,utilities_included,sublease_allowed,business_use_allowed,asset_id,linked_sale_property_id,linked_rental_property_id,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,created_at,property_media(id,public_url,alt_text,sort_order)";
+  "id,title,slug,description,type,transaction_type,status,city,neighborhood,address,price_eur,price_on_request,rent_period,available_from,deposit_eur,minimum_lease_months,maximum_lease_months,furnished_state,utilities_included,sublease_allowed,business_use_allowed,asset_id,linked_sale_property_id,linked_rental_property_id,bedrooms,bathrooms,area_m2,year_built,plot_size_m2,land_certificate_number,cadastral_zone,parcel_number,ownership_status,landowners_count,current_land_use,development_zone,building_coefficient,max_floors,estimated_gross_buildable_area_m2,estimated_net_sellable_area_m2,estimated_apartments,estimated_garages,estimated_parking_spaces,estimated_commercial_units,road_access,utilities_access,planning_permission_status,construction_permit_status,urban_study_status,landowner_requested_percentage,minimum_acceptable_percentage,preferred_compensation_type,preferred_floor_allocation,preferred_unit_orientation,agreement_notes,negotiation_status,developer_name,developer_contact,developer_offered_percentage,developer_proposed_project_size,developer_proposed_delivery_timeline,developer_proposed_unit_allocation,developer_conditions,developer_offer_status,visibility,assigned_agent_id,created_at,assigned_agent:profiles!properties_assigned_agent_id_fkey(id,full_name,email,phone,role,avatar_url,agency_name),property_media(id,public_url,alt_text,sort_order)";
 
 const assetCandidateSelect =
   "id,title,type,transaction_type,status,city,neighborhood,address,area_m2,plot_size_m2,asset_id,linked_sale_property_id,linked_rental_property_id";
@@ -150,6 +152,37 @@ function formatLocalizedResultCount(
   }
 
   return formatResultCount(count, module);
+}
+
+function getAgentOptions(
+  profiles: PropertyAgentOption[],
+  currentUser: { email?: string | null; id: string },
+) {
+  const seen = new Set<string>();
+  const options: PropertyAgentOption[] = [];
+
+  for (const profile of profiles) {
+    if (seen.has(profile.id)) {
+      continue;
+    }
+
+    seen.add(profile.id);
+    options.push(profile);
+  }
+
+  if (!seen.has(currentUser.id)) {
+    options.unshift({
+      agency_name: null,
+      avatar_url: null,
+      email: currentUser.email || null,
+      full_name: currentUser.email || "Current user",
+      id: currentUser.id,
+      phone: null,
+      role: "agent",
+    });
+  }
+
+  return options;
 }
 
 function buildPropertyModuleHref({
@@ -526,7 +559,13 @@ export async function PropertyModulePage({
     ? cityQuery.in("transaction_type", ["rent", "rent_to_own"])
     : cityQuery.eq("transaction_type", "sale");
 
-  const [propertyResult, cityResult, appointmentResult, assetCandidateResult] = await Promise.all([
+  const [
+    propertyResult,
+    cityResult,
+    appointmentResult,
+    assetCandidateResult,
+    profileResult,
+  ] = await Promise.all([
     propertiesQuery,
     cityQuery,
     canManage
@@ -543,6 +582,13 @@ export async function PropertyModulePage({
           .order("created_at", { ascending: false })
           .limit(100)
       : Promise.resolve({ data: [] as AssetDuplicateCandidate[], error: null }),
+    canManage
+      ? supabase
+          .from("profiles")
+          .select("id,full_name,email,phone,role,avatar_url,agency_name")
+          .in("role", ["admin", "manager", "agent"])
+          .order("full_name", { ascending: true })
+      : Promise.resolve({ data: [] as PropertyAgentOption[], error: null }),
   ]);
 
   const { data: properties, error, count } = propertyResult;
@@ -562,12 +608,17 @@ export async function PropertyModulePage({
       .map((item) => item.city)
       .filter((city): city is string => Boolean(city)),
   );
-  const typedProperties = ((properties || []) as PropertyRecord[]).map((property) => ({
+  const typedProperties = ((properties || []) as unknown as PropertyRecord[]).map((property) => ({
     ...property,
+    assigned_agent: normalizeAssignedAgent(property.assigned_agent),
     appointments: appointments.filter(
       (appointment) => appointment.property_id === property.id,
     ),
   }));
+  const agentOptions = getAgentOptions(
+    (profileResult.data || []) as PropertyAgentOption[],
+    { email: user.email, id: user.id },
+  );
   const assetCandidates = ((assetCandidateResult.data || []) as AssetDuplicateCandidate[])
     .filter((candidate) => Boolean(candidate.id));
   const resultCount = count ?? typedProperties.length;
@@ -827,6 +878,7 @@ export async function PropertyModulePage({
           >
             <PropertyForm
               action="/properties/create"
+              agentOptions={agentOptions}
               assetCandidates={assetCandidates}
               defaultType={filters.types.length === 1 ? filters.types[0] : undefined}
               locale={locale}

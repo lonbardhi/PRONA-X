@@ -12,10 +12,12 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PropertyAssignedAgentCard } from "@/components/PropertyAssignedAgentCard";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   AssetDuplicateCandidate,
+  PropertyAgentOption,
   PropertyRecord,
   PropertyStatus,
   PropertyTransactionType,
@@ -32,6 +34,7 @@ import {
   isRentalTransaction,
   isDevelopmentLand,
   isLandPropertyType,
+  normalizeAssignedAgent,
   rentPeriods,
   propertyTypes,
 } from "@/lib/properties";
@@ -57,6 +60,7 @@ import { defaultLocale, type Locale } from "@/lib/i18n";
 
 type PropertyFormProps = {
   action: string | ((formData: FormData) => void | Promise<void>);
+  agentOptions?: PropertyAgentOption[];
   assetCandidates?: AssetDuplicateCandidate[];
   defaultType?: PropertyType;
   locale?: Locale;
@@ -141,6 +145,7 @@ function getQueueStatusLabel(
 
 export function PropertyForm({
   action,
+  agentOptions = [],
   assetCandidates = [],
   defaultType,
   locale = defaultLocale,
@@ -166,6 +171,11 @@ export function PropertyForm({
       : "draft";
   const [selectedStatus, setSelectedStatus] =
     useState<PropertyStatus>(initialStatus);
+  const initialAssignedAgentId =
+    property?.assigned_agent_id || agentOptions[0]?.id || "";
+  const [selectedAssignedAgentId, setSelectedAssignedAgentId] = useState(
+    initialAssignedAgentId,
+  );
   const [plotSize, setPlotSize] = useState(
     String(property?.plot_size_m2 ?? property?.area_m2 ?? ""),
   );
@@ -193,6 +203,13 @@ export function PropertyForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaUploadLockRef = useRef(false);
   const isSq = locale === "sq";
+  const selectedAssignedAgent =
+    selectedAssignedAgentId
+      ? agentOptions.find((agent) => agent.id === selectedAssignedAgentId) ||
+        (property?.assigned_agent_id === selectedAssignedAgentId
+          ? normalizeAssignedAgent(property?.assigned_agent)
+          : null)
+      : null;
   const existingMediaCount = getExistingPropertyMediaCount(property?.property_media);
   const mediaItemsPendingUpload = uploadQueue.filter(
     (item) => item.status !== "done" && item.status !== "cancelled",
@@ -606,6 +623,38 @@ export function PropertyForm({
             ))}
           </Select>
         </Field>
+
+        <div className="grid gap-3 md:col-span-2 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+          <Field label={locale === "sq" ? "Agjenti pergjegjes" : "Responsible agent"}>
+            <Select
+              className={inputClass}
+              name="assigned_agent_id"
+              onChange={(event) => setSelectedAssignedAgentId(event.target.value)}
+              required={selectedStatus !== "draft"}
+              value={selectedAssignedAgentId}
+            >
+              <option value="">
+                {locale === "sq" ? "Zgjidh agjentin" : "Choose agent"}
+              </option>
+              {agentOptions.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.full_name || agent.email || agent.id}
+                  {agent.role ? ` / ${agent.role}` : ""}
+                </option>
+              ))}
+            </Select>
+            <span className="text-xs font-normal leading-5 text-slate-500">
+              {locale === "sq"
+                ? "Kerkohet para publikimit qe ekipi te dije kush e ndjek listimin."
+                : "Required before publishing so the team knows who owns the listing."}
+            </span>
+          </Field>
+          <PropertyAssignedAgentCard
+            agent={selectedAssignedAgent}
+            compact
+            locale={locale}
+          />
+        </div>
 
         <Field label={locale === "sq" ? "Qyteti" : "City"}>
           <Input

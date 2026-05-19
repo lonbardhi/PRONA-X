@@ -28,6 +28,7 @@ import {
 import { deletePropertyAction } from "@/app/properties/actions";
 import { AppointmentAgenda } from "@/components/AppointmentAgenda";
 import { FavoritePropertyButton } from "@/components/FavoritePropertyButton";
+import { PropertyAssignedAgentCard } from "@/components/PropertyAssignedAgentCard";
 import { PropertyMediaViewer } from "@/components/PropertyMediaViewer";
 import { PropertyMediaPreview } from "@/components/PropertyMediaPreview";
 import { SharePropertyButton } from "@/components/SharePropertyButton";
@@ -648,6 +649,11 @@ export function PropertyQuickViewDialog({
                   </Link>
                 </div>
               ) : null}
+
+              <PropertyAssignedAgentCard
+                agent={property.assigned_agent}
+                locale={locale}
+              />
 
               {developmentLand ? (
                 <>

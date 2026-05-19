@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   countPhysicalAssets,
   findDuplicateAssetCandidates,
+  formDataToPropertyInput,
   formatPropertyPrice,
   formatTransactionBadge,
   getLinkedListingId,
@@ -83,6 +84,33 @@ test("rental listing requires rent period and rejects sale-only status", () => {
 
   assert.equal(saleStatus.success, false);
   assert.match(saleStatus.error?.issues[0]?.message || "", /Rental status/);
+});
+
+test("property form input keeps responsible agent assignment", () => {
+  const formData = new FormData();
+  formData.set("title", "Apartament i publikuar");
+  formData.set("type", "apartment");
+  formData.set("transaction_type", "sale");
+  formData.set("status", "published");
+  formData.set("city", "Tirana");
+  formData.set("price_eur", "120000");
+  formData.set("assigned_agent_id", "11111111-1111-4111-8111-111111111111");
+
+  const input = formDataToPropertyInput(formData);
+
+  assert.equal(input.assigned_agent_id, "11111111-1111-4111-8111-111111111111");
+});
+
+test("property form rejects invalid responsible agent ids", () => {
+  const result = propertySchema.safeParse({
+    ...baseListing,
+    assigned_agent_id: "not-a-user-id",
+    price_eur: "120000",
+    transaction_type: "sale",
+  });
+
+  assert.equal(result.success, false);
+  assert.match(result.error?.issues[0]?.message || "", /Assigned agent/);
 });
 
 test("price formatting keeps sale and rental language separate", () => {

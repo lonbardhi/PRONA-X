@@ -126,6 +126,11 @@ const optionalPercentage = z.preprocess(
   z.coerce.number().min(0).max(100).optional(),
 );
 
+const optionalUuid = z.preprocess(
+  (value) => (value === "" || value == null ? undefined : value),
+  z.string().uuid("Assigned agent is invalid").optional(),
+);
+
 export const propertySchema = z
   .object({
     title: z.string().trim().min(3, "Title is required"),
@@ -191,6 +196,7 @@ export const propertySchema = z
     developer_conditions: z.string().trim().optional(),
     developer_offer_status: z.string().trim().optional(),
     visibility: z.string().trim().optional(),
+    assigned_agent_id: optionalUuid,
   })
   .superRefine((value, context) => {
     const isRentalWorkflow =
@@ -324,6 +330,18 @@ export type PropertyMedia = {
   sort_order: number;
 };
 
+export type PropertyAssignedAgent = {
+  agency_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+  full_name: string | null;
+  id: string;
+  phone: string | null;
+  role: string | null;
+};
+
+export type PropertyAgentOption = PropertyAssignedAgent;
+
 export type PropertyRecord = {
   id: string;
   title: string;
@@ -390,6 +408,8 @@ export type PropertyRecord = {
   developer_conditions: string | null;
   developer_offer_status: string | null;
   visibility: string | null;
+  assigned_agent_id: string | null;
+  assigned_agent?: PropertyAssignedAgent | null;
   created_at: string;
   property_media: PropertyMedia[];
   appointments?: AppointmentRecord[];
@@ -470,7 +490,24 @@ export function formDataToPropertyInput(formData: FormData) {
     developer_conditions: formData.get("developer_conditions") || undefined,
     developer_offer_status: formData.get("developer_offer_status") || undefined,
     visibility: formData.get("visibility") || undefined,
+    assigned_agent_id: formData.get("assigned_agent_id") || undefined,
   });
+}
+
+export function normalizeAssignedAgent(
+  agent: PropertyAssignedAgent | PropertyAssignedAgent[] | null | undefined,
+) {
+  if (Array.isArray(agent)) {
+    return agent[0] || null;
+  }
+
+  return agent || null;
+}
+
+export function getAssignedAgentDisplayName(
+  agent: PropertyAssignedAgent | null | undefined,
+) {
+  return agent?.full_name || agent?.email || "PRONA X";
 }
 
 export function normalizeOptionalNumber(value: number | undefined) {
