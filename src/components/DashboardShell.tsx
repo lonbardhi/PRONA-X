@@ -80,81 +80,104 @@ export async function DashboardShell({
           ? [{ label: t(locale, "nav.adminUsers"), href: "/admin/users", icon: UsersIcon }]
           : []),
       ];
+  const renderNavLinks = () => (
+    <>
+      {navItems.map((item) => {
+        if (item.href === "/messages") {
+          return (
+            <MessagesNavItem
+              key={item.href}
+              locale={locale}
+              unreadCount={messagingUnreadCount}
+            />
+          );
+        }
+
+        const Icon = item.icon;
+
+        return (
+          <Link
+            className="crm-nav-link"
+            href={item.href}
+            key={item.label}
+            prefetch={false}
+          >
+            {Icon ? <Icon className="h-4 w-4" /> : null}
+            {item.label}
+          </Link>
+        );
+      })}
+      {isSupportOnly ? (
+        <MessagesNavItem
+          key="messages-support"
+          locale={locale}
+          unreadCount={messagingUnreadCount}
+        />
+      ) : null}
+    </>
+  );
+  const utilityActions = (
+    <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+      <Link
+        aria-label={t(locale, "notifications")}
+        className="crm-icon-button hidden md:flex"
+        href="/profile?section=notifications"
+        prefetch={false}
+      >
+        <Bell className="h-4 w-4" />
+      </Link>
+      <div className="hidden max-w-56 text-right lg:block">
+        <p className="truncate text-sm font-medium text-slate-900">
+          {workspaceData?.profile.full_name || userEmail}
+        </p>
+        <p className="truncate text-xs text-slate-500">{t(locale, "account.workspace")}</p>
+      </div>
+      <LanguageToggle locale={locale} />
+      {workspaceData ? (
+        <ProfileWorkspacePanel data={workspaceData} locale={locale} />
+      ) : null}
+      <form action={signOutAction}>
+        <Button
+          aria-label={t(locale, "pending.signOut")}
+          className="rounded-full"
+          size="icon"
+          variant="outline"
+        >
+          <LogoutIcon className="h-6 w-6 object-contain" />
+        </Button>
+      </form>
+    </div>
+  );
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-slate-50">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6">
-          <div className="min-w-0 flex-1 sm:flex-none">
-            <BrandLockup subtitle={t(locale, "brand.subtitle")} />
+        <div className="mx-auto grid max-w-[1500px] gap-3 px-3 py-3 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3 lg:gap-5">
+            <div className="min-w-0 shrink-0">
+              <BrandLockup subtitle={t(locale, "brand.subtitle")} />
+            </div>
+            <nav className="crm-scroll-area hidden min-w-0 flex-1 gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 lg:flex">
+              {renderNavLinks()}
+            </nav>
           </div>
 
-          <nav className="crm-scroll-area order-3 flex w-full min-w-0 gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 lg:order-none lg:w-auto">
-            {navItems.map((item) => {
-              if (item.href === "/messages") {
-                return (
-                  <MessagesNavItem
-                    key={item.href}
-                    locale={locale}
-                    unreadCount={messagingUnreadCount}
-                  />
-                );
-              }
-
-              const Icon = item.icon;
-
-              return (
-                <Link
-                  className="crm-nav-link"
-                  href={item.href}
-                  key={item.label}
-                  prefetch={false}
-                >
-                  {Icon ? <Icon className="h-4 w-4" /> : null}
-                  {item.label}
-                </Link>
-              );
-            })}
-            {isSupportOnly ? (
-              <MessagesNavItem locale={locale} unreadCount={messagingUnreadCount} />
-            ) : null}
-          </nav>
-
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="flex min-w-0 items-center justify-between gap-3">
             {!isViewer && !isSupportOnly ? (
-              <div className="hidden md:block">
+              <div className="hidden shrink-0 md:block">
                 <AddListingMenu locale={locale} />
               </div>
-            ) : null}
-            <Link
-              aria-label={t(locale, "notifications")}
-              className="crm-icon-button hidden md:flex"
-              href="/profile?section=notifications"
-              prefetch={false}
-            >
-              <Bell className="h-4 w-4" />
-            </Link>
-            <div className="hidden max-w-56 text-right lg:block">
-              <p className="text-sm font-medium text-slate-900">
-                {workspaceData?.profile.full_name || userEmail}
-              </p>
-              <p className="text-xs text-slate-500">{t(locale, "account.workspace")}</p>
+            ) : (
+              <div className="hidden md:block" />
+            )}
+            <div className="ml-auto flex min-w-0 justify-end">
+              {utilityActions}
             </div>
-            <LanguageToggle locale={locale} />
-            {workspaceData ? (
-              <ProfileWorkspacePanel data={workspaceData} locale={locale} />
-            ) : null}
-            <form action={signOutAction}>
-              <Button
-                aria-label={t(locale, "pending.signOut")}
-                className="rounded-full"
-                size="icon"
-                variant="outline"
-              >
-                <LogoutIcon className="h-6 w-6 object-contain" />
-              </Button>
-            </form>
           </div>
+
+          <nav className="crm-scroll-area flex w-full min-w-0 gap-1 overflow-x-auto rounded-full border border-slate-200 bg-slate-50 p-1 lg:hidden">
+            {renderNavLinks()}
+          </nav>
         </div>
       </header>
       <SessionTimeout />
