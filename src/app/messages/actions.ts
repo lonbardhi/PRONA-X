@@ -19,11 +19,19 @@ import {
   type MessageNotificationType,
 } from "@/lib/messaging";
 import { getNotificationWorkspaceId } from "@/lib/notifications/service";
-import { createClient, requireApprovedUser } from "@/lib/supabase/server";
+import { createClient, requireApprovedUser, type AppRole } from "@/lib/supabase/server";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 const MAX_ATTACHMENTS = 5;
+const messagingCreatorRoles: ReadonlySet<AppRole> = new Set([
+  "admin",
+  "manager",
+  "agent",
+  "support",
+  "legal",
+  "finance",
+]);
 
 function getActionErrorMessage(error: unknown) {
   if (error instanceof z.ZodError) {
@@ -31,6 +39,28 @@ function getActionErrorMessage(error: unknown) {
   }
 
   return error instanceof Error ? error.message : "Messaging action failed.";
+}
+
+function canCreateInternalConversation(role: AppRole | null | undefined) {
+  return Boolean(role && messagingCreatorRoles.has(role));
+}
+
+function getSupabaseErrorMessage(error: unknown) {
+  if (!error || typeof error !== "object" || !("message" in error)) {
+    return null;
+  }
+
+  return typeof error.message === "string" ? error.message : null;
+}
+
+function getConversationWriteErrorMessage(error: unknown, fallback: string) {
+  const message = getSupabaseErrorMessage(error);
+
+  if (message?.toLowerCase().includes("row-level security")) {
+    return "Messaging permissions are not enabled for this role yet. Apply the latest Supabase messaging policy migration.";
+  }
+
+  return message || fallback;
 }
 
 function withQueryParam(path: string, key: string, value: string) {
@@ -380,7 +410,7 @@ export async function createConversationAction(formData: FormData) {
     redirect(withMessage(returnTo, getActionErrorMessage(error)));
   }
 
-  if (profile.role === "viewer" || profile.role === "pending") {
+  if (!canCreateInternalConversation(profile.role)) {
     redirect(withMessage(returnTo, "This role cannot create internal conversations."));
   }
 
@@ -405,7 +435,10 @@ export async function createConversationAction(formData: FormData) {
 
   if (error || !conversation) {
     redirect(
-      withMessage(returnTo, error?.message || "Could not create conversation."),
+      withMessage(
+        returnTo,
+        getConversationWriteErrorMessage(error, "Could not create conversation."),
+      ),
     );
   }
 
@@ -420,7 +453,15 @@ export async function createConversationAction(formData: FormData) {
     );
 
   if (participantError) {
-    redirect(withMessage(returnTo, participantError.message));
+    redirect(
+      withMessage(
+        returnTo,
+        getConversationWriteErrorMessage(
+          participantError,
+          "Could not add conversation participants.",
+        ),
+      ),
+    );
   }
 
   await logMessagingActivity(
@@ -509,7 +550,7 @@ export async function createEntityConversationAction(formData: FormData) {
     redirect(withMessage(returnTo, getActionErrorMessage(error)));
   }
 
-  if (profile.role === "viewer" || profile.role === "pending") {
+  if (!canCreateInternalConversation(profile.role)) {
     redirect(withMessage(returnTo, "This role cannot start internal discussion threads."));
   }
 
@@ -570,7 +611,10 @@ export async function createEntityConversationAction(formData: FormData) {
     }
 
     redirect(
-      withMessage(returnTo, error?.message || "Could not create discussion thread."),
+      withMessage(
+        returnTo,
+        getConversationWriteErrorMessage(error, "Could not create discussion thread."),
+      ),
     );
   }
 
@@ -586,7 +630,15 @@ export async function createEntityConversationAction(formData: FormData) {
     );
 
   if (participantError) {
-    redirect(withMessage(returnTo, participantError.message));
+    redirect(
+      withMessage(
+        returnTo,
+        getConversationWriteErrorMessage(
+          participantError,
+          "Could not add discussion participants.",
+        ),
+      ),
+    );
   }
 
   await logMessagingActivity(
