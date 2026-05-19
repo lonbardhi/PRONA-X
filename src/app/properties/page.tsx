@@ -18,8 +18,8 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PropertyIntakePanel } from "@/components/PropertyIntakePanel";
 import { PropertyFilters } from "@/components/PropertyFilters";
 import { PropertyForm } from "@/components/PropertyForm";
+import { PropertyImageCarousel } from "@/components/properties/PropertyImageCarousel";
 import { PropertyMapListView } from "@/components/properties/PropertyMapListView";
-import { PropertyOperationsPanel } from "@/components/properties/PropertyOperationsPanel";
 import { SetupNotice } from "@/components/SetupNotice";
 import {
   getAlbaniaLocationFilterValues,
@@ -919,10 +919,9 @@ export async function PropertyModulePage({
               properties={typedProperties}
             />
 
-            <PropertyOperationsPanel
+            <PropertyImageCarousel
               canManage={canManage}
               locale={locale}
-              mapPoints={propertyMapPoints}
               module={module}
               properties={typedProperties}
             />

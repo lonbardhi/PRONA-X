@@ -460,6 +460,26 @@ svg {
     display: none;
   }
 
+  .property-image-carousel {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .property-image-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .property-image-carousel-track {
+    width: max-content;
+    animation: property-image-carousel-scroll 72s linear infinite;
+    will-change: transform;
+  }
+
+  .property-image-carousel:hover .property-image-carousel-track,
+  .property-image-carousel:focus-within .property-image-carousel-track {
+    animation-play-state: paused;
+  }
+
   .crm-modal-backdrop {
     animation: crm-fade-in var(--crm-motion-normal) var(--crm-ease-out);
   }
@@ -489,6 +509,16 @@ svg {
       transform: translateY(0) scale(1);
     }
   }
+
+  @keyframes property-image-carousel-scroll {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(calc(-50% - 0.375rem));
+    }
+  }
 }
 
 @media (max-width: 640px) {
@@ -513,6 +543,10 @@ svg {
   .crm-nav-link:hover,
   .crm-icon-button:hover {
     transform: none;
+  }
+
+  .property-image-carousel-track {
+    transform: none !important;
   }
 }
 
