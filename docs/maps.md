@@ -4,7 +4,7 @@ PRONA X uses Leaflet for the Phase 1 property map/list MVP. The default tile sou
 
 ## Environment
 
-- `NEXT_PUBLIC_MAP_ENABLED=true`
+- `NEXT_PUBLIC_MAP_ENABLED=true` by default; set to `false`, `0`, `no`, or `off` to hide the map while keeping the property list usable.
 - `NEXT_PUBLIC_MAP_PROVIDER=leaflet`
 - `NEXT_PUBLIC_TILE_SOURCE=osm-raster`
 - `NEXT_PUBLIC_OSM_TILE_URL=https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`

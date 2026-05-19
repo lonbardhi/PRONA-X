@@ -32,6 +32,7 @@ import {
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
 import { defaultLocale, type Locale, t } from "@/lib/i18n";
+import { isMapEnabled } from "@/lib/maps/config";
 import { cn } from "@/lib/utils";
 
 type PropertyMapListViewProps = {
@@ -173,6 +174,7 @@ export function PropertyMapListView({
 }: PropertyMapListViewProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [fitKey, setFitKey] = useState("initial");
+  const mapEnabled = isMapEnabled();
   const pointsById = useMemo(
     () => new Map(mapPoints.map((point) => [point.id, point])),
     [mapPoints],
@@ -213,6 +215,19 @@ export function PropertyMapListView({
       {paginationNode}
     </div>
   );
+
+  if (!mapEnabled) {
+    return (
+      <div className="grid gap-3">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+          {locale === "sq"
+            ? "Harta është çaktivizuar për këtë mjedis. Lista mbetet e përdorshme."
+            : "Map is disabled for this environment. The property list remains usable."}
+        </div>
+        {list}
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4">

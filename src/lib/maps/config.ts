@@ -14,6 +14,14 @@ function getPublicNumberEnv(name: string, fallback: number) {
   return parsed == null ? fallback : parsed;
 }
 
+export function isMapEnabled() {
+  const value = getPublicEnv("NEXT_PUBLIC_MAP_ENABLED", "true")
+    .trim()
+    .toLowerCase();
+
+  return !["0", "false", "no", "off"].includes(value);
+}
+
 export function getMapProviderName(): MapProviderName {
   const value = getPublicEnv("NEXT_PUBLIC_MAP_PROVIDER", "leaflet");
 
