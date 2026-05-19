@@ -145,7 +145,7 @@ function PropertyListCard({
         <div className="flex items-center gap-2">
           <Link
             className="inline-flex h-8 items-center justify-center rounded-lg border border-border px-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-            href={`/properties/${property.id}`}
+            href={canManage ? `/properties/${property.id}/edit` : `/properties/${property.id}`}
           >
             {locale === "sq" ? "Hap" : "Open"}
           </Link>

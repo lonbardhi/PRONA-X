@@ -16,7 +16,10 @@ import {
   isRentalTransaction,
 } from "@/lib/properties";
 import { pickPrimaryPropertyMedia } from "@/lib/property-media";
-import { createClient } from "@/lib/supabase/server";
+import {
+  getCurrentUserWithProfile,
+  isApprovedProfile,
+} from "@/lib/supabase/server";
 
 type PublicPropertyPageProps = {
   params: Promise<{
@@ -50,13 +53,18 @@ export default async function PublicPropertyPage({ params }: PublicPropertyPageP
   }
 
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: property } = await supabase
+  const { profile, supabase } = await getCurrentUserWithProfile();
+  const canViewInternal = isApprovedProfile(profile);
+  let propertyQuery = supabase
     .from("properties")
     .select(propertySelect)
-    .eq("id", id)
-    .eq("status", "published")
-    .single();
+    .eq("id", id);
+
+  if (!canViewInternal) {
+    propertyQuery = propertyQuery.eq("status", "published");
+  }
+
+  const { data: property } = await propertyQuery.single();
 
   if (!property) {
     notFound();
@@ -69,21 +77,28 @@ export default async function PublicPropertyPage({ params }: PublicPropertyPageP
   let linkedPublicListing: LinkedPublicListing | null = null;
 
   if (directLinkedId) {
-    const { data } = await supabase
+    let linkedQuery = supabase
       .from("properties")
       .select(linkedPublicSelect)
-      .eq("id", directLinkedId)
-      .eq("status", "published")
-      .maybeSingle();
+      .eq("id", directLinkedId);
+
+    if (!canViewInternal) {
+      linkedQuery = linkedQuery.eq("status", "published");
+    }
+
+    const { data } = await linkedQuery.maybeSingle();
     linkedPublicListing = data as LinkedPublicListing | null;
   } else if (typedProperty.asset_id) {
     let linkedQuery = supabase
       .from("properties")
       .select(linkedPublicSelect)
       .eq("asset_id", typedProperty.asset_id)
-      .eq("status", "published")
       .neq("id", typedProperty.id)
       .limit(1);
+
+    if (!canViewInternal) {
+      linkedQuery = linkedQuery.eq("status", "published");
+    }
 
     linkedQuery = isRentalTransaction(typedProperty.transaction_type)
       ? linkedQuery.eq("transaction_type", "sale")
