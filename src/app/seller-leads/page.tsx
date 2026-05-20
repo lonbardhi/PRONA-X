@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BrainCircuit,
   CalendarClock,
   CheckCircle2,
   ClipboardList,
@@ -491,6 +492,17 @@ function SellerLeadCard({
       </div>
 
       <div className="flex flex-wrap gap-2">
+        <Link
+          className={buttonVariants({
+            className: "h-9 min-h-9 w-full px-3 sm:w-auto",
+            variant: "outline",
+          })}
+          href={`/seller-leads/${lead.id}`}
+          prefetch={false}
+        >
+          <BrainCircuit className="h-4 w-4" />
+          PRONA X AI
+        </Link>
         <form action={markSellerLeadContactedAction}>
           <input name="lead_id" type="hidden" value={lead.id} />
           <Button className="h-9 min-h-9 w-full px-3 sm:w-auto" size="sm" variant="secondary">
@@ -919,14 +931,15 @@ export default async function SellerLeadsPage({
                   const count = leads.filter((lead) => lead.status === group.key).length;
 
                   return (
-                    <a
+                    <Link
                       className="crm-card-interactive flex items-center justify-between bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
                       href={`/seller-leads?status=${group.key}`}
                       key={group.key}
+                      prefetch={false}
                     >
                       <span>{group.label}</span>
                       <span>{count}</span>
-                    </a>
+                    </Link>
                   );
                 })}
               </div>
@@ -938,18 +951,20 @@ export default async function SellerLeadsPage({
                 Ndjekje të shpejta
               </h2>
               <div className="mt-4 grid gap-2">
-                <a
+                <Link
                   className="crm-card-interactive bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
                   href="/seller-leads?followUp=due"
+                  prefetch={false}
                 >
                   Ndjekje të vonuara
-                </a>
-                <a
+                </Link>
+                <Link
                   className="crm-card-interactive bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
                   href="/seller-leads?followUp=upcoming"
+                  prefetch={false}
                 >
                   Ndjekje të ardhshme
-                </a>
+                </Link>
               </div>
             </section>
           </aside>
