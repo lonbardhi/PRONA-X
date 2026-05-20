@@ -8,6 +8,11 @@ import {
   getNotificationPriorityForType,
   sanitizeNotificationActionUrl,
 } from "./notifications/format.ts";
+import {
+  getNewUnreadNotifications,
+  mergeSeenNotificationIds,
+} from "./notifications/live.ts";
+import type { NotificationListItem } from "./notifications/types.ts";
 import { notificationListQuerySchema, notificationSnoozeSchema } from "./notifications/validation.ts";
 
 test("notification badge count is hidden or capped safely", () => {
@@ -51,4 +56,64 @@ test("relative timestamps localize current notifications", () => {
 
   assert.equal(formatNotificationRelativeTime("2026-05-19T09:59:30.000Z", "sq", now), "tani");
   assert.equal(formatNotificationRelativeTime("2026-05-19T09:55:00.000Z", "en", now), "5 min ago");
+});
+
+test("live notification helper returns only unseen unread items", () => {
+  const baseItem = {
+    actionUrl: null,
+    actorUserId: null,
+    archivedAt: null,
+    body: "Body",
+    category: "messages",
+    conversationId: null,
+    dismissedAt: null,
+    entityId: null,
+    entityType: null,
+    expiresAt: null,
+    messageId: null,
+    metadata: {},
+    priority: "normal",
+    readAt: null,
+    scheduledFor: null,
+    snoozedUntil: null,
+    status: "unread",
+    title: "Title",
+    type: "message",
+  } satisfies Omit<NotificationListItem, "createdAt" | "id" | "isUnread">;
+  const items: NotificationListItem[] = [
+    {
+      ...baseItem,
+      createdAt: "2026-05-19T10:02:00.000Z",
+      id: "newer",
+      isUnread: true,
+    },
+    {
+      ...baseItem,
+      createdAt: "2026-05-19T10:01:00.000Z",
+      id: "seen",
+      isUnread: true,
+    },
+    {
+      ...baseItem,
+      createdAt: "2026-05-19T10:03:00.000Z",
+      id: "read",
+      isUnread: false,
+      status: "read",
+    },
+  ];
+
+  assert.deepEqual(
+    getNewUnreadNotifications({
+      currentItems: items,
+      seenIds: new Set(["seen"]),
+    }).map((item) => item.id),
+    ["newer"],
+  );
+});
+
+test("live notification helper stores newest seen ids first", () => {
+  assert.deepEqual(
+    mergeSeenNotificationIds(["old", "same"], ["new", "same"]).slice(0, 3),
+    ["new", "same", "old"],
+  );
 });
