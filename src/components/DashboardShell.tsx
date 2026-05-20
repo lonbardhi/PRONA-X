@@ -15,6 +15,7 @@ import { LeadsIcon } from "@/components/LeadsIcon";
 import { LogoutIcon } from "@/components/LogoutIcon";
 import { MessagesNavItem } from "@/components/messaging/MessagesNavItem";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { NotificationToastStack } from "@/components/notifications/NotificationToastStack";
 import { ProfileWorkspacePanel } from "@/components/profile/ProfileWorkspacePanel";
 import { RequestIcon } from "@/components/RequestIcon";
 import { RentalsIcon } from "@/components/RentalsIcon";
@@ -190,6 +191,7 @@ export async function DashboardShell({
         </div>
       </header>
       <SessionTimeout />
+      {workspaceContext.user ? <NotificationToastStack locale={locale} /> : null}
       {showMobileQuickActions ? (
         <nav
           aria-label={locale === "sq" ? "Veprime te shpejta" : "Quick actions"}
