@@ -7,6 +7,7 @@ import { EntityDiscussionPanel } from "@/components/messaging/EntityDiscussionPa
 import { PropertyForm } from "@/components/PropertyForm";
 import { PropertyLinkedListingPanel } from "@/components/PropertyLinkedListingPanel";
 import { SetupNotice } from "@/components/SetupNotice";
+import { SmartActionsDropdown } from "@/components/smart-listing-kit/SmartActionsDropdown";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getCurrentLocale } from "@/lib/i18n-server";
 import {
@@ -136,17 +137,24 @@ export default async function EditPropertyPage({
     <DashboardShell userEmail={user.email} userRole={profile.role}>
       <section className="mx-auto grid max-w-5xl gap-5 px-3 py-5 sm:px-6 sm:py-8">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-            {locale === "sq" ? "Ndrysho listimin" : "Edit listing"}
-          </p>
-          <h1 className="mt-2 break-words text-2xl font-semibold leading-tight text-slate-950 sm:text-3xl">
-            {typedProperty.title}
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            {locale === "sq"
-              ? "Përditëso detajet e pronës ose shto foto, video dhe skedarë PDF."
-              : "Update property details or append more photos, videos, and PDF files."}
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+                {locale === "sq" ? "Ndrysho listimin" : "Edit listing"}
+              </p>
+              <h1 className="mt-2 break-words text-2xl font-semibold leading-tight text-slate-950 sm:text-3xl">
+                {typedProperty.title}
+              </h1>
+              <p className="mt-2 text-sm text-slate-500">
+                {locale === "sq"
+                  ? "Përditëso detajet e pronës ose shto foto, video dhe skedarë PDF."
+                  : "Update property details or append more photos, videos, and PDF files."}
+              </p>
+            </div>
+            <div className="sm:pt-1">
+              <SmartActionsDropdown listingId={typedProperty.id} locale={locale} />
+            </div>
+          </div>
 
           {query.message ? (
             <div className="mt-5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
