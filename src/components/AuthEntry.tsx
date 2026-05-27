@@ -86,9 +86,9 @@ export function AuthEntry({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-3 py-3 text-slate-950 sm:px-6 sm:py-4 lg:p-8">
-      <section className="mx-auto grid min-h-[calc(100dvh-1.5rem)] max-w-7xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
-        <div className="relative hidden min-h-[540px] overflow-hidden bg-slate-950 lg:block lg:min-h-full">
+    <main className="min-h-screen bg-slate-50 px-3 py-3 text-slate-950 sm:px-5 sm:py-5 lg:px-8 lg:py-6">
+      <section className="mx-auto grid min-h-[calc(100dvh-1.5rem)] max-w-[1180px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm sm:min-h-[calc(100dvh-2.5rem)] lg:min-h-[calc(100svh-3rem)] lg:grid-cols-[minmax(0,1.02fr)_minmax(380px,0.98fr)]">
+        <div className="relative hidden min-h-[520px] overflow-hidden bg-slate-950 lg:block lg:min-h-full">
           <Image
             alt={slide.alt}
             className="absolute inset-0 h-full w-full object-cover"
@@ -100,27 +100,27 @@ export function AuthEntry({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.12)_0%,rgba(2,6,23,0.18)_42%,rgba(2,6,23,0.82)_100%)]" />
           <div className="absolute inset-y-0 left-0 w-2/3 bg-[linear-gradient(90deg,rgba(2,6,23,0.48)_0%,rgba(2,6,23,0.14)_58%,transparent_100%)]" />
 
-          <div className="absolute left-8 top-8 flex items-center gap-4 rounded-md border border-white/20 bg-white/95 px-5 py-4 shadow-lg backdrop-blur-md">
+          <div className="absolute left-6 top-6 flex items-center gap-3 rounded-md border border-white/20 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-md xl:left-7 xl:top-7">
             <LogoMark
               className="rounded-md border border-slate-200 bg-white p-2 shadow-sm"
               priority
-              size={54}
+              size={46}
             />
             <div>
-              <p className="text-2xl font-black uppercase leading-none tracking-[0.08em] text-slate-950">
+              <p className="text-xl font-black uppercase leading-none tracking-[0.08em] text-slate-950">
                 PRONA X
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-600">
+              <p className="mt-1 text-xs font-semibold text-slate-600">
                 {t(locale, "brand.subtitle")}
               </p>
             </div>
           </div>
 
-          <div className="absolute left-8 right-8 top-48 max-w-xl text-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-200">
+          <div className="absolute left-6 right-6 top-40 max-w-xl text-white xl:left-7 xl:right-7 xl:top-44">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
               PRONA X Platform
             </p>
-            <h2 className="mt-3 text-4xl font-black leading-tight tracking-normal sm:text-5xl">
+            <h2 className="mt-3 text-[2.65rem] font-black leading-[1.08] tracking-normal xl:text-5xl">
               {t(locale, "brand.tagline")}
             </h2>
             <p className="mt-4 max-w-md text-sm font-medium leading-6 text-white/85">
@@ -130,7 +130,7 @@ export function AuthEntry({
             </p>
           </div>
 
-          <div className="absolute bottom-6 left-8 flex gap-2">
+          <div className="absolute bottom-5 left-6 flex gap-2 xl:left-7">
             {heroSlides.map((item, index) => (
               <button
                 key={item.title}
@@ -144,10 +144,10 @@ export function AuthEntry({
             ))}
           </div>
 
-          <div className="absolute bottom-6 right-8 flex gap-2">
+          <div className="absolute bottom-5 right-6 flex gap-2 xl:right-7">
             <Button
               aria-label="Previous feature"
-              className="h-11 w-11 rounded-md border-white/25 bg-white/15 p-0 text-white hover:bg-white/25"
+              className="h-10 w-10 rounded-md border-white/25 bg-white/15 p-0 text-white hover:bg-white/25"
               onClick={showPreviousSlide}
               type="button"
               variant="outline"
@@ -156,7 +156,7 @@ export function AuthEntry({
             </Button>
             <Button
               aria-label="Next feature"
-              className="h-11 w-11 rounded-md border-white/25 bg-white/15 p-0 text-white hover:bg-white/25"
+              className="h-10 w-10 rounded-md border-white/25 bg-white/15 p-0 text-white hover:bg-white/25"
               onClick={showNextSlide}
               type="button"
               variant="outline"
@@ -165,21 +165,21 @@ export function AuthEntry({
             </Button>
           </div>
 
-          <div className="absolute inset-x-8 bottom-20 rounded-lg border border-white/20 bg-slate-950/46 p-5 text-white shadow-xl backdrop-blur-md">
-            <p className="max-w-xl text-lg font-semibold leading-7">
+          <div className="absolute inset-x-6 bottom-16 rounded-lg border border-white/20 bg-slate-950/46 p-4 text-white shadow-xl backdrop-blur-md xl:inset-x-7 xl:p-5">
+            <p className="max-w-xl text-base font-semibold leading-6 xl:text-lg xl:leading-7">
               &quot;{slide.quote}&quot;
             </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end xl:mt-5">
               <div>
-                <p className="text-2xl font-bold">{slide.title}</p>
-                <p className="mt-1 max-w-xl text-sm font-medium leading-6 text-white/82">
+                <p className="text-xl font-bold xl:text-2xl">{slide.title}</p>
+                <p className="mt-1 max-w-xl text-xs font-medium leading-5 text-white/82 xl:text-sm xl:leading-6">
                   {slide.subtitle}
                 </p>
                 {slide.note ? (
                   <p className="text-sm text-white/68">{slide.note}</p>
                 ) : null}
               </div>
-              <div className="rounded-md border border-white/15 bg-white/12 px-4 py-3">
+              <div className="rounded-md border border-white/15 bg-white/12 px-3 py-2.5 xl:px-4 xl:py-3">
                 <p className="text-xs uppercase tracking-[0.14em] text-white/60">
                   {locale === "sq" ? "Sinjal marke" : "Brand signal"}
                 </p>
@@ -189,8 +189,8 @@ export function AuthEntry({
           </div>
         </div>
 
-        <div className="flex items-center justify-center px-4 py-8 sm:px-6 sm:py-10 lg:px-12">
-          <div className="w-full max-w-[460px]">
+        <div className="flex items-start justify-center px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 xl:px-10">
+          <div className="w-full max-w-[430px]">
             <div className="mb-6 flex items-center gap-3 lg:hidden">
               <LogoMark
                 className="rounded-md border border-slate-200 bg-white p-1 shadow-sm"
@@ -208,14 +208,14 @@ export function AuthEntry({
             </div>
 
             <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="gap-5 p-5 pb-4 sm:p-6 sm:pb-4">
+              <CardHeader className="gap-4 p-5 pb-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <Tabs
                     className="w-full sm:w-auto"
                     onValueChange={(value) => setAuthMode(value as "login" | "signup")}
                     value={activeTab}
                   >
-                    <TabsList className="grid h-10 w-full grid-cols-2 sm:w-[220px]">
+                    <TabsList className="grid h-9 w-full grid-cols-2 sm:w-[210px]">
                       <TabsTrigger className="h-8 gap-2" value="login">
                         <LogIn className="h-4 w-4" />
                         {t(locale, "auth.login")}
@@ -230,7 +230,7 @@ export function AuthEntry({
                 </div>
 
                 <div>
-                  <CardTitle className="text-2xl leading-8 sm:text-3xl">
+                  <CardTitle className="text-2xl leading-8 lg:text-[1.7rem] lg:leading-9">
                     {mode === "login"
                       ? t(locale, "auth.loginHeading")
                       : mode === "recovery"
@@ -247,7 +247,7 @@ export function AuthEntry({
                 </div>
               </CardHeader>
 
-              <CardContent className="grid gap-5 p-5 pt-0 sm:p-6 sm:pt-0">
+              <CardContent className="grid gap-4 p-5 pt-0">
                 {message ? (
                   <Alert className="border-amber-200 bg-amber-50 text-amber-900">
                     <AlertCircle className="h-4 w-4" />
@@ -269,10 +269,10 @@ export function AuthEntry({
                 ) : null}
 
                 {mode !== "recovery" ? (
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5">
                     <form action={signInWithGoogleAction}>
                       <input name="next" type="hidden" value={nextPath} />
-                      <Button className="h-11 w-full gap-3" type="submit" variant="outline">
+                      <Button className="h-11 w-full gap-3 lg:h-10" type="submit" variant="outline">
                         <span className="text-base font-bold">G</span>
                         {t(locale, "auth.google")}
                       </Button>
@@ -280,7 +280,7 @@ export function AuthEntry({
 
                     <form action={signInWithAppleAction}>
                       <input name="next" type="hidden" value={nextPath} />
-                      <Button className="h-11 w-full gap-3" type="submit" variant="outline">
+                      <Button className="h-11 w-full gap-3 lg:h-10" type="submit" variant="outline">
                         <Apple className="h-4 w-4" />
                         {t(locale, "auth.apple")}
                       </Button>
@@ -296,7 +296,7 @@ export function AuthEntry({
                   <Separator />
                 </div>
 
-                <form action={action} className="grid gap-4">
+                <form action={action} className="grid gap-3.5">
                   <input name="next" type="hidden" value={nextPath} />
                   {mode === "signup" ? (
                     <div className="grid gap-2">
@@ -304,7 +304,7 @@ export function AuthEntry({
                       <div className="relative">
                         <UserPlus className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <Input
-                          className="h-11 rounded-md bg-white pl-10 pr-3"
+                          className="h-11 rounded-md bg-white pl-10 pr-3 lg:h-10"
                           id="auth-full-name"
                           name="full_name"
                           placeholder={t(locale, "auth.fullNamePlaceholder")}
@@ -319,7 +319,7 @@ export function AuthEntry({
                     <div className="relative">
                       <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <Input
-                        className="h-11 rounded-md bg-white pl-10 pr-3"
+                        className="h-11 rounded-md bg-white pl-10 pr-3 lg:h-10"
                         id="auth-email"
                         name="email"
                         placeholder={t(locale, "auth.emailPlaceholder")}
@@ -346,7 +346,7 @@ export function AuthEntry({
                       <div className="relative">
                         <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <Input
-                          className="h-11 rounded-md bg-white pl-10 pr-12"
+                          className="h-11 rounded-md bg-white pl-10 pr-12 lg:h-10"
                           id="auth-password"
                           minLength={mode === "signup" ? 10 : 1}
                           name="password"
@@ -389,7 +389,7 @@ export function AuthEntry({
                       <div className="relative">
                         <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <Input
-                          className="h-11 rounded-md bg-white pl-10 pr-3"
+                          className="h-11 rounded-md bg-white pl-10 pr-3 lg:h-10"
                           id="auth-confirm-password"
                           minLength={10}
                           name="confirm_password"
@@ -402,7 +402,7 @@ export function AuthEntry({
                   ) : null}
 
                   {mode === "signup" ? (
-                    <div className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+                    <div className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-3 lg:p-2.5">
                       <Checkbox
                         className="mt-0.5 data-checked:border-slate-950 data-checked:bg-slate-950"
                         id="auth-updates"
@@ -418,7 +418,7 @@ export function AuthEntry({
                     </div>
                   ) : null}
 
-                  <Button className="mt-1 h-11 w-full" type="submit">
+                  <Button className="mt-1 h-11 w-full lg:h-10" type="submit">
                     {mode === "login"
                       ? t(locale, "auth.signIn")
                       : mode === "recovery"
@@ -429,7 +429,7 @@ export function AuthEntry({
                 </form>
               </CardContent>
 
-              <CardFooter className="border-t border-slate-100 p-5 sm:p-6">
+              <CardFooter className="border-t border-slate-100 p-4 sm:p-5">
                 <p className="w-full text-center text-sm text-slate-500">
                   {mode === "login"
                     ? t(locale, "auth.newAccount")
